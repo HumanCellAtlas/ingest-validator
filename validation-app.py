@@ -8,11 +8,9 @@ import config
 if __name__ == '__main__':
 
     ingest_api = IngestApi(ingest_url=config.INGEST_API_URL)
-    print config.INGEST_API_URL
     validation_processor = ValidationProcessor(ingest_api=ingest_api)
 
-    MessageReceiver(host=config.RABBITMQ_HOST,
-                    port=config.RABBITMQ_PORT,
+    MessageReceiver(url=config.RABBITMQ_URL,
                     queue=config.RABBITMQ_VALIDATION_QUEUE,
                     message_processor=validation_processor) 
 

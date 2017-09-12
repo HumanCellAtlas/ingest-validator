@@ -1,14 +1,14 @@
 import pika, logging
 
 class MessageReceiver:
-    def __init__(self, host=None, port=None, queue=None, message_processor=None):
+    def __init__(self, url=None, queue=None, message_processor=None):
         self.message_processor = message_processor
         
         logging.basicConfig(level=logging.INFO)
         
         self.logger = logging.getLogger(__name__)
 
-        connection = pika.BlockingConnection(pika.ConnectionParameters(host=host, port=port))
+        connection = pika.BlockingConnection(pika.URLParameters(url))
         channel = connection.channel()
         channel.queue_declare(queue=queue)
 
