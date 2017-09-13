@@ -20,10 +20,6 @@ class ValidationProcessor:
         metadata_update = {}
         metadata_update['validationStatus'] = "Valid"
 
-        if metadata_entity_type ==  "FILE" and not params['cloudUrl']:
-            self.logger.info('File url is not existing')
-            metadata_update['validationStatus'] = "Invalid"
-
         self.logger.info('Patch metadata update:'+ json.dumps(metadata_update))
         self.ingest_api.set_valid(metadata_callback_link, metadata_entity_type, metadata_id)            
 

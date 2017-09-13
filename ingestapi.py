@@ -4,9 +4,10 @@ import config
 ENTITY_TYPE_LINKS = {
     "SAMPLE" : "samples",
     "ASSAY" : "assays",
-    "ANALYSIS" : "analysis"
-    # add file type
-
+    "ANALYSIS" : "analysis",
+    "PROTOCOL" : "protocols",
+    "PROJECT" : "projects",
+    "FILE" : "files"
 }
 
 SEARCH_UUID_PATH = '/search/findByUuid?uuid='
@@ -40,6 +41,13 @@ class IngestApi:
     def set_valid(self, callback_link, metadata_type, metadata_id):
         metadata_type = ENTITY_TYPE_LINKS[metadata_type]
         resource_url = self.ingest_url + "/" + metadata_type + "/" + metadata_id
+
+        # if it's a File, only validate is the cloudUrl is present
+        if metadata_type == 'FILE':
+            file_resource = json.loads(urllib.urlopen(resource_url))
+            file_cloud_url = file_resource["cloudUrl"]
+            if file_cloud_url == None or file_cloud_url == "":
+                return
 
         # first set to validating
         resource_url_links_response = urllib.urlopen(resource_url)
