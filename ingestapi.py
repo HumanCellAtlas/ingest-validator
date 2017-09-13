@@ -14,6 +14,8 @@ SEARCH_UUID_PATH = '/search/findByUuid?uuid='
 class IngestApi:
 
     def __init__(self, ingest_url=None):
+        self.ingest_url = ingest_url
+
         reply = urllib.urlopen(ingest_url)
         self.links = json.load(reply)['_links']
         
@@ -34,3 +36,26 @@ class IngestApi:
         entity_response = urllib.urlopen(entity_find_by_uuid_url)
         entity_url = json.load(entity_response)['_links']['self']['href']
         return entity_url
+
+    def set_valid(self, callback_link, metadata_type, metadata_id):
+        metadata_type = ENTITY_TYPE_LINKS[metadata_type]
+        resource_url = self.ingest_url + "/" + metadata_type + "/" + metadata_id
+
+        # first set to validating
+        resource_url_links_response = urllib.urlopen(resource_url)
+        resource_url_links = json.load(resource_url_links_response)['_links']
+        set_resource_validating_url = resource_url_links['validating']['href']
+
+        r = requests.put(set_resource_validating_url, data={}, headers=self.headers)
+        if r.status_code != requests.codes.ok:
+            self.logger.error(str(r))
+
+        # then set to valid
+        resource_url_links_response = urllib.urlopen(resource_url)
+        resource_url_links = json.load(resource_url_links_response)['_links']
+        set_resource_valid_url = resource_url_links['valid']['href']
+
+        r = requests.put(set_resource_valid_url, data={}, headers=self.headers)
+        if r.status_code != requests.codes.ok:
+            self.logger.error(str(r))
+

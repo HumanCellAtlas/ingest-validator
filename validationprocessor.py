@@ -13,8 +13,9 @@ class ValidationProcessor:
         self._set_metadata_valid(params)
 
     def _set_metadata_valid(self, params):
-        metadata_uuid = params['uuid']['uuid']
-        metadata_entity_type = params['entityType']
+        metadata_id = params['documentId']
+        metadata_entity_type = str(params['documentType']).upper()
+        metadata_callback_link = params['callbackLink']
 
         metadata_update = {}
         metadata_update['validationStatus'] = "Valid"
@@ -24,7 +25,7 @@ class ValidationProcessor:
             metadata_update['validationStatus'] = "Invalid"
 
         self.logger.info('Patch metadata update:'+ json.dumps(metadata_update))
-        self.ingest_api.update_entity_by_uuid(metadata_entity_type, metadata_uuid, json.dumps(metadata_update))            
+        self.ingest_api.set_valid(metadata_callback_link, metadata_entity_type, metadata_id)            
 
 
     def _get_checksum(self, string):
