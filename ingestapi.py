@@ -1,4 +1,4 @@
-import glob, json, os, urllib, requests, logging
+import glob, json, os, urllib, requests, logging, time
 import config
 
 ENTITY_TYPE_LINKS = {
@@ -50,20 +50,29 @@ class IngestApi:
                 return
 
         # first set to validating
-        resource_url_links_response = urllib.urlopen(resource_url)
-        resource_url_links = json.load(resource_url_links_response)['_links']
-        set_resource_validating_url = resource_url_links['validating']['href']
+        poll_count = 5
+        for i in range(0, poll_count):
+            resource_url_links_response = urllib.urlopen(resource_url)
+            resource_url_links = json.load(resource_url_links_response)['_links']
+            if 'validating' in resource_url_links:
+                set_resource_validating_url = resource_url_links['validating']['href']
 
-        r = requests.put(set_resource_validating_url, data={}, headers=self.headers)
-        if r.status_code != requests.codes.ok:
-            self.logger.error(str(r))
+                r = requests.put(set_resource_validating_url, data={}, headers=self.headers)
+                if r.status_code != requests.codes.ok:
+                    self.logger.error(str(r))
+        else:
+            time.sleep(0.5)
 
-        # then set to valid
-        resource_url_links_response = urllib.urlopen(resource_url)
-        resource_url_links = json.load(resource_url_links_response)['_links']
-        set_resource_valid_url = resource_url_links['valid']['href']
-
-        r = requests.put(set_resource_valid_url, data={}, headers=self.headers)
-        if r.status_code != requests.codes.ok:
-            self.logger.error(str(r))
+        # poll the resource until ready to validate
+        poll_count = 5
+        for i in range(0, poll_count):
+            resource_url_links_response = urllib.urlopen(resource_url)
+            resource_url_links = json.load(resource_url_links_response)['_links']
+            if 'valid' in resource_url_links:
+                set_resource_valid_url = resource_url_links['valid']['href']
+                r = requests.put(set_resource_valid_url, data={}, headers=self.headers)
+                if r.status_code != requests.codes.ok:
+                    self.logger.error(str(r))
+            else:
+                time.sleep(0.5)
 
