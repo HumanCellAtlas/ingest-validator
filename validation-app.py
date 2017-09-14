@@ -7,6 +7,7 @@ import config
 
 if __name__ == '__main__':
 
+    print("ingest url is " + config.INGEST_API_URL)
     ingest_api = IngestApi(ingest_url=config.INGEST_API_URL)
     validation_processor = ValidationProcessor(ingest_api=ingest_api)
 

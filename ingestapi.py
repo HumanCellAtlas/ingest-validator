@@ -43,8 +43,8 @@ class IngestApi:
         resource_url = self.ingest_url + "/" + metadata_type + "/" + metadata_id
 
         # if it's a File, only validate is the cloudUrl is present
-        if metadata_type == 'FILE':
-            file_resource = json.loads(urllib.urlopen(resource_url))
+        if metadata_type == 'files':
+            file_resource = json.load(urllib.urlopen(resource_url))
             file_cloud_url = file_resource["cloudUrl"]
             if file_cloud_url == None or file_cloud_url == "":
                 return
