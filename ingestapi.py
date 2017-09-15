@@ -48,7 +48,7 @@ class IngestApi:
 
         # if already valid or validating then don't do anything
         validation_state = resource['validationState'].upper() 
-        if validation_state == 'VALID' or validation_state == 'VALIDATING':
+        if validation_state != 'DRAFT':
             return
 
         # if it isn't accessioned (i.e has a uuid), wait til it does
