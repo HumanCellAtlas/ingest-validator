@@ -8,7 +8,7 @@ class ValidationProcessor:
 
     def run(self, message):
         params = json.loads(message)
-        self.logger.info('Received: '+message)
+        self.logger.info('Received message. Callback link: ' + params['callbackLink'])
 
         self._set_metadata_valid(params)
 
@@ -17,12 +17,7 @@ class ValidationProcessor:
         metadata_entity_type = str(params['documentType']).upper()
         metadata_callback_link = params['callbackLink']
 
-        metadata_update = {}
-        metadata_update['validationStatus'] = "Valid"
-
-        self.logger.info('Patch metadata update:'+ json.dumps(metadata_update))
         self.ingest_api.set_valid(metadata_callback_link, metadata_entity_type, metadata_id)            
-
 
     def _get_checksum(self, string):
         
