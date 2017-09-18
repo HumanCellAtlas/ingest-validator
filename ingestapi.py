@@ -4,7 +4,7 @@ import config
 ENTITY_TYPE_LINKS = {
     "SAMPLE" : "samples",
     "ASSAY" : "assays",
-    "ANALYSIS" : "analysis",
+    "ANALYSIS" : "analyses",
     "PROTOCOL" : "protocols",
     "PROJECT" : "projects",
     "FILE" : "files"
