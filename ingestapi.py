@@ -38,63 +38,9 @@ class IngestApi:
         entity_url = json.load(entity_response)['_links']['self']['href']
         return entity_url
 
-    def set_valid(self, callback_link, metadata_type, metadata_id):
-        metadata_type = ENTITY_TYPE_LINKS[metadata_type]
-        resource_url = self.ingest_url + "/" + metadata_type + "/" + metadata_id
 
-        # get the resource
+    def get_resource_callback(self, callback_link):
+        resource_url = self.ingest_url + callback_link
         resource_response = urllib.urlopen(resource_url)
         resource = json.load(resource_response)
-
-        # if already valid or validating then don't do anything
-        validation_state = resource['validationState'].upper() 
-        if validation_state != 'DRAFT':
-            return
-
-        # if it isn't accessioned (i.e has a uuid), wait til it does
-        uuid = resource['uuid']
-        if (uuid == None) or (not 'uuid' in uuid) or (uuid['uuid'] == ''):
-            self.logger.info("received document with no uuid, discarding....")
-            return
-
-        # if it's a File, only validate is the cloudUrl is present
-        if metadata_type == 'files':
-            file_cloud_url = resource['cloudUrl']
-            if file_cloud_url == None or file_cloud_url == '':
-                return
-
-        # first set to validating
-        poll_count = 5
-        for i in range(0, poll_count):
-            resource_response = urllib.urlopen(resource_url)
-            resource = json.load(resource_response)
-            resource_links = resource['_links']
-
-            if 'validating' in resource_links:
-                set_resource_validating_url = resource_links['validating']['href']
-                r = requests.put(set_resource_validating_url, data={}, headers=self.headers)
-                if r.ok:
-                    self.logger.info(str(r))
-                else:
-                    self.logger.error(str(r))
-            else:
-                time.sleep(0.5)
-                
-
-        # poll the resource until ready to validate
-        poll_count = 5
-        for i in range(0, poll_count):
-            resource_response = urllib.urlopen(resource_url)
-            resource = json.load(resource_response)
-            resource_links = resource['_links']
-
-            if 'valid' in resource_links: # i.e we can now validate
-                time.sleep(2) # sleeping for 2 seconds to simulate validation
-                set_resource_valid_url = resource_links['valid']['href']
-                r = requests.put(set_resource_valid_url, data={}, headers=self.headers)
-                if r.ok:
-                    self.logger.info(str(r))
-                else:
-                    self.logger.error(str(r))
-            else:
-                time.sleep(0.5)
+        return resource
