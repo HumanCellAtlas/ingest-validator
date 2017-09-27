@@ -1,7 +1,5 @@
-import glob, json, os, urllib, requests, logging, time
-import urlparse
-
-import config
+import glob, json, os, urllib, requests, logging, time, urlparse
+from requests import HTTPError
 
 ENTITY_TYPE_LINKS = {
     "SAMPLE" : "samples",
@@ -75,13 +73,21 @@ class IngestApi:
                 validating_link = metadata_document['_links']['validating']['href']
                 transition_response = requests.put(validating_link, data={}, headers=self.headers)
 
-                if transition_response.status_code != requests.codes.ok:
-                    self.logger.error(str(transition_response))
-                    retries +=1
-                    self.logger.info('retries: ' + str(retries))
-                else:
+                try:
+                    transition_response.raise_for_status()
                     updated = True
                     break
+                except HTTPError:
+                    self.logger.error(str(transition_response))
+                    retries += 1
+                    self.logger.info('retries: ' + str(retries))
+                # if transition_response.status_code != requests.codes.ok:
+                #     self.logger.error(str(transition_response))
+                #     retries +=1
+                #     self.logger.info('retries: ' + str(retries))
+                # else:
+                #     updated = True
+                #     break
             else:
                 self.logger.info('Target document ' + str(entity_path) + ' is not ready to validate, ignoring')
                 updated = False
@@ -107,8 +113,8 @@ class IngestApi:
 
             metadata_document = json.loads(entity_response.text)
 
-            # check the response is indeed ready to start validating
-            if self.is_ready_to_validate(metadata_document):
+            # check the response is validating and can be finished
+            if self.is_validating(metadata_document):
                 if etag:
                     # set the etag header so we get 412 if someone beats us to set validating
                     self.headers['If-Match'] = etag
@@ -117,13 +123,21 @@ class IngestApi:
                 validating_link = metadata_document['_links']['valid']['href']
                 transition_response = requests.put(validating_link, data={}, headers=self.headers)
 
-                if transition_response.status_code != requests.codes.ok:
-                    self.logger.error(str(transition_response))
-                    retries +=1
-                    self.logger.info('retries: ' + str(retries))
-                else:
+                try:
+                    transition_response.raise_for_status()
                     updated = True
                     break
+                except HTTPError:
+                    self.logger.error(str(transition_response))
+                    retries += 1
+                    self.logger.info('retries: ' + str(retries))
+                # if transition_response.status_code != requests.codes.ok:
+                #     self.logger.error(str(transition_response))
+                #     retries +=1
+                #     self.logger.info('retries: ' + str(retries))
+                # else:
+                #     updated = True
+                #     break
             else:
                 self.logger.info('Target document ' + str(entity_path) +
                                  ' cannot be set as valid (maybe already finished?), ignoring')
