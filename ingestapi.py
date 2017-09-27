@@ -1,4 +1,4 @@
-import glob, json, os, urllib, requests, logging, time, urlparse
+import json, urllib, requests, logging, time, urlparse
 from requests import HTTPError
 
 ENTITY_TYPE_LINKS = {
@@ -81,13 +81,6 @@ class IngestApi:
                     self.logger.error(str(transition_response))
                     retries += 1
                     self.logger.info('retries: ' + str(retries))
-                # if transition_response.status_code != requests.codes.ok:
-                #     self.logger.error(str(transition_response))
-                #     retries +=1
-                #     self.logger.info('retries: ' + str(retries))
-                # else:
-                #     updated = True
-                #     break
             else:
                 self.logger.info('Target document ' + str(entity_path) + ' is not ready to validate, ignoring')
                 updated = False
@@ -131,13 +124,6 @@ class IngestApi:
                     self.logger.error(str(transition_response))
                     retries += 1
                     self.logger.info('retries: ' + str(retries))
-                # if transition_response.status_code != requests.codes.ok:
-                #     self.logger.error(str(transition_response))
-                #     retries +=1
-                #     self.logger.info('retries: ' + str(retries))
-                # else:
-                #     updated = True
-                #     break
             else:
                 self.logger.info('Target document ' + str(entity_path) +
                                  ' cannot be set as valid (maybe already finished?), ignoring')

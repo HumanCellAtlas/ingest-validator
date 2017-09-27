@@ -1,4 +1,5 @@
-import pika, logging, uuid, json, hashlib, requests, time
+import logging, json
+
 
 class ValidationProcessor:
     def __init__(self, ingest_api):
