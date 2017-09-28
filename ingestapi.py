@@ -11,7 +11,7 @@ ENTITY_TYPE_LINKS = {
 }
 
 SEARCH_UUID_PATH = '/search/findByUuid?uuid='
-MAX_RETRIES = 3
+MAX_RETRIES = 5
 
 
 class IngestApi:
