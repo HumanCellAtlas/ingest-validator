@@ -14,7 +14,7 @@ class MessageReceiver:
 
         def callback(ch, method, properties, body):
             try:
-                self.logger.info("Received:" + body)
+                self.logger.debug("Received:" + body)
                 self.message_processor.run(message=body)
             
             except Exception as e:

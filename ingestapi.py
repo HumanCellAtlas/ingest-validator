@@ -20,7 +20,9 @@ class IngestApi:
 
         reply = urllib.urlopen(ingest_url)
         self.links = json.load(reply)['_links']
-        
+
+        logging.getLogger("requests").setLevel(logging.WARNING)
+        logging.getLogger("urllib3").setLevel(logging.WARNING)
         self.logger = logging.getLogger(__name__)
         self.headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
 
@@ -78,11 +80,11 @@ class IngestApi:
                     updated = True
                     break
                 except HTTPError:
-                    self.logger.error(str(transition_response))
+                    self.logger.error("PUT " + str(entity_path) + ": Response = " + str(transition_response.status_code))
                     retries += 1
-                    self.logger.info('retries: ' + str(retries))
+                    self.logger.error('retries: ' + str(retries))
             else:
-                self.logger.info('Target document ' + str(entity_path) + ' is not ready to validate, ignoring')
+                self.logger.debug('Target document ' + str(entity_path) + ' is not ready to validate, ignoring')
                 updated = False
                 break
         return updated
@@ -125,7 +127,7 @@ class IngestApi:
                     retries += 1
                     self.logger.info('retries: ' + str(retries))
             else:
-                self.logger.info('Target document ' + str(entity_path) +
+                self.logger.debug('Target document ' + str(entity_path) +
                                  ' cannot be set as valid (maybe already finished?), ignoring')
                 updated = False
                 break
@@ -136,7 +138,7 @@ class IngestApi:
         # for now, we only validate if the document has a uuid, and only files if they also have a cloudUrl
         uuid = metadata_document['uuid']
         if not uuid:
-            self.logger.info('No uuid, discarding message')
+            self.logger.debug('No uuid, discarding message')
             return False
         else:
             # uuid is set, so check if it's a file...
@@ -148,7 +150,7 @@ class IngestApi:
                     return True
                 else:
                     # if not, this isn't eligible
-                    self.logger.info("no cloudUrl, discarding....")
+                    self.logger.debug("no cloudUrl, discarding....")
                     return False
             else:
                 # ... which it isn't so we can validate

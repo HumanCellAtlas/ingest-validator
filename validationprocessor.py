@@ -13,7 +13,7 @@ class ValidationProcessor:
         entity_link = params['callbackLink']
         document_type = params['documentType'].upper()
 
-        self.logger.info('Received message. Callback link: ' + entity_link)
+        self.logger.debug('Received message. Callback link: ' + entity_link)
 
         if self.ingest_api.start_validation(entity_link, document_type):
             if self.ingest_api.simulate_validation(entity_link):
@@ -24,4 +24,4 @@ class ValidationProcessor:
             else:
                 self.logger.error("Validation failed for '" + entity_link + "': could not simulate validation")
         else:
-            self.logger.error("Validation failed for '" + entity_link + "': could not start validation")
+            self.logger.debug("Validation failed for '" + entity_link + "': could not start validation")
