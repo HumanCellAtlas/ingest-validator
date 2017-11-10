@@ -1,14 +1,14 @@
 import unittest
+import os
 
-from fastq.validator import Validator
-
+from validator import Validator
 
 class TestFastqFileValidation(unittest.TestCase):
   #### single record tests###
   def test_validates_ascii(self):
     validator = Validator()
 
-    results = validator.validate("data/valid_ascii.fastq")
+    results = validator.validate(os.path.abspath("data/valid_ascii.fastq"))
 
     self.assertTrue(results)
 
@@ -45,6 +45,6 @@ class TestFastqFileValidation(unittest.TestCase):
   def test_validates_ascii_multiple_records(self):
     validator = Validator()
 
-    results = validator.validate("data/big.fastq")
+    results = validator.validate(os.path.abspath("data/big.fastq"))
 
     self.assertTrue(results)
