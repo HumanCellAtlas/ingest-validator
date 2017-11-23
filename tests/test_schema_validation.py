@@ -41,7 +41,7 @@ class TestSchemaValidation(unittest.TestCase):
             with open(BASE_PATH + "/test_files/metadata_documents/sample_document.json") as sample_document_file:
                 metadata_document = json.load(sample_document_file)
                 report = validator.validate(metadata_document, schema)
-                assert (report.document_state == "VALID")
+                assert (report.validation_state == "VALID")
 
     def test_validate_sample_should_fail(self):
         with open(BASE_PATH + "/test_files/schema/sample.json") as sample_schema:
@@ -49,4 +49,4 @@ class TestSchemaValidation(unittest.TestCase):
             with open(BASE_PATH + "/test_files/metadata_documents/sample_document_invalid.json") as sample_document_file:
                 metadata_document = json.load(sample_document_file)
                 report = validator.validate(metadata_document, schema)
-                assert (report.document_state == "INVALID")
+                assert (report.validation_state == "INVALID")

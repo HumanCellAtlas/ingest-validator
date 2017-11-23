@@ -1,4 +1,4 @@
-import logging, json
+import logging, json, validator.validator as validator
 
 
 class ValidationProcessor:
@@ -8,20 +8,15 @@ class ValidationProcessor:
         self.headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
 
     def run(self, message):
-        params = json.loads(message)
+        entity_link = message['callbackLink']
+        document_type = message['documentType'].upper()
 
-        entity_link = params['callbackLink']
-        document_type = params['documentType'].upper()
 
         self.logger.debug('Received message. Callback link: ' + entity_link)
+        # get the metadata document
+        document_content = self.ingest_api.get_resource_callback(entity_link)["content"]
+        schema_url_for_document = validator.extract_schema_url_from_document(document_content)
+        schema = validator.get_schema_from_url(schema_url_for_document)
+        validation_report = validator.validate(document_content, schema)
+        self.ingest_api.post_validation_report(entity_link, validation_report)
 
-        if self.ingest_api.start_validation(entity_link, document_type):
-            if self.ingest_api.simulate_validation(entity_link):
-                if self.ingest_api.end_validation(entity_link):
-                    self.logger.info("Completed validation of '" + entity_link + "'!")
-                else:
-                    self.logger.error("Validation failed for '" + entity_link + "': could not end validation")
-            else:
-                self.logger.error("Validation failed for '" + entity_link + "': could not simulate validation")
-        else:
-            self.logger.debug("Validation failed for '" + entity_link + "': could not start validation")
