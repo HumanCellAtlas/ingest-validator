@@ -153,6 +153,12 @@ class IngestApi:
                 # ... which it isn't so we can validate
                 return True
 
+    def transition_document_validation_state_to(self, document, validation_state):
+        transition_link = document['_links'][validation_state.lower()]['href']
+        response = requests.put(transition_link, data={}, headers=self.headers)
+        status_code = response.status_code
+        return 200 <= status_code < 300
+
     def is_ready_to_validate(self, metadata_document):
         # test for presence of 'validating' link
         resource_links = metadata_document['_links']
@@ -170,6 +176,6 @@ class IngestApi:
             return False
 
     def post_validation_report(self, entity_url, validation_report):
-        requests.patch(self.ingest_url + entity_url,
-                       json.dumps({'validationState': validation_report.validation_state,
-                                   'validationErrors' : validation_report.errors_to_dict()}), headers=self.headers)
+        return requests.patch(self.ingest_url + entity_url,
+                              json.dumps({'validationErrors': validation_report.errors_to_dict()}),
+                              headers=self.headers)
