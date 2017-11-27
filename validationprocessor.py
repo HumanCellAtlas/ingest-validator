@@ -18,15 +18,6 @@ class ValidationProcessor:
         # ready to be validated === resource['links'].contains("validating")
         if self.ingest_api.is_ready_to_validate(document):
             if self.ingest_api.is_eligible(document, document_type):
-
-
-
-
-
-
-
-
-
                 # mark it "validating"
                 if self.ingest_api.transition_document_validation_state_to(document, "validating"):
                     document_content = document["content"]
