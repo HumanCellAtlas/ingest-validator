@@ -1,3 +1,5 @@
+<a href="https://codeclimate.com/github/HumanCellAtlas/ingest-validator/maintainability"><img src="https://api.codeclimate.com/v1/badges/acb71b5e1472ff38cbb2/maintainability" /></a>
+<a href="https://codeclimate.com/github/HumanCellAtlas/ingest-validator/test_coverage"><img src="https://api.codeclimate.com/v1/badges/acb71b5e1472ff38cbb2/test_coverage" /></a>
 # HCA ingest validation service
 
 Scripts for metadata validation 
