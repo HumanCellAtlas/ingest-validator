@@ -7,7 +7,7 @@
 
 Scripts for metadata validation 
  
-To run scripts locally you'll need python 2.7 and all the dependencies in [requirements.txt](requirements.txt).
+To run scripts locally you'll need python 3+ and all the dependencies in [requirements.txt](requirements.txt).
 
 
 ```
@@ -23,3 +23,6 @@ This script listens for messages from ingest API messaging queue and validates e
 python validation-app.py
 ```
 
+Metadata JSON documents are validated against specified schemas. <a href="https://github.com/HumanCellAtlas/metadata-schema/tree/master/json_schema">A list of the current applicable schemas are located here</a>.
+Documents must specify the schema against which they are to be validated. The URL of the schema must be located at the JSON path core.schema_url within the JSON document
+After validation has completed, a validation report will be attached to the metadata document living in the ingestion-infrastructure database at api.ingest.dev.data.humancellatlas.org
