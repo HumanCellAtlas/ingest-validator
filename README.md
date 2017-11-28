@@ -2,6 +2,7 @@
 <a href="https://codecov.io/gh/HumanCellAtlas/ingest-validator">
   <img src="https://codecov.io/gh/HumanCellAtlas/ingest-validator/branch/master/graph/badge.svg" alt="Codecov" />
 </a>
+[![Build Status](https://travis-ci.org/HumanCellAtlas/ingest-validator.svg?branch=master)](https://travis-ci.org/HumanCellAtlas/ingest-validator)
 # HCA ingest validation service
 
 Scripts for metadata validation 
