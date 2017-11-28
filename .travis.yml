@@ -1,4 +1,7 @@
 language: python
+env:
+        global:
+                - CC_TEST_REPORTER_ID=afe02543b4c58c294ab40164bf63a43318c828fcb613b6056695e6ce0df3791a
 python:
         - "3.6"
 before_script:
