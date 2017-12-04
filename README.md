@@ -8,13 +8,16 @@
 
 Scripts for metadata validation 
 
-## Python Virtualenv
+## Python's `virtualenv`
 
-To easily facilitate development for this project, `virtualenv` tool for Python is used to package together all the necessary modules with their respective specific versions. The documentation for setting up `virtualenv` can be found on [Python 3's official documentation](https://packaging.python.org/guides/installing-using-pip-and-virtualenv).
+To easily facilitate development for this project, `virtualenv` tool for Python is used to package together all the 
+necessary modules with their respective specific versions. The documentation for setting up `virtualenv` can be found 
+on [Python 3's official documentation](https://packaging.python.org/guides/installing-using-pip-and-virtualenv).
 
 ### Development Environment
 
-This project has been set up with a `development` environment through Python's `virtualenv`. To activate development, the following command be can be executed relative the the project's root directory.
+This project has been set up with a `development` environment through Python's `virtualenv`. To activate development, 
+the following command be can be executed relative the the project's root directory.
 
     source development/bin/activate
     
@@ -26,14 +29,28 @@ When the virtual environment is activated, the command line prompt should indica
 
     deactivate  
  
-## Running Scripts
- 
-To run scripts locally you'll need python 3+ and all the dependencies in [requirements.txt](requirements.txt).
+## Dependencies
 
+### Packaged Dependencies with `virtualenv`
+
+With `virtualenv`, it is possible to package requirements in the virtual environments themselves. When working inside a 
+virtual environment, any dependencies installed through `pip` will automatically be added as part of that particular 
+environment. It is then advised that the changes in the environment related to newly installed dependencies be 
+committed as part of version control.
+
+### Installing Dependencies
+
+With most of the dependencies already added as part of the virtual environment, the scripts should run successfully when
+the correct virtual environment is active. However, it is also best to keep a list of dependencies that can be installed
+in batch through `pip`. 
+
+Such dependencies are listed in the [`requirements.txt`](requirements.txt) and may be installed in batch through the
+following command:
 
 ```
 pip install -r requirements.txt
 ```
+
 
 # CLI application 
 ## Validation service
