@@ -20,3 +20,5 @@ INGEST_API_URL = os.path.expandvars(os.environ.get('INGEST_API', INGEST_API_URL)
 SCHEMA_VERSION = '4.0.0'
 SCHEMA_BASE_URI = 'https://raw.githubusercontent.com/HumanCellAtlas/metadata-schema/'
 
+ONTOLOGY_SCHEMA_BASE_URL = 'https://raw.githubusercontent.com/HumanCellAtlas/metadata-schema/v5_prototype/json_schema/common/ontology'
+ONTOLOGY_SCHEMA_BASE_URL = os.path.expandvars(os.environ.get('ONTOLOGY_SCHEMA_BASE_URL', ONTOLOGY_SCHEMA_BASE_URL))
