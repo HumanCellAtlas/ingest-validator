@@ -3,9 +3,30 @@
   <img src="https://codecov.io/gh/HumanCellAtlas/ingest-validator/branch/master/graph/badge.svg" alt="Codecov" />
 </a>
 [![Build Status](https://travis-ci.org/HumanCellAtlas/ingest-validator.svg?branch=master)](https://travis-ci.org/HumanCellAtlas/ingest-validator)
+
 # HCA ingest validation service
 
 Scripts for metadata validation 
+
+## Python Virtualenv
+
+To easily facilitate development for this project, `virtualenv` tool for Python is used to package together all the necessary modules with their respective specific versions. The documentation for setting up `virtualenv` can be found on [Python 3's official documentation](https://packaging.python.org/guides/installing-using-pip-and-virtualenv).
+
+### Development Environment
+
+This project has been set up with a `development` environment through Python's `virtualenv`. To activate development, the following command be can be executed relative the the project's root directory.
+
+    source development/bin/activate
+    
+Alternatively, the `source` command can be replaced with the `.` command:
+
+    . development/bin/activate
+    
+When the virtual environment is activated, the command line prompt should indicate its name. To leave the virtual environment, the following command is used:
+
+    deactivate  
+ 
+## Running Scripts
  
 To run scripts locally you'll need python 3+ and all the dependencies in [requirements.txt](requirements.txt).
 
