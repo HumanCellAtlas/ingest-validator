@@ -1,6 +1,7 @@
 import flatten_json
 import requests
 from functools import reduce
+import common.criticalvalidationexception as criticalvalidationexception
 
 class OntologyValidationUtil:
     '''
@@ -60,15 +61,20 @@ class OntologyValidationUtil:
 
             query_dict = dict()
             query_dict["q"] = ontology_term
-            query_dict["queryFields"] = "short_form"
+            query_dict["queryFields"] = "short_form,obo_id"
             query_dict["ontology"] = ontologies_to_query_string
             query_dict["childrenOf"] = reduce(lambda ontology_class_iri, another_ontology_class_iri: ontology_class_iri + "," + another_ontology_class_iri, ontology_classes_uris)
             return query_dict
         except KeyError as e:
-            raise("Critical error: Failed to parse ontology schema: " + str(e))
+            raise criticalvalidationexception.CriticalValidationException("Critical error: Failed to parse ontology schema: " + str(e))
 
     def get_iri_for_ontology_class(self, ontology_class):
-        return requests.get("https://www.ebi.ac.uk/ols/api/terms", {"id":ontology_class}).json()["_embedded"]["terms"][0]["iri"]
+        iri_lookup_request = requests.get("https://www.ebi.ac.uk/ols/api/terms", {"id":ontology_class})
+        try:
+            return iri_lookup_request.json()["_embedded"]["terms"][0]["iri"]
+        except KeyError as e:
+            raise criticalvalidationexception.CriticalValidationException(("Critical error: Could not find ontology class {} in OLS using lookup query {}".format(ontology_class, iri_lookup_request.url)))
+
 
     '''
     searches OLS with the given query and handles the response. returns the response

@@ -1,7 +1,9 @@
 import ontologyvalidator.ontologyvalidateutil as ontologyvalidateutil
 import config
+import logging
 import common.errorreport as errorreport
 import common.validationreport as validationreport
+import common.criticalvalidationexception as criticalvalidationexception
 
 
 class OntologyValidator:
@@ -9,9 +11,14 @@ class OntologyValidator:
     def __init__(self, schema_base_url=None):
         self.util = ontologyvalidateutil.OntologyValidationUtil()
         self.schema_base_url = schema_base_url if schema_base_url else config.ONTOLOGY_SCHEMA_BASE_URL
+        self.logger = logging.getLogger(__name__)
+
 
     def validate(self, metadata_document):
-        return self.generate_validation_report(metadata_document)
+        try:
+            return self.generate_validation_report(metadata_document)
+        except criticalvalidationexception.CriticalValidationException as e:
+            self.logger.critical(e, exc_info=True)
 
     def generate_validation_report(self, metadata_document):
         # generate a validation report for each instance of an ontology term in the document
