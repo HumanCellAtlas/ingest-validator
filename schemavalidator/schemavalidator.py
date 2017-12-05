@@ -31,7 +31,7 @@ class SchemaValidator:
         :param error: a jsonschema ValidationError
         :return: error message string generated from the error
         """
-        path_to_error_in_document = reduce((lambda key1, key2: key1 + "." + key2), error.absolute_path) if len(error.absolute_path) > 0 else "root of document"
+        path_to_error_in_document = reduce((lambda key1, key2: str(key1) + "." + str(key2)), error.absolute_path) if len(error.absolute_path) > 0 else "root of document"
         return "Error: " + error.message + " at " + path_to_error_in_document
 
 

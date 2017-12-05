@@ -44,7 +44,11 @@ class OntologyValidationUtil:
     fetches an ontology schema at the specified location
     '''
     def retrieve_ontology_schema(self, base_url, filename):
-        return requests.get(base_url + "/" + filename).json()
+        retrieve_schema_request = requests.get(base_url + "/" + filename)
+        if retrieve_schema_request.status_code == 200:
+            return retrieve_schema_request.json()
+        else:
+            raise("couldn't find a matching schema for this ontology term, skipping validation...")
 
     '''
     generates an OLS query dict() given the ontology schema describing graph restrictions and ontology term
