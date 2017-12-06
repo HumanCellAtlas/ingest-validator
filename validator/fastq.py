@@ -11,15 +11,22 @@ class Validator:
 
     def validate(self, file_path):
         valid = False
-        count = 0
         with open(file_path, "rb") as source:
+            record = list()
+            validation_results = list()
+            line_index = 0
             for line in source:
-                count += 1
-        if count == 4:
-            records = self._parse_records(file_path)
-            records_validation_results = (self._validate_record(r) for r in records)
-            valid = reduce(lambda val_result, next_val_result: val_result and next_val_result,
-                           records_validation_results)
+                line = line.rstrip()
+                line_is_not_empty = line # added for readability
+                if line_is_not_empty:
+                    record.append(line)
+                    line_index += 1
+                    record_is_ready = line_index == 4
+                    if record_is_ready:
+                        validation_results.append(self._validate_record(record))
+                        record.clear()
+                        line_index = 0
+            valid = reduce(lambda val_result, next_val_result: val_result and next_val_result, validation_results)
         return valid
 
     def _validate_record(self, record):
