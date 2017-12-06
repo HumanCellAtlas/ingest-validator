@@ -33,6 +33,11 @@ class TestFastqFileValidation(unittest.TestCase):
         results = validator.validate("test_files/fastq/no_at_symbol_first_line.fastq")
         self.assertFalse(results)
 
+    def test_big_record(self):
+        validator = Validator()
+        results = validator.validate('test_files/fastq/big.fastq')
+        self.assertTrue(results)
+
     ### multiple record tests###
 
     def test_validates_ascii_multiple_records(self):
