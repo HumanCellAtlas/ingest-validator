@@ -63,15 +63,6 @@ class Validator:
         return len(base_line) == len(qc_line)
 
     @staticmethod
-    def _parse_records(file_path):
-        with open(file_path, "rb") as file:
-            record = list()  # a record is a list of 4 lines in the fastq
-            for i in range(0, 4):
-                record.append(file.readline().rstrip())
-
-            yield record
-
-    @staticmethod
     def _all_ascii(line):
         for char in line:
             if char > 128:
