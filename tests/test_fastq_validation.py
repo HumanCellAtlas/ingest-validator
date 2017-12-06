@@ -32,6 +32,7 @@ class TestFastqFileValidation(unittest.TestCase):
         results = self.validator.validate("test_files/fastq/no_at_symbol_first_line.fastq")
         self.assertFalse(results)
 
+    #TODO refactor this and the other methods to use template
     def test_big_record(self):
         results = self.validator.validate('test_files/fastq/big.fastq')
         self.assertTrue(results)
@@ -43,6 +44,9 @@ class TestFastqFileValidation(unittest.TestCase):
 
     def test_invalid_multiple_records(self):
         self._do_test_validate_as_invalid('multiple_non-matching-lengths')
+
+    def test_invalid_multiple_records_with_missing_lines(self):
+        self._do_test_validate_as_invalid('multiple_missing-lines')
 
     # test utils
 

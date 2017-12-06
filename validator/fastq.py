@@ -26,7 +26,9 @@ class Validator:
                         validation_results.append(self._validate_record(record))
                         record.clear()
                         line_index = 0
-            valid = reduce(lambda val_result, next_val_result: val_result and next_val_result, validation_results)
+            valid = line_index == 0
+            if valid:
+                valid = reduce(lambda val_result, next_val_result: val_result and next_val_result, validation_results)
         return valid
 
     def _validate_record(self, record):
