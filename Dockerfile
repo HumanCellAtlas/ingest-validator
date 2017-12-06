@@ -10,6 +10,9 @@ WORKDIR /app
 RUN pip install -r /app/requirements.txt
 
 ENV INGEST_API=http://localhost:8080
+ENV ONTOLOGY_SCHEMA_BASE_URL=https://github.com/HumanCellAtlas/metadata-schema/tree/4.2.0/json_schema/ontology_json
+ENV JSON_SCHEMA_VALIDATION=ACTIVE
+ENV OLS_VALIDATION=ACTIVE
 
 EXPOSE 5000
 ENTRYPOINT ["python"]
