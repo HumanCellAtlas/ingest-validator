@@ -1,7 +1,8 @@
 import flatten_json
 import requests
 from functools import reduce
-import common.criticalvalidationexception as criticalvalidationexception
+from common.criticalvalidationexception import CriticalValidationException
+from common.skipvalidationexception import SkipValidationException
 
 class OntologyValidationUtil:
     '''
@@ -48,7 +49,7 @@ class OntologyValidationUtil:
         if retrieve_schema_request.status_code == 200:
             return retrieve_schema_request.json()
         else:
-            raise("couldn't find a matching schema for this ontology term, skipping validation...")
+            raise SkipValidationException("couldn't find a matching schema for this ontology term, skipping validation...")
 
     '''
     generates an OLS query dict() given the ontology schema describing graph restrictions and ontology term
@@ -70,14 +71,14 @@ class OntologyValidationUtil:
             query_dict["childrenOf"] = reduce(lambda ontology_class_iri, another_ontology_class_iri: ontology_class_iri + "," + another_ontology_class_iri, ontology_classes_uris)
             return query_dict
         except KeyError as e:
-            raise criticalvalidationexception.CriticalValidationException("Critical error: Failed to parse ontology schema: " + str(e))
+            raise CriticalValidationException("Critical error: Failed to parse ontology schema: " + str(e))
 
     def get_iri_for_ontology_class(self, ontology_class):
         iri_lookup_request = requests.get("https://www.ebi.ac.uk/ols/api/terms", {"id":ontology_class})
         try:
             return iri_lookup_request.json()["_embedded"]["terms"][0]["iri"]
         except KeyError as e:
-            raise criticalvalidationexception.CriticalValidationException(("Critical error: Could not find ontology class {} in OLS using lookup query {}".format(ontology_class, iri_lookup_request.url)))
+            raise CriticalValidationException(("Critical error: Could not find ontology class {} in OLS using lookup query {}".format(ontology_class, iri_lookup_request.url)))
 
 
     '''

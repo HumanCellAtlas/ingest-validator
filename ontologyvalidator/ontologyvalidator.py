@@ -1,9 +1,10 @@
 import ontologyvalidator.ontologyvalidateutil as ontologyvalidateutil
 import config
 import logging
-import common.errorreport as errorreport
-import common.validationreport as validationreport
-import common.criticalvalidationexception as criticalvalidationexception
+from common.errorreport import ErrorReport
+from common.validationreport import ValidationReport
+from common.criticalvalidationexception import CriticalValidationException
+from common.skipvalidationexception import SkipValidationException
 
 
 class OntologyValidator:
@@ -17,7 +18,7 @@ class OntologyValidator:
     def validate(self, metadata_document):
         try:
             return self.generate_validation_report(metadata_document)
-        except criticalvalidationexception.CriticalValidationException as e:
+        except CriticalValidationException as e:
             self.logger.critical(e, exc_info=True)
 
     def generate_validation_report(self, metadata_document):
@@ -26,18 +27,22 @@ class OntologyValidator:
         error_reports = list()
 
         for (ontology_term_field_path, ontology_term_id) in self.util.find_ontology_terms_in_document(metadata_document):
-            file_name = self.util.get_ontology_schema_file_name_from_ontology_field(ontology_term_field_path)
-            schema = self.util.retrieve_ontology_schema(self.schema_base_url, file_name)
-            lookup_query = self.util.generate_ols_query(schema, ontology_term_id)
-            lookup_response = self.util.lookup_ontology_term(lookup_query)
+            try:
+                file_name = self.util.get_ontology_schema_file_name_from_ontology_field(ontology_term_field_path)
+                schema = self.util.retrieve_ontology_schema(self.schema_base_url, file_name)
+                lookup_query = self.util.generate_ols_query(schema, ontology_term_id)
+                lookup_response = self.util.lookup_ontology_term(lookup_query)
 
-            if lookup_response.json()["response"]["numFound"] == 0:
-                error_reports.append(self.generate_error_report(ontology_term_field_path, ontology_term_id, lookup_response, metadata_document))
+                if lookup_response.json()["response"]["numFound"] == 0:
+                    error_reports.append(self.generate_error_report(ontology_term_field_path, ontology_term_id, lookup_response, metadata_document))
+            except SkipValidationException as e:
+                self.logger.info(str(e))
+                continue
 
-        validation_report = validationreport.ValidationReport()
+        validation_report = ValidationReport()
 
         if len(error_reports) == 0:
-            validation_report = validationreport.ValidationReport.validation_report_ok()
+            validation_report = ValidationReport.validation_report_ok()
         else:
             validation_report.error_reports = error_reports
             validation_report.validation_state = "INVALID"
@@ -53,7 +58,7 @@ class OntologyValidator:
         ontology_validation_error.message = error_message
         ontology_validation_error.instance = metadata_document
 
-        error_report = errorreport.ErrorReport(error_message, ontology_validation_error, "ontology schema")
+        error_report = ErrorReport(error_message, ontology_validation_error, "ontology schema")
 
         return error_report
 
