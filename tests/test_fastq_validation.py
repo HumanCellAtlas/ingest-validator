@@ -36,12 +36,23 @@ class TestFastqFileValidation(unittest.TestCase):
         results = self.validator.validate('test_files/fastq/big.fastq')
         self.assertTrue(results)
 
-    ### multiple record tests###
+    # multiple record tests
 
     def test_validates_ascii_multiple_records(self):
-        results = self.validator.validate(os.path.abspath("test_files/fastq/multiple_valid-ascii.fastq"))
-        self.assertTrue(results)
+        self._do_test_validate_as_valid('multiple_valid-ascii')
 
     def test_invalid_multiple_records(self):
-        results = self.validator.validate('test_files/fastq/multiple_non-matching-lengths.fastq')
-        self.assertFalse(results)
+        self._do_test_validate_as_invalid('multiple_non-matching-lengths')
+
+    # test utils
+
+    def _do_test_validate_as_valid(self, test_data):
+        self._do_test_validate(test_data, self.assertTrue)
+
+    def _do_test_validate_as_invalid(self, test_data):
+        self._do_test_validate(test_data, self.assertFalse)
+
+    def _do_test_validate(self, test_data, assertion):
+        file_name = "test_files/fastq/%s.fastq" % (test_data)
+        results = self.validator.validate(file_name)
+        assertion(results)
