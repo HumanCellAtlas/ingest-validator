@@ -1,7 +1,7 @@
 import unittest
 from unittest import mock
 import os
-import validator.validator as validator
+import schemavalidator.schemavalidator as validator
 import config
 import json
 
@@ -25,13 +25,15 @@ class TestSchemaValidation(unittest.TestCase):
 
     @mock.patch('requests.get', side_effect=mocked_get)
     def test_get_validation_schema(self, mock_get):
-        schema = validator.get_schema_from_url("https://mock-schemas.org/v1/sample.json")
+        schema_validator = validator.SchemaValidator()
+        schema = schema_validator.get_schema_from_url("https://mock-schemas.org/v1/sample.json")
         assert(schema is not None and len(schema) > 0)
 
     def test_extract_schema_url_from_metadata(self):
         with open(BASE_PATH + "/test_files/metadata_documents/sample_document.json") as sample_document_file:
             metadata_document = json.load(sample_document_file)
-            schema_url = validator.extract_schema_url_from_document(metadata_document)
+            schema_validator = validator.SchemaValidator()
+            schema_url = schema_validator.extract_schema_url_from_document(metadata_document)
             assert(schema_url is not None and len(schema_url) > 0)
 
 
@@ -40,7 +42,8 @@ class TestSchemaValidation(unittest.TestCase):
             schema = json.load(sample_schema)
             with open(BASE_PATH + "/test_files/metadata_documents/sample_document.json") as sample_document_file:
                 metadata_document = json.load(sample_document_file)
-                report = validator.validate(metadata_document, schema)
+                schema_validator = validator.SchemaValidator()
+                report = schema_validator.validate(metadata_document, schema)
                 assert (report.validation_state == "VALID")
 
     def test_validate_sample_should_fail(self):
@@ -48,5 +51,6 @@ class TestSchemaValidation(unittest.TestCase):
             schema = json.load(sample_schema)
             with open(BASE_PATH + "/test_files/metadata_documents/sample_document_invalid.json") as sample_document_file:
                 metadata_document = json.load(sample_document_file)
-                report = validator.validate(metadata_document, schema)
+                schema_validator = validator.SchemaValidator()
+                report = schema_validator.validate(metadata_document, schema)
                 assert (report.validation_state == "INVALID")

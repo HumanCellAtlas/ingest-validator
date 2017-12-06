@@ -21,8 +21,6 @@ class ValidationProcessor:
                 # mark it "validating"
                 if self.ingest_api.transition_document_validation_state_to(document, "validating"):
                     document_content = document["content"]
-                    schema_url_for_document = validator.extract_schema_url_from_document(document_content)
-                    schema = validator.get_schema_from_url(schema_url_for_document)
-                    validation_report = validator.validate(document_content, schema)
+                    validation_report = validator.validate(document_content)
                     validated_document = self.ingest_api.post_validation_report(entity_link, validation_report).json()
                     self.ingest_api.transition_document_validation_state_to(validated_document, validation_report.validation_state)

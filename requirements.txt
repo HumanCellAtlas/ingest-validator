@@ -1,3 +1,4 @@
 requests
 pika
 jsonschema
+flatten_json
