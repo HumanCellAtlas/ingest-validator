@@ -4,6 +4,10 @@ MAINTAINER Alegria Aclan "aaclan@ebi.ac.uk"
 RUN mkdir /app
 COPY config.py messagereceiver.py validationprocessor.py ingestapi.py validation-app.py requirements.txt /app/
 ADD validator /app/validator
+ADD common /app/common
+ADD ontologyvalidator /app/ontologyvalidator
+ADD schemavalidator /app/schemavalidator
+
 
 WORKDIR /app
 
