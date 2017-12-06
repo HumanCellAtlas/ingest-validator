@@ -10,10 +10,16 @@ class Validator:
         pass
 
     def validate(self, file_path):
-        records = self._parse_records(file_path)
-        records_validation_results = (self._validate_record(r) for r in records)
-        valid = reduce(lambda val_result, next_val_result: val_result and next_val_result, records_validation_results)
-
+        valid = False
+        count = 0
+        with open(file_path, "rb") as source:
+            for line in source:
+                count += 1
+        if count == 4:
+            records = self._parse_records(file_path)
+            records_validation_results = (self._validate_record(r) for r in records)
+            valid = reduce(lambda val_result, next_val_result: val_result and next_val_result,
+                           records_validation_results)
         return valid
 
     def _validate_record(self, record):

@@ -6,6 +6,10 @@ from validator.fastq import Validator
 
 class TestFastqFileValidation(unittest.TestCase):
 
+    @classmethod
+    def setUp(self):
+        self.validator = Validator()
+
     #### single record tests###
 
     def test_validates_ascii(self):
@@ -44,3 +48,7 @@ class TestFastqFileValidation(unittest.TestCase):
         validator = Validator()
         results = validator.validate(os.path.abspath("test_files/fastq/valid_ascii_multiple_records.fastq"))
         self.assertTrue(results)
+
+    def test_invalid_multiple_records(self):
+        results = self.validator.validate('test_files/fastq/multiple_non-matching-lengths.fastq')
+        self.assertFalse(results)
