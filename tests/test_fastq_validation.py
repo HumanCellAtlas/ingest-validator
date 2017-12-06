@@ -37,5 +37,5 @@ class TestFastqFileValidation(unittest.TestCase):
 
     def test_validates_ascii_multiple_records(self):
         validator = Validator()
-        results = validator.validate(os.path.abspath("test_files/fastq/big.fastq"))
+        results = validator.validate(os.path.abspath("test_files/fastq/valid_ascii_multiple_records.fastq"))
         self.assertTrue(results)
