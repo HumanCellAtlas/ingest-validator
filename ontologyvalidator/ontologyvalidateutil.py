@@ -68,7 +68,7 @@ class OntologyValidationUtil:
             query_dict["q"] = ontology_term
             query_dict["queryFields"] = "short_form,obo_id"
             query_dict["ontology"] = ontologies_to_query_string
-            query_dict["childrenOf"] = reduce(lambda ontology_class_iri, another_ontology_class_iri: ontology_class_iri + "," + another_ontology_class_iri, ontology_classes_uris)
+            query_dict["allChildrenOf"] = reduce(lambda ontology_class_iri, another_ontology_class_iri: ontology_class_iri + "," + another_ontology_class_iri, ontology_classes_uris)
             return query_dict
         except KeyError as e:
             raise CriticalValidationException("Critical error: Failed to parse ontology schema: " + str(e))
