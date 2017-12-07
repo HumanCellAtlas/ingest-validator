@@ -77,3 +77,10 @@ following can be used:
 In the sample above, `TestArithmeticOperations` is the name of the test case (i.e. the Python class that extends 
 `unittest.TestCase`). More options can be found at [the official nose test documentation Web site](http://nose.readthedocs.io/en/latest/usage.html).
 
+#### Debugging with IDE
+
+Being able to run a single test from any given test case means it's possible to debug a specific block of code using
+any IDE's debugging tool. [JetBrains' PyCharm](https://www.jetbrains.com/pycharm/) in particular support single test
+call through a few selected tools one of which is `nosetest`. To set `nosetest` as the default test runner in PyCharm,
+set the *Default test runner* option in **Tools > Python Integrated Tools** pane of the IDE preferences.
+
