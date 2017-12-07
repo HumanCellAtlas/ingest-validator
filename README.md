@@ -62,4 +62,18 @@ When new modules are added through `pip`, it is advised to keep the list up to d
     pip freeze > requirements.txt
     
 This command will overwrite the text file with all the modules needed including the last ones installed along with the
-versions used for the local environment. 
+versions used for the local environment.
+
+### Unit Testing
+
+Test driven development is observed for this project and unit tests are required for any fairly complex part of the
+system. Unit tests are written using Python's `unittest` module, and can be run using the built-in testing system. 
+However, for finer grain control on testing, `nosetests` can also be used. For one, `nosetests` can run a single test
+from any given test module. For example, to run `test_addition` test method in `test_arithmetic_operations` module, the
+following can be used:
+
+    nosetests tests.test_arithmentic_operations:TestArithmeticOperations.test_addtion
+    
+In the sample above, `TestArithmeticOperations` is the name of the test case (i.e. the Python class that extends 
+`unittest.TestCase`). More options can be found at [the official nose test documentation Web site](http://nose.readthedocs.io/en/latest/usage.html).
+
