@@ -30,10 +30,8 @@ def validate(metadata_document):
 
 def merge_validation_reports(report_a, report_b):
     merged_validation_state = "VALID" if report_a.validation_state == "VALID" and report_b.validation_state == "VALID" else "INVALID"
-
     merged_validation_errors = list()
     merged_validation_errors.extend(report_a.error_reports)
     merged_validation_errors.extend(report_b.error_reports)
 
     return ValidationReport(merged_validation_state, merged_validation_errors)
-
