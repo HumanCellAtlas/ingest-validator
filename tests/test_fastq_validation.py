@@ -1,6 +1,9 @@
+import os
 import unittest
 
 from validator.fastq import Validator
+
+BASE_DIR = os.path.dirname(__file__)
 
 class TestFastqFileValidation(unittest.TestCase):
 
@@ -48,6 +51,7 @@ class TestFastqFileValidation(unittest.TestCase):
         self._do_test_validate(test_data, self.assertFalse)
 
     def _do_test_validate(self, test_data, assertion):
-        file_name = "test_files/fastq/%s.fastq" % (test_data)
-        results = self.validator.validate(file_name)
+        file_name = "%s.fastq" % (test_data)
+        file_path = os.path.join(BASE_DIR, 'test_files', 'fastq', file_name) # $BASE_DIR/test_files/fastq/<file_name>
+        results = self.validator.validate(os.path.abspath(file_path))
         assertion(results)
