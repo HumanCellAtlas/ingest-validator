@@ -1,8 +1,9 @@
-FROM jfloff/alpine-python:2.7-slim
+FROM frolvlad/alpine-python3
 MAINTAINER Alegria Aclan "aaclan@ebi.ac.uk"
 
 RUN mkdir /app
 COPY config.py messagereceiver.py validationprocessor.py ingestapi.py validation-app.py requirements.txt /app/
+ADD validator /app/validator
 
 WORKDIR /app
 
