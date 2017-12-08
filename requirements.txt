@@ -1,4 +1,9 @@
-requests
-pika
-jsonschema
-flatten_json
+certifi==2017.11.5
+chardet==3.0.4
+idna==2.6
+jsonschema==2.6.0
+nose==1.3.7
+pika==0.11.2
+requests==2.18.4
+urllib3==1.22
+flatten-json==0.1.6
