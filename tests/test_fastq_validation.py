@@ -35,7 +35,8 @@ class TestFastqFileValidation(unittest.TestCase):
         self._do_test_validate_as_valid('single_valid-with-period')
 
     def test_validates_data_with_mixed_n_and_period(self):
-        self._do_test_validate_as_invalid('single_invalid-mixed-n-and-period')
+        self._do_test_validate_as_invalid('single_invalid-has-n-then-period')
+        self._do_test_validate_as_invalid('single_invalid-has-period-then-n')
 
     def test_big_record(self):
         self._do_test_validate_as_valid('single_big')

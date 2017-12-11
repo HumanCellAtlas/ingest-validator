@@ -44,16 +44,17 @@ class Validator:
 
     #TODO implement case insensitive check
     def _validate_bases(self, line):
+        valid = False
         has_n_char = False
+        has_period = False
         for symbol in line:
-            if symbol not in (ord(value) for value in "ACGTN."):
-                return False
-            else:
+            valid = symbol in (ord(value) for value in "ACGTN.")
+            if valid:
                 if symbol == ord("N"):
                     has_n_char = True
-                if has_n_char and symbol == ord("."):
-                    return False
-        return True
+                if symbol == ord("."):
+                    has_period = True
+        return valid and not has_n_char or not has_period
 
     def _validate_plus(self, line):
         # is the first char a plus sign?
