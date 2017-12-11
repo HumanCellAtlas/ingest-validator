@@ -59,6 +59,9 @@ class TestFastqFileValidation(unittest.TestCase):
     def test_invalid_multiple_records_with_missing_lines(self):
         self._do_test_validate_as_invalid('multiple_missing-lines')
 
+    def test_validates_spacing_on_multiple_records(self):
+        self._do_test_validate_as_invalid('multiple_invalid-spacing')
+
     # test templates
 
     def _do_test_validate_as_valid(self, test_data):

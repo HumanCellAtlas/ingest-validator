@@ -15,7 +15,7 @@ class Validator:
             self.quality_score_symbols.append(ord(symbol))
 
     def validate(self, file_path):
-        valid = False
+        valid = True
         with open(file_path, 'rb') as source:
             record = list()
             validation_results = list()
@@ -28,7 +28,10 @@ class Validator:
                     if record_is_ready:
                         validation_results.append(self._validate_record(record))
                         record.clear()
-            valid = len(record) == 0
+                else:
+                    valid = False
+                    break
+            valid = valid and len(record) == 0
             if valid:
                 valid = reduce(lambda val_result, next_val_result: val_result and next_val_result, validation_results)
         return valid
