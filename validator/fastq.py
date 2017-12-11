@@ -42,10 +42,17 @@ class Validator:
         all_ascii = Validator._all_ascii(line)
         return has_at_char and all_ascii
 
+    #TODO implement case insensitive check
     def _validate_bases(self, line):
+        has_n_char = False
         for symbol in line:
             if symbol not in (ord(value) for value in "ACGTN."):
                 return False
+            else:
+                if symbol == ord("N"):
+                    has_n_char = True
+                if has_n_char and symbol == ord("."):
+                    return False
         return True
 
     def _validate_plus(self, line):
