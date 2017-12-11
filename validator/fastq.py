@@ -1,5 +1,3 @@
-from functools import reduce
-
 class Validator:
     PLUS_CHAR = 43
     AT_CHAR = 64
@@ -18,22 +16,20 @@ class Validator:
         valid = True
         with open(file_path, 'rb') as source:
             record = list()
-            validation_results = list()
             for line in source:
+                if not valid:
+                    break
                 line = line.rstrip()
                 line_is_not_empty = line # added for readability
                 if line_is_not_empty:
                     record.append(line)
                     record_is_ready = len(record) == 4
                     if record_is_ready:
-                        validation_results.append(self._validate_record(record))
+                        valid = valid and self._validate_record(record)
                         record.clear()
                 else:
                     valid = False
-                    break
             valid = valid and len(record) == 0
-            if valid:
-                valid = reduce(lambda val_result, next_val_result: val_result and next_val_result, validation_results)
         return valid
 
     def _validate_record(self, record):
