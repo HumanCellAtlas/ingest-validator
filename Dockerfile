@@ -1,4 +1,4 @@
-FROM frolvlad/alpine-python3
+FROM python:3.6.3-alpine
 MAINTAINER Alegria Aclan "aaclan@ebi.ac.uk"
 
 RUN mkdir /app
