@@ -28,6 +28,9 @@ class TestFastqFileValidation(unittest.TestCase):
     def test_no_ampersand_as_first_char(self):
         self._do_test_validate_as_invalid('single_no-at-symbol')
 
+    def test_validates_data_with_n_in_sequence(self):
+        self._do_test_validate_as_valid('single_valid-with-n-char')
+
     def test_big_record(self):
         self._do_test_validate_as_valid('single_big')
 

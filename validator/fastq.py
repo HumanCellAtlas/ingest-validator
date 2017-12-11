@@ -6,6 +6,7 @@ class Validator:
 
     def __init__(self):
         self.validation_results = None
+        self
         pass
 
     def validate(self, file_path):
@@ -42,9 +43,8 @@ class Validator:
         return has_at_char and all_ascii
 
     def _validate_bases(self, line):
-        # is each character either ATCG? TODO - there's more than this, use regex
-        for char in line:
-            if not (char == 65 or char == 84 or char == 67 or char == 71):
+        for symbol in line:
+            if symbol not in (ord(value) for value in "ACGTN"):
                 return False
         return True
 
