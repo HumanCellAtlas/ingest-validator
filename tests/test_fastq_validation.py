@@ -38,6 +38,13 @@ class TestFastqFileValidation(unittest.TestCase):
         self._do_test_validate_as_invalid('single_invalid-has-n-then-period')
         self._do_test_validate_as_invalid('single_invalid-has-period-then-n')
 
+    # Note:
+    # The test file technically contains 62 base characters and 60 quality score character.
+    # However, characters outside the traditional ASCII characters are represented using 16 (or more bits) in UTF-8.
+    # In the test file, Pound sign (£) is represented by 2 bytes.
+    def test_validates_data_with_invalid_quality_scores(self):
+        self._do_test_validate_as_invalid('single_invalid-quality-scores')
+
     def test_big_record(self):
         self._do_test_validate_as_valid('single_big')
 

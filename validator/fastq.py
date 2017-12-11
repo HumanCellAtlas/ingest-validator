@@ -11,7 +11,7 @@ class Validator:
 
     def validate(self, file_path):
         valid = False
-        with open(file_path, "rb") as source:
+        with open(file_path, 'rb') as source:
             record = list()
             validation_results = list()
             for line in source:
@@ -29,11 +29,13 @@ class Validator:
         return valid
 
     def _validate_record(self, record):
-        return self._validate_identifier_line(record[0]) \
-               and self._validate_bases(record[1]) \
-               and self._validate_plus(record[2]) \
-               and self._validate_qc(record[3]) \
-               and self._validate_bases_length_equals_qc_length(record[1], record[3])
+        valid_identifier = self._validate_identifier_line(record[0])
+        valid_bases = self._validate_bases(record[1])
+        valid_plus = self._validate_plus(record[2])
+        valid_quality_scores = self._validate_quality_scores(record[3])
+        equal_lengths = self._validate_bases_length_equals_qc_length(record[1], record[3])
+        return valid_identifier and valid_bases and valid_plus and valid_quality_scores \
+               and equal_lengths
 
     def _validate_identifier_line(self, line):
         # is the first char @ ?
@@ -61,12 +63,17 @@ class Validator:
         has_plus_char = line[0] == Validator.PLUS_CHAR
         return has_plus_char
 
-    def _validate_qc(self, line):
-        # TODO
+    def _validate_quality_scores(self, line):
+        for symbol in line:
+            if symbol not in (ord(value) for value in "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ \
+                [\]^_`abcdefghijklmnopqrstuvwxyz{|}~"):
+                return False;
         return True
 
     def _validate_bases_length_equals_qc_length(self, base_line, qc_line):
-        return len(base_line) == len(qc_line)
+        base_length = len(base_line)
+        quality_length = len(qc_line)
+        return base_length == quality_length
 
     @staticmethod
     def _all_ascii(line):
