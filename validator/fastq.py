@@ -44,7 +44,7 @@ class Validator:
 
     def _validate_bases(self, line):
         for symbol in line:
-            if symbol not in (ord(value) for value in "ACGTN"):
+            if symbol not in (ord(value) for value in "ACGTN."):
                 return False
         return True
 
