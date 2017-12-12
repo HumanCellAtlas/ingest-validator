@@ -1,0 +1,2 @@
+class SkipValidationException(Exception):
+    pass
