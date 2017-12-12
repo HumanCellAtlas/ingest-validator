@@ -1,3 +1,6 @@
+from common.validationreport import ValidationReport
+
+
 class Validator:
     PLUS_CHAR = 43
     AT_CHAR = 64
@@ -30,7 +33,9 @@ class Validator:
                 else:
                     valid = False
             valid = valid and len(record) == 0
-        return valid
+        return ValidationReport.validation_report_ok() if valid \
+        else ValidationReport("INVALID")
+
 
     def _validate_record(self, record):
         valid_identifier = self._validate_identifier_line(record[0])

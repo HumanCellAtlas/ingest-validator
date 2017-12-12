@@ -65,10 +65,14 @@ class TestFastqFileValidation(unittest.TestCase):
     # test templates
 
     def _do_test_validate_as_valid(self, test_data):
-        self._do_test_validate(test_data, self.assertTrue)
+        assert_valid = lambda result:\
+            self.assertEqual("VALID", result.validation_state)
+        self._do_test_validate(test_data, assert_valid)
 
     def _do_test_validate_as_invalid(self, test_data):
-        self._do_test_validate(test_data, self.assertFalse)
+        assert_invalid = lambda result:\
+            self.assertEqual("INVALID", result.validation_state)
+        self._do_test_validate(test_data, assert_invalid)
 
     def _do_test_validate(self, test_data, assertion):
         file_name = "%s.fastq" % (test_data)
