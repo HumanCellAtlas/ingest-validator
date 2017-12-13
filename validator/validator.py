@@ -1,6 +1,8 @@
 from ontologyvalidator.ontologyvalidator import OntologyValidator
 from schemavalidator.schemavalidator import SchemaValidator
 from common.validationreport import ValidationReport
+from common.errorreport import ErrorReport
+from common.missingschemaurlexception import MissingSchemaUrlException
 import config
 from functools import reduce
 
@@ -11,11 +13,16 @@ def validate(metadata_document):
     validation_reports = list()
 
     if DO_JSON_SCHEMA_VALIDATION == "ACTIVE":
-        schema_validator = SchemaValidator()
-        json_schema_url = schema_validator.extract_schema_url_from_document(metadata_document)
-        json_schema = schema_validator.get_schema_from_url(json_schema_url)
-        schema_validation_report = schema_validator.validate(metadata_document, json_schema)
-        validation_reports.append(schema_validation_report)
+        try:
+            schema_validator = SchemaValidator()
+            json_schema_url = schema_validator.extract_schema_url_from_document(metadata_document)
+            json_schema = schema_validator.get_schema_from_url(json_schema_url)
+            schema_validation_report = schema_validator.validate(metadata_document, json_schema)
+            validation_reports.append(schema_validation_report)
+        except MissingSchemaUrlException as e:
+            missing_schema_report = ValidationReport("INVALID")
+            missing_schema_report.error_reports.append(ErrorReport("No schema url specified at core.schema_url for this document. Please contact your broker"))
+            validation_reports.append(missing_schema_report)
 
     if DO_OLS_VALIDATION == "ACTIVE":
         ontology_validator = OntologyValidator()

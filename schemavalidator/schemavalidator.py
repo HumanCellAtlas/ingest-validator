@@ -2,6 +2,7 @@ import jsonschema
 import requests
 import common.validationreport as validationreport
 import common.errorreport as errorreport
+from common.missingschemaurlexception import MissingSchemaUrlException
 from functools import reduce
 
 
@@ -39,7 +40,7 @@ class SchemaValidator:
         try:
             return metadata_document["core"]["schema_url"]
         except KeyError as e:
-            raise("Could not find schema_url")
+            raise MissingSchemaUrlException("Could not find schema url for this document")
 
 
     def get_schema_from_url(self, schema_url):

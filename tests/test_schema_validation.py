@@ -1,7 +1,9 @@
 import unittest
 from unittest import mock
+from common.missingschemaurlexception import MissingSchemaUrlException
 import os
 import schemavalidator.schemavalidator as validator
+from validator import validator as va
 import config
 import json
 
@@ -36,6 +38,16 @@ class TestSchemaValidation(unittest.TestCase):
             schema_url = schema_validator.extract_schema_url_from_document(metadata_document)
             assert(schema_url is not None and len(schema_url) > 0)
 
+    def test_extract_schema_url_from_metadata_no_schema_url(self):
+        with open(BASE_PATH + "/test_files/metadata_documents/sample_document.json") as sample_document_file:
+            metadata_document = json.load(sample_document_file)
+            del metadata_document["core"]["schema_url"]
+            schema_validator = validator.SchemaValidator()
+            try:
+                schema_url = schema_validator.extract_schema_url_from_document(metadata_document)
+                assert False
+            except MissingSchemaUrlException as e:
+                assert True
 
     def test_validate_sample_should_pass(self):
         with open(BASE_PATH + "/test_files/schema/sample.json") as sample_schema:
