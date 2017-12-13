@@ -11,3 +11,9 @@ class ValidationReport:
         report = ValidationReport()
         report.validation_state = "VALID"
         return report
+
+    @staticmethod
+    def from_dict(validation_report_dict: dict):
+        report = ValidationReport()
+        report.validation_state = validation_report_dict["validationState"]
+        return report

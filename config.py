@@ -13,9 +13,14 @@ RABBITMQ_URL = os.path.expandvars(os.environ.get('RABBIT_URL', RABBITMQ_URL))
 
 INGEST_API_HOST = 'http://localhost'
 INGEST_API_PORT = '8080'
-
 INGEST_API_URL = INGEST_API_HOST + ':' + INGEST_API_PORT
 INGEST_API_URL = os.path.expandvars(os.environ.get('INGEST_API', INGEST_API_URL))
+
+UPLOAD_API_HOST = "https://upload.dev.data.humancellatlas.org"
+UPLOAD_API_PORT = "80"
+UPLOAD_API_URL = UPLOAD_API_HOST + ":" + UPLOAD_API_PORT
+UPLOAD_API_URL = os.path.expandvars(os.environ.get('UPLOAD_API_URL', UPLOAD_API_URL))
+
 
 SCHEMA_VERSION = '4.0.0'
 SCHEMA_BASE_URI = 'https://raw.githubusercontent.com/HumanCellAtlas/metadata-schema/'
@@ -28,3 +33,8 @@ JSON_SCHEMA_VALIDATION = os.path.expandvars(os.environ.get('JSON_SCHEMA_VALIDATI
 
 OLS_VALIDATION = "ACTIVE"
 OLS_VALIDATION = os.path.expandvars(os.environ.get('OLS_VALIDATION', OLS_VALIDATION))
+
+FASTQ_VALIDATION_IMAGE = "quay.io/humancellatlas/ingest-fastq-validator"
+FASTQ_VALIDATION_IMAGE = os.path.expandvars(os.environ.get('FASTQ_VALIDATION_IMAGE', FASTQ_VALIDATION_IMAGE))
+
+FILE_VALIDATION_IMAGES = {"fastq": FASTQ_VALIDATION_IMAGE}

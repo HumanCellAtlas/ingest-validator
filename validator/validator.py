@@ -9,7 +9,7 @@ from functools import reduce
 DO_JSON_SCHEMA_VALIDATION = config.JSON_SCHEMA_VALIDATION
 DO_OLS_VALIDATION = config.OLS_VALIDATION
 
-def validate(metadata_document):
+def validate(metadata_document, entity_link):
     validation_reports = list()
 
     if DO_JSON_SCHEMA_VALIDATION == "ACTIVE":
