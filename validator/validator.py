@@ -1,5 +1,6 @@
 from ontologyvalidator.ontologyvalidator import OntologyValidator
 from schemavalidator.schemavalidator import SchemaValidator
+from filevalidator.filevalidator import FileValidator
 from common.validationreport import ValidationReport
 from common.errorreport import ErrorReport
 from common.missingschemaurlexception import MissingSchemaUrlException
@@ -8,8 +9,9 @@ from functools import reduce
 
 DO_JSON_SCHEMA_VALIDATION = config.JSON_SCHEMA_VALIDATION
 DO_OLS_VALIDATION = config.OLS_VALIDATION
+DO_FILE_VALIDATION = config.FILE_VALIDATION
 
-def validate(metadata_document, entity_link):
+def validate(metadata_document, entity_link, document_type):
     validation_reports = list()
 
     if DO_JSON_SCHEMA_VALIDATION == "ACTIVE":
@@ -29,6 +31,11 @@ def validate(metadata_document, entity_link):
         ontology_validation_report = ontology_validator.validate(metadata_document)
         validation_reports.append(ontology_validation_report)
 
+    if DO_FILE_VALIDATION == "ACTIVE" and document_type == "FILE":
+        file_validator = FileValidator()
+        file_validation_report = file_validator.validate(metadata_document, entity_link)
+        validation_reports.append(file_validation_report)
+
     # reduce the validation reports into a single report using merge_validation_reports() and an initial valid report
     return reduce(lambda validation_report, another_validation_report: merge_validation_reports(validation_report, another_validation_report),
                   validation_reports,
@@ -36,7 +43,16 @@ def validate(metadata_document, entity_link):
 
 
 def merge_validation_reports(report_a, report_b):
-    merged_validation_state = "VALID" if report_a.validation_state == "VALID" and report_b.validation_state == "VALID" else "INVALID"
+    # if any report is INVALID, the final report is INVALID
+    # otherwise, if any report is VALIDATING, the final report is VALIDATING
+    # otherwise, the final report is VALID
+    if report_a.validation_state == "INVALID" or report_b.validation_state == "INVALID":
+        merged_validation_state = "INVALID"
+    elif report_a.validation_state == "VALIDATING" or report_b.validation_state == "VALIDATING":
+        merged_validation_state = "VALIDATING"
+    else:
+        merged_validation_state = "VALID"
+
     merged_validation_errors = list()
     merged_validation_errors.extend(report_a.error_reports)
     merged_validation_errors.extend(report_b.error_reports)

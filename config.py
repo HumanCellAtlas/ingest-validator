@@ -34,7 +34,16 @@ JSON_SCHEMA_VALIDATION = os.path.expandvars(os.environ.get('JSON_SCHEMA_VALIDATI
 OLS_VALIDATION = "ACTIVE"
 OLS_VALIDATION = os.path.expandvars(os.environ.get('OLS_VALIDATION', OLS_VALIDATION))
 
+FILE_VALIDATION = "ACTIVE"
+FILE_VALIDATION = os.path.expandvars(os.environ.get('FILE_VALIDATION', FILE_VALIDATION))
+
+
 FASTQ_VALIDATION_IMAGE = "quay.io/humancellatlas/ingest-fastq-validator"
 FASTQ_VALIDATION_IMAGE = os.path.expandvars(os.environ.get('FASTQ_VALIDATION_IMAGE', FASTQ_VALIDATION_IMAGE))
 
-FILE_VALIDATION_IMAGES = {"fastq": FASTQ_VALIDATION_IMAGE}
+FASTQ_GZ_VALIDATION_IMAGE = "quay.io/humancellatlas/ingest-fastq-validator"
+FASTQ_VALIDATION_IMAGE = os.path.expandvars(os.environ.get('FASTQ_VALIDATION_IMAGE', FASTQ_VALIDATION_IMAGE))
+
+
+FILE_VALIDATION_IMAGES = {"fastq": FASTQ_VALIDATION_IMAGE,
+                          "fastq.gz": FASTQ_GZ_VALIDATION_IMAGE}

@@ -21,6 +21,6 @@ class ValidationProcessor:
                 # mark it "validating"
                 if self.ingest_api.transition_document_validation_state_to(document, "validating"):
                     document_content = document["content"]
-                    validation_report = validator.validate(document_content, entity_link)
+                    validation_report = validator.validate(document_content, entity_link, document_type)
                     validated_document = self.ingest_api.post_validation_report(entity_link, validation_report).json()
                     self.ingest_api.transition_document_validation_state_to(validated_document, validation_report.validation_state)
