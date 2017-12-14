@@ -23,11 +23,20 @@ def validate(metadata_document):
             missing_schema_report = ValidationReport("INVALID")
             missing_schema_report.error_reports.append(ErrorReport("No schema url specified at core.schema_url for this document. Please contact your broker"))
             validation_reports.append(missing_schema_report)
+        except Exception as e:
+            unknown_exception_report = ValidationReport("INVALID")
+            unknown_exception_report.error_reports.append(ErrorReport(str(e)))
+            validation_reports.append(unknown_exception_report)
 
     if DO_OLS_VALIDATION == "ACTIVE":
-        ontology_validator = OntologyValidator()
-        ontology_validation_report = ontology_validator.validate(metadata_document)
-        validation_reports.append(ontology_validation_report)
+        try:
+            ontology_validator = OntologyValidator()
+            ontology_validation_report = ontology_validator.validate(metadata_document)
+            validation_reports.append(ontology_validation_report)
+        except Exception as e:
+            unknown_exception_report = ValidationReport("INVALID")
+            unknown_exception_report.error_reports.append(ErrorReport(str(e)))
+            validation_reports.append(unknown_exception_report)
 
     # reduce the validation reports into a single report using merge_validation_reports() and an initial valid report
     return reduce(lambda validation_report, another_validation_report: merge_validation_reports(validation_report, another_validation_report),
