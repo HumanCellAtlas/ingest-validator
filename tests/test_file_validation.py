@@ -108,3 +108,4 @@ class TestFileValidation(unittest.TestCase):
         util = FileValidationUtil("http://mock-ingest-api")
         report = util.extract_validation_report_from_job_results({'stderr': '', 'stdout': '{"validationState": "VALID", "validationErrors": []}'})
         assert report.validation_state == "VALID"
+

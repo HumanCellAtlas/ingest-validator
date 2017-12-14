@@ -49,4 +49,14 @@ class FileValidationUtil:
             validation_report_dict = json.loads(job_results["stdout"])
             return ValidationReport.from_dict(validation_report_dict)
 
+    def get_validation_report_from_validation_job_result(self, job_result: dict):
+        # we're expecting a stringified JSON object here
+        validation_report_string = job_result["stdout"]
+        validation_report_dict = json.loads(validation_report_string)
+        return validation_report_dict
 
+    def get_file_entity_given_validation_id(self, validation_id):
+        query_url = self.ingest_api_url + "/files/search/findByValidationId?validationId=" + validation_id
+        search_results = requests.get(query_url)
+        file_entity = search_results.json()
+        return file_entity
