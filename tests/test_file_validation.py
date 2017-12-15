@@ -46,7 +46,7 @@ class TestFileValidation(unittest.TestCase):
             def json(self):
                 return self.json_data
 
-        if args[0] == "http://mock-upload-api/v1/area/mock-area-uuid/mock-file-name":
+        if args[0] == "http://mock-upload-api/v1/area/mock-area-uuid/mock-file-name/validate":
             return MockResponse({"validation_id": "mock-validation-job-id"}, 200)
 
     def mocked_patch(*args, **keywargs):

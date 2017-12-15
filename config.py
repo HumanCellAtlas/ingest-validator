@@ -17,7 +17,7 @@ INGEST_API_URL = INGEST_API_HOST + ':' + INGEST_API_PORT
 INGEST_API_URL = os.path.expandvars(os.environ.get('INGEST_API', INGEST_API_URL))
 
 UPLOAD_API_HOST = "https://upload.dev.data.humancellatlas.org"
-UPLOAD_API_PORT = "80"
+UPLOAD_API_PORT = "443"
 UPLOAD_API_URL = UPLOAD_API_HOST + ":" + UPLOAD_API_PORT
 UPLOAD_API_URL = os.path.expandvars(os.environ.get('UPLOAD_API_URL', UPLOAD_API_URL))
 
