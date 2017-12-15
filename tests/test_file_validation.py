@@ -81,7 +81,7 @@ class TestFileValidation(unittest.TestCase):
     @mock.patch.object(config, 'FILE_VALIDATION_IMAGES', {"mockformat.tar.gz": "quay.io/mock-format-validator"})
     def test_determine_validation_job_to_perform(self):
         util = FileValidationUtil("http://mock-ingest-api")
-        mock_file_document = {"fileName": "mockfile.mockformat.tar.gz"}
+        mock_file_document = {"filename": "mockfile.mockformat.tar.gz"}
         validation_job_image = util.determine_validation_job_to_perform(mock_file_document)
         assert validation_job_image == "quay.io/mock-format-validator"
 
@@ -90,7 +90,7 @@ class TestFileValidation(unittest.TestCase):
     @mock.patch.object(config, 'FILE_VALIDATION_IMAGES', {"mockformat.tar.gz" : "quay.io/mock-format-validator"})
     def test_file_validation_service_job_request(self, mocked_put):
         util = FileValidationUtil("http://mock-ingest-api")
-        mock_file_document = {"fileName": "mockfile.mockformat.tar.gz"}
+        mock_file_document = {"filename": "mockfile.mockformat.tar.gz"}
         validation_job_image = util.determine_validation_job_to_perform(mock_file_document)
 
         validation_job_uuid = util.request_file_validation_job(validation_job_image, "mock-area-uuid", "mock-file-name")
