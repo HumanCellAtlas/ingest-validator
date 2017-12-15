@@ -267,8 +267,8 @@ class FileValidationOutputListener():
         """
         LOGGER.info('Received message # %s from %s: %s',
                     basic_deliver.delivery_tag, properties.app_id, body)
+        self._file_validator.handle_upload_job_results(body)
         self.acknowledge_message(basic_deliver.delivery_tag)
-        self._file_validator.
 
     def acknowledge_message(self, delivery_tag):
         """Acknowledge the message delivery from RabbitMQ by sending a

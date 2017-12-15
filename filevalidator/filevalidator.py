@@ -13,7 +13,7 @@ requests the file validation jobs from the upload service
 class FileValidator:
     def __init__(self, upload_validation_service_url=None, ingest_api_url=None):
         self.upload_validation_service_url = upload_validation_service_url if upload_validation_service_url is not None else UPLOAD_API_URL
-        self.ingest_api_url = ingest_api_url if ingest_api_url is not None else ingest_api_url
+        self.ingest_api_url = ingest_api_url if ingest_api_url is not None else INGEST_API_URL
         self.ingest_api = IngestApi(self.ingest_api_url)
 
         self.util = FileValidationUtil()
