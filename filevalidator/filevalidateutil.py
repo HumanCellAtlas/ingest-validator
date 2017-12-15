@@ -33,6 +33,9 @@ class FileValidationUtil:
     '''
     def request_file_validation_job(self, validator_image_url: str, upload_area_uuid: str, file_name: str):
         request_url = config.UPLOAD_API_URL + "/v1/area/" + upload_area_uuid + "/" + file_name + "/validate"
+        self.logger.info("attempting file validation job with image {} on file {} at upload area {}".format(validator_image_url,
+                                                                                                            file_name,
+                                                                                                            upload_area_uuid))
         validation_job_request = requests.put(request_url,
                                               data={"validator_image": validator_image_url},
                                               headers=self.headers)
