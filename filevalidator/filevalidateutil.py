@@ -51,7 +51,7 @@ class FileValidationUtil:
 
 
     def assign_validation_job_id_to_file_document(self, entity_link, job_id):
-        return requests.patch(self.ingest_api_url + entity_link, data={"validationId": job_id}).json()
+        return requests.patch(self.ingest_api_url + entity_link, data=json.dumps({"validationId": job_id})).json()
 
     '''
     returns file extension given a file name, e.g
