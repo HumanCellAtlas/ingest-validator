@@ -71,7 +71,7 @@ class TestFileValidation(unittest.TestCase):
                 return self.json_data
 
         if args[0] == "http://mock-ingest-api/files/mock-file-entity":
-            payload = keywargs["data"]
+            payload = json.loads(keywargs["data"])
             validation_id = payload["validationId"]
             return MockResponse({"validationId": validation_id}, 200, args[0])
 
