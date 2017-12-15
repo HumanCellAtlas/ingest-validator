@@ -24,7 +24,7 @@ class FileValidator:
         file_name = file_document["filename"]
         validation_image_url = self.util.determine_validation_job_to_perform(file_document)
         validation_job_id = self.util.request_file_validation_job(validation_image_url, upload_area_uuid, file_name)
-        self.util.assign_validation_job_id_to_file_document(validation_job_id, entity_link)
+        self.util.assign_validation_job_id_to_file_document(entity_link, validation_job_id)
 
         file_validation_report = ValidationReport.validation_report_validating()
         return file_validation_report
