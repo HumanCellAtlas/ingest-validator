@@ -7,6 +7,7 @@ ADD validator /app/validator
 ADD common /app/common
 ADD ontologyvalidator /app/ontologyvalidator
 ADD schemavalidator /app/schemavalidator
+ADD filevalidator /app/filevalidator
 
 
 WORKDIR /app
