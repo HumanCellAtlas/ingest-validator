@@ -1,14 +1,17 @@
 import config
 import requests
 import json
+import logging
 from common.validationreport import ValidationReport
 from functools import reduce
+
 
 class FileValidationUtil:
 
     def __init__(self, ingest_api_url=None):
         self.ingest_api_url = ingest_api_url if ingest_api_url is not None else config.INGEST_API_URL
         self.headers = {"Content-type": "application/json", "Api-key": config.UPLOAD_API_KEY}
+        self.logger = logging.getLogger(__name__)
 
     def get_envelope_uuid_of_file_entity(self, entity_link: str):
         entity = requests.get(self.ingest_api_url + entity_link).json()
@@ -30,9 +33,13 @@ class FileValidationUtil:
     '''
     def request_file_validation_job(self, validator_image_url: str, upload_area_uuid: str, file_name: str):
         request_url = config.UPLOAD_API_URL + "/v1/area/" + upload_area_uuid + "/" + file_name + "/validate"
-        return requests.put(request_url,
-                            data={"validator_image": validator_image_url},
-                            headers=self.headers).json()["validation_id"]
+        validation_job_request = requests.put(request_url,
+                                              data={"validator_image": validator_image_url},
+                                              headers=self.headers)
+        self.logger.info("sent a validation request to {} and received status code {} and message: {}".format(validation_job_request.url,
+                                                                                                              str(validation_job_request.status_code),
+                                                                                                              validation_job_request.content))
+        return validation_job_request.json()["validation_id"]
 
 
     def assign_validation_job_id_to_file_document(self, entity_link, job_id):
