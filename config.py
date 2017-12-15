@@ -21,6 +21,8 @@ UPLOAD_API_PORT = "80"
 UPLOAD_API_URL = UPLOAD_API_HOST + ":" + UPLOAD_API_PORT
 UPLOAD_API_URL = os.path.expandvars(os.environ.get('UPLOAD_API_URL', UPLOAD_API_URL))
 
+UPLOAD_API_KEY = "zero-pupil-until-funny"
+UPLOAD_API_KEY = os.path.expandvars(os.environ.get('UPLOAD_API_KEY', UPLOAD_API_KEY))
 
 SCHEMA_VERSION = '4.0.0'
 SCHEMA_BASE_URI = 'https://raw.githubusercontent.com/HumanCellAtlas/metadata-schema/'
