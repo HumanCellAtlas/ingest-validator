@@ -20,6 +20,11 @@ class FileValidationUtil:
         envelope_uuid = envelopes["_embedded"]["submissionEnvelopes"][0]["uuid"]["uuid"]
         return envelope_uuid
 
+    def get_cloud_url_of_file_entity(self, entity_link: str):
+        entity = requests.get(self.ingest_api_url + entity_link).json()
+        cloud_url = entity["cloudUrl"]
+        return cloud_url
+
     def determine_validation_job_to_perform(self, file_document: dict):
         # attempt to figure out the file type
         file_extension = self.extract_file_extension(file_document["filename"])
@@ -37,7 +42,7 @@ class FileValidationUtil:
                                                                                                             file_name,
                                                                                                             upload_area_uuid))
         validation_job_request = requests.put(request_url,
-                                              data={"validator_image": validator_image_url},
+                                              data=json.dumps({"validator_image": validator_image_url}),
                                               headers=self.headers)
         self.logger.info("sent a validation request to {} and received status code {} and message: {}".format(validation_job_request.url,
                                                                                                               str(validation_job_request.status_code),

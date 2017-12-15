@@ -3,7 +3,6 @@ from unittest import mock
 from common.missingschemaurlexception import MissingSchemaUrlException
 import os
 import schemavalidator.schemavalidator as validator
-from validator import validator as va
 import config
 import json
 

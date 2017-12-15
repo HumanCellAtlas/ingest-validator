@@ -29,7 +29,8 @@ class TestFileValidation(unittest.TestCase):
             return MockResponse({"_links":
                                      {"submissionEnvelopes":
                                           {"href": "http://mock-ingest-api/files/mock-file-entity/submissionEnvelopes"}
-                                      }
+                                      },
+                                 "cloudUrl": "mock-cloud-url"
                                  }, 200, args[0])
         elif args[0] == "http://mock-ingest-api/files/mock-file-entity/submissionEnvelopes":
             return MockResponse({"_embedded":
@@ -80,6 +81,13 @@ class TestFileValidation(unittest.TestCase):
         util = FileValidationUtil()
         envelope_uuid = util.get_envelope_uuid_of_file_entity("/files/mock-file-entity")
         assert envelope_uuid == "mock-uuid"
+
+    @mock.patch('requests.get', side_effect=mocked_get)
+    @mock.patch.object(config, 'INGEST_API_URL', "http://mock-ingest-api")
+    def test_get_cloud_url_from_file_entity_link(self, mocked_get):
+        util = FileValidationUtil()
+        cloud_url = util.get_cloud_url_of_file_entity("/files/mock-file-entity")
+        assert cloud_url == "mock-cloud-url"
 
     @mock.patch.object(config, 'INGEST_API_URL', "http://mock-ingest-api")
     def test_extract_file_extensions_from_file_name(self):
