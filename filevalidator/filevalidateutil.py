@@ -65,7 +65,7 @@ class FileValidationUtil:
     def extract_validation_report_from_job_results(self, job_results: dict):
         if not job_results["stderr"]:
             validation_report_dict = json.loads(job_results["stdout"])
-            return ValidationReport.from_dict(validation_report_dict)
+            return ValidationReport.from_job_results_dict(validation_report_dict)
 
     def get_validation_report_from_validation_job_result(self, job_result: dict):
         # we're expecting a stringified JSON object here
