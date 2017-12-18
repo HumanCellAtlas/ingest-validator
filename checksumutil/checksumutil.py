@@ -84,3 +84,7 @@ class ChecksumUtil:
             return checksum_bytes
         except KeyError as e:
             raise CriticalValidationException("Expected content field on metadata document but none found")
+
+    def should_validation(self, metadata_document, document_type):
+        calculated_checksum = self.calculate_checksum(metadata_document, document_type)
+        return not(calculated_checksum == metadata_document["validationChecksum"])

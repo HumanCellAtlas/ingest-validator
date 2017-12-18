@@ -179,3 +179,8 @@ class IngestApi:
         return requests.patch(self.ingest_url + entity_url,
                               json.dumps({'validationErrors': validation_report.errors_to_dict()}),
                               headers=self.headers)
+
+    def post_new_checksum(self, entity_link, new_checksum):
+        return requests.patch(self.ingest_url + entity_link,
+                              json.dumps({"validationChecksum" : new_checksum}),
+                              headers=self.headers)

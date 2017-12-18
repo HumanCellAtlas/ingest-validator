@@ -25,3 +25,8 @@ class TestChecksumUTil(unittest.TestCase):
 
             another_checksum = util.calculate_content_checksum(sample_doc)
             assert another_checksum == precalculated_checksum
+
+            # change values and assert that the checksum changes
+            del sample_doc["content"]["core"]
+            yet_another_checksum = util.calculate_content_checksum(sample_doc)
+            assert not (yet_another_checksum == precalculated_checksum)
