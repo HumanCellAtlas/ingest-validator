@@ -1,3 +1,4 @@
+from common.errorreport import ErrorReport
 class ValidationReport:
     def __init__(self, validation_state="", error_reports=None):
         self.validation_state = validation_state
@@ -17,6 +18,12 @@ class ValidationReport:
         report = ValidationReport()
         report.validation_state = "VALIDATING"
         return report
+
+    @staticmethod
+    def unknown_exception_report(e):
+        exception_report = ValidationReport("INVALID")
+        exception_report.error_reports.append(ErrorReport(str(e)))
+        return exception_report
 
     @staticmethod
     def from_dict(validation_report_dict: dict):

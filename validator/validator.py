@@ -39,7 +39,7 @@ def do_file_validation(metadata_document: dict, entity_link: str):
         file_validation_report = file_validator.validate(metadata_document, entity_link)
         return file_validation_report
     except Exception as e:
-        return unknown_exception_report(e)
+        return ValidationReport.unknown_exception_report(e)
 
 
 def do_ontology_validation(metadata_document: dict):
@@ -48,7 +48,7 @@ def do_ontology_validation(metadata_document: dict):
         ontology_validation_report = ontology_validator.validate(metadata_document)
         return ontology_validation_report
     except Exception as e:
-        return unknown_exception_report(e)
+        return ValidationReport.unknown_exception_report(e)
 
 
 def do_schema_validation(metadata_document: dict):
@@ -63,14 +63,7 @@ def do_schema_validation(metadata_document: dict):
         missing_schema_report.error_reports.append(ErrorReport("No schema url specified at core.schema_url for this document. Please contact your broker"))
         return missing_schema_report
     except Exception as e:
-        return unknown_exception_report(e)
-
-
-def unknown_exception_report(e):
-    exception_report = ValidationReport("INVALID")
-    exception_report.error_reports.append(ErrorReport(str(e)))
-    return exception_report
-
+        return ValidationReport.unknown_exception_report(e)
 
 def merge_validation_reports(report_a, report_b):
     # if any report is INVALID, the final report is INVALID
