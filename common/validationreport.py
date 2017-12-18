@@ -23,3 +23,9 @@ class ValidationReport:
         report = ValidationReport()
         report.validation_state = validation_report_dict["validationState"]
         return report
+
+    @staticmethod
+    def from_job_results_dict(validation_report_dict: dict):
+        report = ValidationReport()
+        report.validation_state = validation_report_dict["validation_state"]
+        return report
