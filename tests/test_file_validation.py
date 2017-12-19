@@ -130,4 +130,4 @@ class TestFileValidation(unittest.TestCase):
 
         invalid_report = util.extract_validation_report_from_job_results({'stderr': '',
                                                                           'stdout': '{"validation_state": "INVALID", "validation_errors": [{"user_friendly_message": "some error message"}]}'})
-        assert len(invalid_report.error_reports) == 1
+        assert len(invalid_report.error_reports) == 1 and len(invalid_report.errors_to_dict()) == 1
