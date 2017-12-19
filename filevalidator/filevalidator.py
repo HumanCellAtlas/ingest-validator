@@ -35,5 +35,5 @@ class FileValidator:
         validation_id = results["validation_id"]
         file_entity = self.util.get_file_entity_given_validation_id(validation_id)
         validation_report = self.util.extract_validation_report_from_job_results(results)
-        self.ingest_api.post_validation_report(validation_report)
+        self.ingest_api.post_validation_report(file_entity, validation_report)
         self.ingest_api.transition_document_validation_state_to(file_entity, validation_report.validation_state)
