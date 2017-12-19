@@ -175,7 +175,12 @@ class IngestApi:
         else:
             return False
 
-    def post_validation_report(self, entity_url, validation_report):
+    def post_validation_report(self, entity_relative_url, validation_report):
+        return requests.patch(self.ingest_url + entity_relative_url,
+                              json.dumps({'validationErrors': validation_report.errors_to_dict()}),
+                              headers=self.headers)
+
+    def post_validation_report_full_url(self, entity_url, validation_report):
         return requests.patch(self.ingest_url + entity_url,
                               json.dumps({'validationErrors': validation_report.errors_to_dict()}),
                               headers=self.headers)
