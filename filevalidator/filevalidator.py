@@ -16,7 +16,7 @@ class FileValidator:
         self.ingest_api_url = ingest_api_url if ingest_api_url is not None else INGEST_API_URL
         self.ingest_api = IngestApi(self.ingest_api_url)
 
-        self.util = FileValidationUtil()
+        self.util = FileValidationUtil(self.ingest_api_url)
 
     def validate(self, file_document, entity_link):
         # upload-area-uuid is the same as the envelope uuid

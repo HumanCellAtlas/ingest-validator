@@ -3,6 +3,7 @@ import unittest
 import config
 import json
 from filevalidator.filevalidateutil import FileValidationUtil
+from filevalidator.filevalidator import FileValidator
 from unittest import mock
 
 BASE_PATH = os.path.dirname(__file__)
@@ -25,10 +26,18 @@ class TestFileValidation(unittest.TestCase):
             def json(self):
                 return self.json_data
 
-        if args[0] == "http://mock-ingest-api/files/mock-file-entity":
+        if args[0] == "http://mock-ingest-api/files/mock-file-entity" or args[0] == "http://mock-ingest-api/files/search/findByValidationId?validationId=mock-job-uuid":
             return MockResponse({"_links":
                                      {"submissionEnvelopes":
-                                          {"href": "http://mock-ingest-api/files/mock-file-entity/submissionEnvelopes"}
+                                          {"href": "http://mock-ingest-api/files/mock-file-entity/submissionEnvelopes"},
+                                      "self":
+                                          {"href": "http://mock-ingest-api/files/mock-file-entity"},
+                                      "valid": {
+                                          "href": "http://mock-ingest-api/files/mock-file-entity/validEvent"},
+                                      "validating":
+                                          {"href": "http://mock-ingest-api/files/mock-file-entity/validatingEvent"},
+                                      "invalid":
+                                          {"href": "http://mock-ingest-api/files/mock-file-entity/invalidEvent"},
                                       },
                                  "cloudUrl": "mock-cloud-url"
                                  }, 200, args[0])
@@ -58,6 +67,12 @@ class TestFileValidation(unittest.TestCase):
 
         if args[0] == "http://mock-upload-api/v1/area/mock-area-uuid/mock-file-name/validate":
             return MockResponse({"validation_id": "mock-validation-job-id"}, 200, args[0])
+        elif args[0] == "http://mock-ingest-api/files/mock-file-entity/invalidEvent":
+            return MockResponse({}, 200, args[0])
+        elif args[0] == "http://mock-ingest-api/files/mock-file-entity/validEvent":
+            return MockResponse({}, 200, args[0])
+        elif args[0] == "http://mock-ingest-api/files/mock-file-entity/validatingEvent":
+            return MockResponse({}, 200, args[0])
 
     def mocked_patch(*args, **keywargs):
         class MockResponse:
@@ -72,8 +87,23 @@ class TestFileValidation(unittest.TestCase):
 
         if args[0] == "http://mock-ingest-api/files/mock-file-entity":
             payload = json.loads(keywargs["data"])
-            validation_id = payload["validationId"]
+            validation_id = payload["validationId"] if "validationId" in payload else ""
             return MockResponse({"validationId": validation_id}, 200, args[0])
+
+    def mocked_post(*args, **keywargs):
+        class MockResponse:
+            def __init__(self, json_data, status_code, url):
+                self.json_data = json_data
+                self.status_code = status_code
+                self.url = url
+                self.content = TestFileValidation.dump_json(json_data)
+
+            def json(self):
+                return self.json_data
+
+        if args[0] == "http://mock-ingest-api/files/mock-file-entity":
+            return MockResponse({}, 200, args[0])
+
 
     @mock.patch('requests.get', side_effect=mocked_get)
     @mock.patch.object(config, 'INGEST_API_URL', "http://mock-ingest-api")
@@ -131,3 +161,19 @@ class TestFileValidation(unittest.TestCase):
         invalid_report = util.extract_validation_report_from_job_results({'stderr': '',
                                                                           'stdout': '{"validation_state": "INVALID", "validation_errors": [{"user_friendly_message": "some error message"}]}'})
         assert len(invalid_report.error_reports) == 1 and len(invalid_report.errors_to_dict()) == 1
+
+    @mock.patch('requests.get', side_effect=mocked_get)
+    @mock.patch('requests.post', side_effect=mocked_post)
+    @mock.patch('requests.patch', side_effect=mocked_patch)
+    @mock.patch('requests.put', side_effect=mocked_put)
+    def test_handle_job_results(self, mocked_get, mocked_post, mocked_patch, mocked_put):
+        job_results = {'stderr': '',
+                       'stdout': '{"validation_state": "INVALID", "validation_errors": [{"user_friendly_message": "some error message"}]}',
+                       'validation_id': 'mock-job-uuid'}
+        file_validator = FileValidator("http://mock-upload-api", "http://mock-ingest-api")
+        try:
+            file_validator.handle_upload_job_results(json.dumps(job_results))
+            assert True
+        except Exception as e:
+            assert False
+
