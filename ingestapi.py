@@ -18,8 +18,6 @@ class IngestApi:
     def __init__(self, ingest_url=None):
         self.ingest_url = ingest_url
 
-        self.links = requests.get(ingest_url).json()['_links']
-
         logging.getLogger("requests").setLevel(logging.WARNING)
         logging.getLogger("urllib3").setLevel(logging.WARNING)
         self.logger = logging.getLogger(__name__)
@@ -32,13 +30,6 @@ class IngestApi:
         if r.status_code != requests.codes.ok:
             self.logger.error(str(r))
 
-    def get_entity_url_by_uuid(self, entity_type, uuid):
-        metadata_type = ENTITY_TYPE_LINKS[entity_type]
-        entity_index_url = self.links[metadata_type]['href'].rsplit('{')[0]
-        entity_find_by_uuid_url = entity_index_url + SEARCH_UUID_PATH + uuid
-        entity_response = urllib.urlopen(entity_find_by_uuid_url)
-        entity_url = json.load(entity_response)['_links']['self']['href']
-        return entity_url
 
     def get_resource_callback(self, callback_link):
         resource_url = self.ingest_url + callback_link
@@ -175,7 +166,12 @@ class IngestApi:
         else:
             return False
 
-    def post_validation_report(self, entity_url, validation_report):
-        return requests.patch(self.ingest_url + entity_url,
+    def post_validation_report(self, entity_relative_url, validation_report):
+        return requests.patch(self.ingest_url + entity_relative_url,
                               json.dumps({'validationErrors': validation_report.errors_to_dict()}),
+                              headers=self.headers)
+
+    def post_validation_report_full_url(self, entity_url, validation_report):
+        return requests.patch(entity_url,
+                              data=json.dumps({'validationErrors': validation_report.errors_to_dict()}),
                               headers=self.headers)

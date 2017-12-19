@@ -1,0 +1,22 @@
+{
+  "fileName": "R1.fastq.gz",
+  "content": {
+    "core": {
+      "type": "file",
+      "schema_url": "https://raw.githubusercontent.com/HumanCellAtlas/metadata-schema/4.3.0/json_schema/file.json"
+    },
+    "filename": "R1.fastq.gz",
+    "format": "fastq.gz"
+  },
+  "submissionDate": "2017-12-06T15:47:46.096Z",
+  "updateDate": "2017-12-06T15:48:08.730Z",
+  "uuid": {
+    "uuid": "b63dfa43-c39a-4c09-b1a2-220abbbf5949"
+  },
+  "events": [],
+  "accession": null,
+  "validationState": "Draft",
+  "validationErrors": null,
+  "cloudUrl": null,
+  "checksums": null
+}

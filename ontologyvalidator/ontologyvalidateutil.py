@@ -83,6 +83,17 @@ class OntologyValidationUtil:
 
     '''
     searches OLS with the given query and handles the response. returns the response
+    retries lookup in case of non-2XX response
     '''
     def lookup_ontology_term(self, lookup_query_dict):
-        return requests.get("https://www.ebi.ac.uk/ols/api/search", params=lookup_query_dict)
+        retries = 0
+        max_retries = 5
+        while retries < 5:
+            lookup_response = requests.get("https://www.ebi.ac.uk/ols/api/search", params=lookup_query_dict)
+            if not 200 <= lookup_response.status_code <= 300:
+                retries += 1
+                if retries == max_retries:
+                    raise CriticalValidationException("Failed to look up ontology class in OLS using query {}. Status code {}".format(lookup_response.url, str(lookup_response.status_code)))
+            else:
+                return lookup_response
+
