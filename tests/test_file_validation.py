@@ -124,6 +124,10 @@ class TestFileValidation(unittest.TestCase):
 
     def test_extract_validation_report_from_validation_job_results(self):
         util = FileValidationUtil("http://mock-ingest-api")
-        report = util.extract_validation_report_from_job_results(
-            {'stderr': '', 'stdout': '{"validation_state": "VALID", "validationErrors": []}'})
+        report = util.extract_validation_report_from_job_results({'stderr': '',
+                                                                  'stdout': '{"validation_state": "VALID", "validation_errors": []}'})
         assert report.validation_state == "VALID"
+
+        invalid_report = util.extract_validation_report_from_job_results({'stderr': '',
+                                                                          'stdout': '{"validation_state": "INVALID", "validation_errors": [{"user_friendly_message": "some error message"}]}'})
+        assert len(invalid_report.error_reports) == 1
