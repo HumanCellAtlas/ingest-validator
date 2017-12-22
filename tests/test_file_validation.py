@@ -133,6 +133,17 @@ class TestFileValidation(unittest.TestCase):
         validation_job_image = util.determine_validation_job_to_perform(mock_file_document)
         assert validation_job_image == "quay.io/mock-format-validator"
 
+    def test_determine_validation_job_no_result(self):
+        # given:
+        util = FileValidationUtil()
+        file_metadata = {'filename': 'some_file.txt'}
+
+        # when:
+        image_name = util.determine_validation_job_to_perform(file_metadata)
+
+        # then:
+        self.assertEqual('quay.io/default-validator', image_name)
+
     @mock.patch('requests.put', side_effect=mocked_put)
     @mock.patch.object(config, 'UPLOAD_API_URL', "http://mock-upload-api")
     @mock.patch.object(config, 'FILE_VALIDATION_IMAGES', {"mockformat.tar.gz": "quay.io/mock-format-validator"})
