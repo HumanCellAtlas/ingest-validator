@@ -142,7 +142,7 @@ class TestFileValidation(unittest.TestCase):
         image_name = util.determine_validation_job_to_perform(file_metadata)
 
         # then:
-        self.assertEqual('quay.io/default-validator', image_name)
+        self.assertEqual(config.DEFAULT_VALIDATION_IMAGE, image_name)
 
     @mock.patch('requests.put', side_effect=mocked_put)
     @mock.patch.object(config, 'UPLOAD_API_URL', "http://mock-upload-api")
