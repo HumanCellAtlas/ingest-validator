@@ -26,11 +26,14 @@ class FileValidationUtil:
         return cloud_url
 
     def determine_validation_job_to_perform(self, file_document: dict):
-        # attempt to figure out the file type
-        file_extension = self.extract_file_extension(file_document["filename"])
-        # lookup the file extension and file required docker image
-        validation_image_url = config.FILE_VALIDATION_IMAGES[file_extension]
-        return validation_image_url
+        try:
+            # attempt to figure out the file type
+            file_extension = self.extract_file_extension(file_document["filename"])
+            # lookup the file extension and file required docker image
+            validation_image_url = config.FILE_VALIDATION_IMAGES[file_extension]
+            return validation_image_url
+        except KeyError:
+            return config.DEFAULT_VALIDATION_IMAGE
 
 
     '''
