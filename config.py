@@ -49,3 +49,5 @@ FASTQ_VALIDATION_IMAGE = os.path.expandvars(os.environ.get('FASTQ_VALIDATION_IMA
 
 FILE_VALIDATION_IMAGES = {"fastq": FASTQ_VALIDATION_IMAGE,
                           "fastq.gz": FASTQ_GZ_VALIDATION_IMAGE}
+
+DEFAULT_VALIDATION_IMAGE = 'quay.io/default-validator'

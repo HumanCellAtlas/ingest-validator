@@ -33,7 +33,7 @@ class FileValidationUtil:
             validation_image_url = config.FILE_VALIDATION_IMAGES[file_extension]
             return validation_image_url
         except KeyError:
-            return 'quay.io/default-validator'
+            return config.DEFAULT_VALIDATION_IMAGE
 
 
     '''
