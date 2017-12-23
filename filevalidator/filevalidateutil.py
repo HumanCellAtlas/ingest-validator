@@ -63,7 +63,8 @@ class FileValidationUtil:
     given aaaabbbccc.fastq.tar.gz, returns fastq.tar.gz
     '''
     def extract_file_extension(self, file_name: str):
-        return reduce(lambda extension, subsequent_extension: extension + "." + subsequent_extension, file_name.split(".")[1:])
+        return reduce(lambda extension, subsequent_extension: extension + "." + subsequent_extension,
+                      file_name.split(".")[1:]) if '.' in file_name else None
 
     def extract_validation_report_from_job_results(self, job_results: dict):
         if not job_results["stderr"]:
