@@ -34,6 +34,9 @@ class ValidationReport:
     @staticmethod
     def from_job_results_dict(validation_report_dict: dict):
         report = ValidationReport()
-        report.validation_state = validation_report_dict["validation_state"]
-        report.error_reports = [ErrorReport(error["user_friendly_message"]) for error in validation_report_dict["validation_errors"]]
+        try:
+            report.validation_state = validation_report_dict["validation_state"]
+            report.error_reports = [ErrorReport(error["user_friendly_message"]) for error in validation_report_dict["validation_errors"]]
+        except KeyError as key_error:
+            pass
         return report

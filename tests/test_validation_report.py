@@ -27,3 +27,14 @@ class TestValidationReport(TestCase):
         self.assertEqual(report_map_invalid['validation_state'], report_invalid.validation_state)
         self.assertEqual(1, len(report_invalid.error_reports))
         self.assertEqual(error_message, report_invalid.error_reports[0].message)
+
+    def test_from_job_results_errors_optional(self):
+        # given:
+        report_map_no_errors = { 'validation_state': 'VALID' }
+
+        # when:
+        report = ValidationReport.from_job_results_dict(report_map_no_errors)
+
+        # then:
+        self.assertEqual(report_map_no_errors['validation_state'], report.validation_state)
+        self.assertEqual(0, len(report.error_reports))
