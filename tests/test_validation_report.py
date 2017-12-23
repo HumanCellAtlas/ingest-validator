@@ -38,3 +38,13 @@ class TestValidationReport(TestCase):
         # then:
         self.assertEqual(report_map_no_errors['validation_state'], report.validation_state)
         self.assertEqual(0, len(report.error_reports))
+
+    def test_from_job_results_no_validation_state(self):
+        # given:
+        report_map = { 'validation_errors': [] }
+
+        # when:
+        report = ValidationReport.from_job_results_dict(report_map)
+
+        # then:
+        self.assertEqual(ValidationReport.STATE_UNDEFINED, report.validation_state)

@@ -1,6 +1,9 @@
 from common.errorreport import ErrorReport
 class ValidationReport:
-    def __init__(self, validation_state="", error_reports=None):
+
+    STATE_UNDEFINED = 'UNDEFINED'
+
+    def __init__(self, validation_state=STATE_UNDEFINED, error_reports=None):
         self.validation_state = validation_state
         self.error_reports = error_reports if error_reports is not None else list()  # list of ErrorReport
 
@@ -36,7 +39,8 @@ class ValidationReport:
         report = ValidationReport()
         try:
             report.validation_state = validation_report_dict["validation_state"]
-            report.error_reports = [ErrorReport(error["user_friendly_message"]) for error in validation_report_dict["validation_errors"]]
+            report.error_reports = [ErrorReport(error["user_friendly_message"]) \
+                                    for error in validation_report_dict["validation_errors"]]
         except KeyError as key_error:
-            pass
+            pass # be liberal in what we accept
         return report
