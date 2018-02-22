@@ -38,7 +38,7 @@ class SchemaValidator:
 
     def extract_schema_url_from_document(self, metadata_document):
         try:
-            return metadata_document["core"]["schema_url"]
+            return metadata_document["describedBy"]
         except KeyError as e:
             raise MissingSchemaUrlException("Could not find schema url for this document")
 
