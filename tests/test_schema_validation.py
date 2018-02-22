@@ -21,26 +21,26 @@ class TestSchemaValidation(unittest.TestCase):
             def json(self):
                 return self.json_data
 
-        with open(BASE_PATH + "/test_files/schema/sample.json") as sample_schema:
+        with open(BASE_PATH + "/test_files/schema/donor_organism.json") as sample_schema:
             return MockResponse(json.load(sample_schema), 200)
 
     @mock.patch('requests.get', side_effect=mocked_get)
     def test_get_validation_schema(self, mock_get):
         schema_validator = validator.SchemaValidator()
-        schema = schema_validator.get_schema_from_url("https://mock-schemas.org/v1/sample.json")
+        schema = schema_validator.get_schema_from_url("https://mock-schemas.org/v1/donor_organism.json")
         assert(schema is not None and len(schema) > 0)
 
     def test_extract_schema_url_from_metadata(self):
-        with open(BASE_PATH + "/test_files/metadata_documents/sample_document.json") as sample_document_file:
+        with open(BASE_PATH + "/test_files/metadata_documents/biomaterial_document.json") as sample_document_file:
             metadata_document = json.load(sample_document_file)
             schema_validator = validator.SchemaValidator()
             schema_url = schema_validator.extract_schema_url_from_document(metadata_document)
             assert(schema_url is not None and len(schema_url) > 0)
 
     def test_extract_schema_url_from_metadata_no_schema_url(self):
-        with open(BASE_PATH + "/test_files/metadata_documents/sample_document.json") as sample_document_file:
+        with open(BASE_PATH + "/test_files/metadata_documents/biomaterial_document.json") as sample_document_file:
             metadata_document = json.load(sample_document_file)
-            del metadata_document["core"]["schema_url"]
+            del metadata_document["describedBy"]
             schema_validator = validator.SchemaValidator()
             try:
                 schema_url = schema_validator.extract_schema_url_from_document(metadata_document)
@@ -49,16 +49,16 @@ class TestSchemaValidation(unittest.TestCase):
                 assert True
 
     def test_validate_sample_should_pass(self):
-        with open(BASE_PATH + "/test_files/schema/sample.json") as sample_schema:
+        with open(BASE_PATH + "/test_files/schema/donor_organism.json") as sample_schema:
             schema = json.load(sample_schema)
-            with open(BASE_PATH + "/test_files/metadata_documents/sample_document.json") as sample_document_file:
+            with open(BASE_PATH + "/test_files/metadata_documents/biomaterial_document.json") as sample_document_file:
                 metadata_document = json.load(sample_document_file)
                 schema_validator = validator.SchemaValidator()
                 report = schema_validator.validate(metadata_document, schema)
                 assert (report.validation_state == "VALID")
 
     def test_validate_sample_should_fail(self):
-        with open(BASE_PATH + "/test_files/schema/sample.json") as sample_schema:
+        with open(BASE_PATH + "/test_files/schema/donor_organism.json") as sample_schema:
             schema = json.load(sample_schema)
             with open(BASE_PATH + "/test_files/metadata_documents/sample_document_invalid.json") as sample_document_file:
                 metadata_document = json.load(sample_document_file)

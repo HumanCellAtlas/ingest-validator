@@ -12,10 +12,10 @@ class TestOntologyValidation(unittest.TestCase):
     def test_find_ontology_fields_in_document(self):
         util = ontology_validate_util.OntologyValidationUtil()
 
-        with open(BASE_PATH + "/test_files/metadata_documents/sample_document.json") as document_file:
+        with open(BASE_PATH + "/test_files/metadata_documents/biomaterial_document.json") as document_file:
             document = json.load(document_file)
             fields_found = util.find_ontology_terms_in_document(document)
-            assert(len(fields_found) == 1 and fields_found[0][0] == "specimen_from_organism.organ.ontology")
+            assert(len(fields_found) == 2 and (fields_found[0][0] == "development_stage.ontology" or fields_found[0][0] == "genus_species.ontology"))
 
     def test_generate_ontology_schema_file_name_from_ontology_field(self):
         util = ontology_validate_util.OntologyValidationUtil()
@@ -72,7 +72,7 @@ class TestOntologyValidation(unittest.TestCase):
 
 
     def test_ontology_validate(self):
-        with open(BASE_PATH + "/test_files/metadata_documents/sample_document.json") as document_file:
+        with open(BASE_PATH + "/test_files/metadata_documents/biomaterial_document.json") as document_file:
             ontology_validator = validator.OntologyValidator(None)
             ontology_validation_report = ontology_validator.validate(json.load(document_file))
 
