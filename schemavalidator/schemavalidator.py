@@ -1,6 +1,6 @@
 import jsonschema
+import logging
 import requests
-import urllib3
 import time
 import common.validationreport as validationreport
 import common.errorreport as errorreport
@@ -9,6 +9,8 @@ from functools import reduce
 
 
 class SchemaValidator:
+
+    logger = logging.getLogger(__name__)
 
     def validate(self, metadata, schema):
         """
@@ -61,4 +63,5 @@ def resolve_uri_with_retry(uri: str):
             response = requests.get(uri)
             return response.json()
         except Exception as e:
+            logging.error("Exception occurred resolving a schema ref, attempt {0}".format(str(i)), exc_info=e)
             time.sleep(0.1)  # sleep for 100 milliseconds
