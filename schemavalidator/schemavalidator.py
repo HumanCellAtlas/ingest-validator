@@ -60,5 +60,5 @@ def resolve_uri_with_retry(uri: str):
         try:
             response = requests.get(uri)
             return response.json()
-        except urllib3.exceptions.NewConnectionError as e:
+        except Exception as e:
             time.sleep(0.1)  # sleep for 100 milliseconds
