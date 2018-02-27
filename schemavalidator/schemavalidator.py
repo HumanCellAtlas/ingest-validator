@@ -58,8 +58,10 @@ Custom function for handling HTTP/s requests that retries when an error occurs d
 '''
 def resolve_uri_with_retry(uri: str):
     # try 10 times to resolve
-    for i in range(0, 10):
+    for i in range(1, 10):
         try:
+            if i > 1:
+                logging.info("Re-attempting (attempt #{0}) to fetch schema at {1}".format(str(i), uri))
             response = requests.get(uri)
             return response.json()
         except Exception as e:
