@@ -1,5 +1,7 @@
 import jsonschema
+import logging
 import requests
+import time
 import common.validationreport as validationreport
 import common.errorreport as errorreport
 from common.missingschemaurlexception import MissingSchemaUrlException
@@ -8,12 +10,16 @@ from functools import reduce
 
 class SchemaValidator:
 
+    logger = logging.getLogger(__name__)
+
     def validate(self, metadata, schema):
         """
         given a json document(metadata) and a json-schema(schema), validates the
         schema and returns a ValidationReport
         """
         validator = jsonschema.Draft4Validator(schema=schema)
+        validator.resolver.handlers["http"] = resolve_uri_with_retry
+        validator.resolver.handlers["https"] = resolve_uri_with_retry
         if validator.is_valid(instance=metadata):
             return validationreport.ValidationReport.validation_report_ok()
         else:
@@ -45,3 +51,19 @@ class SchemaValidator:
 
     def get_schema_from_url(self, schema_url):
         return requests.get(schema_url).json()
+
+
+'''
+Custom function for handling HTTP/s requests that retries when an error occurs during creation of a HTTP connection
+'''
+def resolve_uri_with_retry(uri: str):
+    # try 10 times to resolve
+    for i in range(1, 10):
+        try:
+            if i > 1:
+                logging.info("Re-attempting (attempt #{0}) to fetch schema at {1}".format(str(i), uri))
+            response = requests.get(uri)
+            return response.json()
+        except Exception as e:
+            logging.error("Exception occurred resolving a schema ref, attempt {0}".format(str(i)), exc_info=e)
+            time.sleep(0.1)  # sleep for 100 milliseconds
