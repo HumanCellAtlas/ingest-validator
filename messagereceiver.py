@@ -18,7 +18,7 @@ class MessageReceiver:
                 self.message_processor.run(message=json.loads(body))
 
             except Exception as e:
-                self.logger.exception(str(e))
+                self.logger.error("Error:", exc_info=e)
 
         channel.basic_consume(callback, queue=queue, no_ack=True)
         self.logger.info("Waiting for messages...")
