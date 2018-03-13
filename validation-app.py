@@ -1,13 +1,15 @@
-from ingestapi import IngestApi
-from validationprocessor import ValidationProcessor
-from listeners.filevalidationoutputlistener import FileValidationOutputListener
-import config
-import messagereceiver
 import threading
 
-def initReceivers(url, queue, message_processor):
-    # start a listener for the metadata queue
-    t = threading.Thread(target=messagereceiver.MessageReceiver, args=(config.RABBITMQ_URL, config.RABBITMQ_VALIDATION_QUEUE, validation_processor))
+import config
+import logging
+from listeners.filevalidationoutputlistener import FileValidationOutputListener
+from listeners.metadatadocumentupdatelistener import MetadataDocumentUpdateListener
+
+
+def initReceivers():
+    # start a listener for the metadata document update queue
+    metadata_validation_listener = MetadataDocumentUpdateListener(config.RABBITMQ_URL)
+    t = threading.Thread(target=metadata_validation_listener.run)
     t.start()
 
     # start a listener for validation job completion messages coming from the upload-service
@@ -16,9 +18,7 @@ def initReceivers(url, queue, message_processor):
     t.start()
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
+
     print("ingest url is " + config.INGEST_API_URL)
-    ingest_api = IngestApi(ingest_url=config.INGEST_API_URL)
-    validation_processor = ValidationProcessor(ingest_api=ingest_api)
-    initReceivers(url=config.RABBITMQ_URL,
-                  queue=config.RABBITMQ_VALIDATION_QUEUE,
-                  message_processor=validation_processor)
+    initReceivers()
