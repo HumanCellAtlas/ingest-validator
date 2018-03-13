@@ -2,7 +2,7 @@ FROM frolvlad/alpine-python3
 MAINTAINER Alegria Aclan "aaclan@ebi.ac.uk"
 
 RUN mkdir /app
-COPY config.py messagereceiver.py validationprocessor.py ingestapi.py validation-app.py requirements.txt /app/
+COPY config.py ingestapi.py validation-app.py requirements.txt /app/
 
 ADD validator /app/validator
 ADD common /app/common
@@ -10,6 +10,7 @@ ADD ontologyvalidator /app/ontologyvalidator
 ADD schemavalidator /app/schemavalidator
 ADD filevalidator /app/filevalidator
 ADD listeners /app/listeners
+ADD processor /app/processor
 
 
 WORKDIR /app
