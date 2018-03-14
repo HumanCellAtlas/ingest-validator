@@ -1,9 +1,12 @@
 import logging, json, validator.validator as validator
+import config
+from ingestapi import IngestApi
 
 
 class ValidationProcessor:
-    def __init__(self, ingest_api):
-        self.ingest_api = ingest_api
+    def __init__(self, ingest_api_url=None):
+        self.ingest_api_url = ingest_api_url if ingest_api_url is not None else config.INGEST_API_URL
+        self.ingest_api = IngestApi(self.ingest_api_url)
         self.logger = logging.getLogger(__name__)
         self.headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
 

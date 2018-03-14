@@ -1,13 +1,14 @@
 import logging
 import pika
-from filevalidator.filevalidator import FileValidator
+import json
+from processor.validationprocessor import ValidationProcessor
 
 LOG_FORMAT = ('%(levelname) -10s %(asctime)s %(name) -30s %(funcName) '
               '-35s %(lineno) -5d: %(message)s')
 LOGGER = logging.getLogger(__name__)
 
 
-class FileValidationOutputListener():
+class MetadataDocumentUpdateListener():
     """This is an example consumer that will handle unexpected interactions
     with RabbitMQ such as channel and connection closures.
 
@@ -22,8 +23,8 @@ class FileValidationOutputListener():
     """
     EXCHANGE = 'ingest.validation.exchange'
     EXCHANGE_TYPE = 'direct'
-    QUEUE = 'ingest.file.validation.queue'
-    ROUTING_KEY = 'ingest.file.validation.queue'
+    QUEUE = 'ingest.metadata.validation.queue'
+    ROUTING_KEY = 'ingest.metadata.validation.queue'
 
     def __init__(self, amqp_url):
         """Create a new instance of the consumer class, passing in the AMQP
@@ -37,7 +38,7 @@ class FileValidationOutputListener():
         self._closing = False
         self._consumer_tag = None
         self._url = amqp_url
-        self._file_validator = FileValidator()
+        self._validation_processor = ValidationProcessor()
 
     def connect(self):
         """This method connects to RabbitMQ, returning the connection handle.
@@ -267,7 +268,7 @@ class FileValidationOutputListener():
         LOGGER.info('Received message # %s from %s: %s',
                     basic_deliver.delivery_tag, properties.app_id, body)
         try:
-            self._file_validator.handle_upload_job_results(body)
+            self._validation_processor.run(json.loads(body))
             self.acknowledge_message(basic_deliver.delivery_tag)
         except Exception as e:
             LOGGER.error(e)

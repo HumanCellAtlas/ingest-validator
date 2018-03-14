@@ -2,6 +2,7 @@ import config
 import requests
 import json
 import logging
+import urllib.parse
 from common.validationreport import ValidationReport
 from functools import reduce
 
@@ -41,7 +42,9 @@ class FileValidationUtil:
     requests a validation job using the upload service's file validation API and returns the validation job ID
     '''
     def request_file_validation_job(self, validator_image_url: str, upload_area_uuid: str, file_name: str):
-        request_url = config.UPLOAD_API_URL + "/v1/area/" + upload_area_uuid + "/" + file_name + "/validate"
+        quoted_file_name = urllib.parse.quote(file_name)
+        request_url = config.UPLOAD_API_URL + "/v1/area/" + upload_area_uuid + "/" + quoted_file_name + "/validate"
+        self.logger.info("calling API endpoint {} to create validation job".format(request_url))
         self.logger.info("attempting file validation job with image {} on file {} at upload area {}".format(validator_image_url,
                                                                                                             file_name,
                                                                                                             upload_area_uuid))
