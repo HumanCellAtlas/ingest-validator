@@ -21,7 +21,7 @@ class FileValidator:
     def validate(self, file_document, entity_link):
         # upload-area-uuid is the same as the envelope uuid
         upload_area_uuid = self.util.get_envelope_uuid_of_file_entity(entity_link)
-        file_name = file_document["filename"]
+        file_name = file_document["file_name"]
         validation_image_url = self.util.determine_validation_job_to_perform(file_document)
         validation_job_id = self.util.request_file_validation_job(validation_image_url, upload_area_uuid, file_name)
         self.util.assign_validation_job_id_to_file_document(entity_link, validation_job_id)

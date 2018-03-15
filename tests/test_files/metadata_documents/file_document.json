@@ -1,12 +1,10 @@
 {
   "fileName": "R1.fastq.gz",
   "content": {
-    "core": {
-      "type": "file",
-      "schema_url": "https://raw.githubusercontent.com/HumanCellAtlas/metadata-schema/4.3.0/json_schema/file.json"
-    },
-    "filename": "R1.fastq.gz",
-    "format": "fastq.gz"
+    "schema_type": "file",
+    "describedBy": "https://raw.githubusercontent.com/HumanCellAtlas/metadata-schema/4.3.0/json_schema/file.json",
+    "file_name": "R1.fastq.gz",
+    "file_format": "fastq.gz"
   },
   "submissionDate": "2017-12-06T15:47:46.096Z",
   "updateDate": "2017-12-06T15:48:08.730Z",
