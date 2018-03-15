@@ -29,7 +29,7 @@ class FileValidationUtil:
     def determine_validation_job_to_perform(self, file_document: dict):
         try:
             # attempt to figure out the file type, if no period char present in the filename then setting the filename to be the extension
-            file_name = file_document["file_name"]
+            file_name = file_document["file_core"]["file_name"]
             file_extension = self.extract_file_extension(file_name) if "." in file_name else file_name
             # lookup the file extension and file required docker image
             validation_image_url = config.FILE_VALIDATION_IMAGES[file_extension]
