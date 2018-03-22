@@ -28,9 +28,14 @@ class OntologyValidator:
 
         for (ontology_term_field_path, ontology_term_id) in self.util.find_ontology_terms_in_document(metadata_document):
             try:
-                file_name = self.util.get_ontology_schema_file_name_from_ontology_field(ontology_term_field_path)
-                schema = self.util.retrieve_ontology_schema(self.schema_base_url, file_name)
-                lookup_query = self.util.generate_ols_query(schema, ontology_term_id)
+                # file_name = self.util.get_ontology_schema_file_name_from_ontology_field(ontology_term_field_path)
+                parent_schema_url = self.util.extract_schema_url_from_document(metadata_document)
+                parent_schema = self.util.get_schema_from_url(parent_schema_url)
+                ontology_schema_field = parent_schema["properties"][ontology_term_field_path.split(".")[0]]
+                # schema = self.util.retrieve_ontology_schema(self.schema_base_url, file_name)
+                ontology_schema_url = self.util.extract_reference_url_from_schema(ontology_schema_field)
+                ontology_schema = self.util.get_schema_from_url(ontology_schema_url)
+                lookup_query = self.util.generate_ols_query(ontology_schema, ontology_term_id)
                 lookup_response = self.util.lookup_ontology_term(lookup_query)
 
                 if lookup_response.json()["response"]["numFound"] == 0:
