@@ -114,10 +114,10 @@ class OntologyValidationUtil:
     '''
     def extract_reference_url_from_schema(self, metadata_schema):
         try:
-            if "$ref" in metadata_schema:
-                return metadata_schema["$ref"]
-            elif "items" in metadata_schema and "$ref" in metadata_schema["items"]:
-                return metadata_schema["items"]["$ref"]
+            if "items" in metadata_schema:
+                metadata_schema = metadata_schema["items"]
+
+            return metadata_schema["$ref"]
         except KeyError as e:
             raise MissingSchemaUrlException("Could not find schema url for this document")
 
