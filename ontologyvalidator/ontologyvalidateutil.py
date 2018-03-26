@@ -100,13 +100,18 @@ class OntologyValidationUtil:
             else:
                 return lookup_response
 
-
+    '''
+    extracts the describedBy URL from the piece of metadata json provided 
+    '''
     def extract_schema_url_from_document(self, metadata_document):
         try:
             return metadata_document["describedBy"]
         except KeyError as e:
             raise MissingSchemaUrlException("Could not find schema url for this document")
 
+    '''
+    extracts the reference URL from the piece of metadata json provided 
+    '''
     def extract_reference_url_from_schema(self, metadata_schema):
         try:
             if "$ref" in metadata_schema:
@@ -116,6 +121,9 @@ class OntologyValidationUtil:
         except KeyError as e:
             raise MissingSchemaUrlException("Could not find schema url for this document")
 
+    '''
+    retrieves the schema json from the URL provided
+    '''
     def get_schema_from_url(self, schema_url):
         return requests.get(schema_url).json()
 
