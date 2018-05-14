@@ -19,7 +19,10 @@ def validate(metadata_document, entity_link, document_type):
         schema_validation_report = do_schema_validation(metadata_document)
         validation_reports.append(schema_validation_report)
         # file validation depends on successful schema validation
-        if DO_FILE_VALIDATION == "ACTIVE" and document_type == "FILE" and schema_validation_report.validation_state == "VALID":
+        if DO_FILE_VALIDATION == "ACTIVE" \
+                and document_type == "FILE" \
+                and schema_validation_report.validation_state == "VALID" \
+                and FileValidator().is_elligible_for_file_validation(metadata_document):
             file_validation_report = do_file_validation(metadata_document, entity_link)
             validation_reports.append(file_validation_report)
 

@@ -26,6 +26,9 @@ class FileValidationUtil:
         cloud_url = entity["cloudUrl"]
         return cloud_url
 
+    def is_elligible_for_file_validation(self, file_document: dict):
+        return self.determine_validation_job_to_perform(file_document) != config.DEFAULT_VALIDATION_IMAGE
+
     def determine_validation_job_to_perform(self, file_document: dict):
         try:
             # attempt to figure out the file type, if no period char present in the filename then setting the filename to be the extension
