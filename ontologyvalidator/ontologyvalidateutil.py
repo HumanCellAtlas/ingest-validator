@@ -1,10 +1,15 @@
 import flatten_json
 import requests
+import config
 from functools import reduce
 from common.criticalvalidationexception import CriticalValidationException
 from common.skipvalidationexception import SkipValidationException
 
 class OntologyValidationUtil:
+
+    def __init__(self, ols_base_uri=None):
+        self.ols_base_uri = ols_base_uri if ols_base_uri else config.OLS_API_URL
+
     '''
     Given a metadata_document dictionary(i.e JSON document), returns a list of pairs/2-tuples: the first
     element of the pair is a (pseudo)JSONPaths to an ontology term in the document and the second element of
@@ -74,7 +79,7 @@ class OntologyValidationUtil:
             raise CriticalValidationException("Critical error: Failed to parse ontology schema: " + str(e))
 
     def get_iri_for_ontology_class(self, ontology_class):
-        iri_lookup_request = requests.get("https://www.ebi.ac.uk/ols/api/terms", {"id":ontology_class})
+        iri_lookup_request = requests.get(self.ols_base_uri + "/terms", {"id":ontology_class})
         try:
             return iri_lookup_request.json()["_embedded"]["terms"][0]["iri"]
         except KeyError as e:
@@ -89,7 +94,7 @@ class OntologyValidationUtil:
         retries = 0
         max_retries = 5
         while retries < 5:
-            lookup_response = requests.get("https://www.ebi.ac.uk/ols/api/search", params=lookup_query_dict)
+            lookup_response = requests.get(self.ols_base_uri + "/search", params=lookup_query_dict)
             if not 200 <= lookup_response.status_code <= 300:
                 retries += 1
                 if retries == max_retries:

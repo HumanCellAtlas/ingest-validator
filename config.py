@@ -16,6 +16,9 @@ INGEST_API_PORT = '8080'
 INGEST_API_URL = INGEST_API_HOST + ':' + INGEST_API_PORT
 INGEST_API_URL = os.path.expandvars(os.environ.get('INGEST_API', INGEST_API_URL))
 
+OLS_API_URL = 'http://localhost:8088'
+OLS_API_URL = os.path.expandvars(os.environ.get('OLS_API_URL', OLS_API_URL))
+
 UPLOAD_API_HOST = "https://upload.dev.data.humancellatlas.org"
 UPLOAD_API_PORT = "443"
 UPLOAD_API_URL = UPLOAD_API_HOST + ":" + UPLOAD_API_PORT

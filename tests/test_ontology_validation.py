@@ -40,6 +40,33 @@ class TestOntologyValidation(unittest.TestCase):
         with open(BASE_PATH + "/test_files/schema/test_body_part_ontology_schema.json") as ontology_schema:
             return MockResponse(json.load(ontology_schema), 200)
 
+
+    def mocked_ols_query(*args, **keywargs):
+        class MockResponse:
+            def __init__(self, json_data, status_code):
+                self.json_data = json_data
+                self.status_code = status_code
+
+            def json(self):
+                return self.json_data
+
+        return MockResponse({"_embedded":
+                                 {"terms": [{"iri": "http://mock-ontology-library/obo/UBERON_0000465"}]}},
+                            200)
+
+    def mocked_ols_lookup(*args, **keywargs):
+        class MockResponse:
+            def __init__(self, json_data, status_code):
+                self.json_data = json_data
+                self.status_code = status_code
+
+            def json(self):
+                return self.json_data
+
+        return MockResponse({"_embedded":
+                                 {"terms": [{"iri": "http://mock-ontology-library/obo/UBERON_0000465"}]}},
+                            200)
+
     @mock.patch('requests.get', side_effect=mocked_get)
     def test_retrieve_ontology_validation_schema(self, mock_get):
         with open(BASE_PATH + "/test_files/schema/test_body_part_ontology_schema.json") as ontology_schema_file:
@@ -49,26 +76,13 @@ class TestOntologyValidation(unittest.TestCase):
             # asserting 2 schemas are equal if the set of keys in each is equal to set of keys in the other
             assert(set(retrieved_schema.keys()).issubset(mocked_schema.keys()) and set(mocked_schema.keys()).issubset(retrieved_schema.keys()))
 
-    def test_generate_ols_query_from_ontology_validation_schema_and_ontology_term(self):
+    @mock.patch('requests.get', side_effect=mocked_ols_query)
+    def test_generate_ols_query_from_ontology_validation_schema_and_ontology_term(self, mocked_ols_get):
         with open(BASE_PATH + "/test_files/schema/test_body_part_ontology_schema.json") as ontology_schema_file:
             ontology_schema_document = json.load(ontology_schema_file)
-            util = ontology_validate_util.OntologyValidationUtil()
+            util = ontology_validate_util.OntologyValidationUtil("http://mock-ols/api")
             query_dict = util.generate_ols_query(ontology_schema_document, "UBERON_000ABCDEFG")
             assert(len(query_dict.keys()) == 4)
-
-    def test_lookup_ontology_terms(self):
-        with open(BASE_PATH + "/test_files/schema/test_body_part_ontology_schema.json") as ontology_schema_file:
-            ontology_schema_document = json.load(ontology_schema_file)
-            util = ontology_validate_util.OntologyValidationUtil()
-            should_pass_query_dict = util.generate_ols_query(ontology_schema_document, "UBERON_0000178")
-            lookup = util.lookup_ontology_term(should_pass_query_dict)
-
-            assert lookup.json()["response"]["numFound"] >= 1
-
-            should_fail_query_dict = util.generate_ols_query(ontology_schema_document, "UBERON_doesnt_exist")
-            lookup = util.lookup_ontology_term(should_fail_query_dict)
-
-            assert lookup.json()["response"]["numFound"] == 0
 
 
     def test_ontology_validate(self):
