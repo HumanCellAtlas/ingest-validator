@@ -3,6 +3,7 @@ import requests
 import config
 from functools import reduce
 from common.criticalvalidationexception import CriticalValidationException
+from common.missingschemaurlexception import MissingSchemaUrlException
 from common.skipvalidationexception import SkipValidationException
 
 class OntologyValidationUtil:
@@ -72,7 +73,7 @@ class OntologyValidationUtil:
             query_dict = dict()
             query_dict["q"] = ontology_term
             query_dict["queryFields"] = "short_form,obo_id"
-            query_dict["ontology"] = ontologies_to_query_string
+            query_dict["ontology"] = ontologies_to_query_string.lower()
             query_dict["allChildrenOf"] = reduce(lambda ontology_class_iri, another_ontology_class_iri: ontology_class_iri + "," + another_ontology_class_iri, ontology_classes_uris)
             return query_dict
         except KeyError as e:
@@ -101,4 +102,31 @@ class OntologyValidationUtil:
                     raise CriticalValidationException("Failed to look up ontology class in OLS using query {}. Status code {}".format(lookup_response.url, str(lookup_response.status_code)))
             else:
                 return lookup_response
+
+    '''
+    extracts the describedBy URL from the piece of metadata json provided 
+    '''
+    def extract_schema_url_from_document(self, metadata_document):
+        try:
+            return metadata_document["describedBy"]
+        except KeyError as e:
+            raise MissingSchemaUrlException("Could not find schema url for this document")
+
+    '''
+    extracts the reference URL from the piece of metadata json provided 
+    '''
+    def extract_reference_url_from_schema(self, metadata_schema):
+        try:
+            if "items" in metadata_schema:
+                metadata_schema = metadata_schema["items"]
+
+            return metadata_schema["$ref"]
+        except KeyError as e:
+            raise MissingSchemaUrlException("Could not find schema url for this document")
+
+    '''
+    retrieves the schema json from the URL provided
+    '''
+    def get_schema_from_url(self, schema_url):
+        return requests.get(schema_url).json()
 

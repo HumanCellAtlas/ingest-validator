@@ -43,10 +43,10 @@ FILE_VALIDATION = "ACTIVE"
 FILE_VALIDATION = os.path.expandvars(os.environ.get('FILE_VALIDATION', FILE_VALIDATION))
 
 
-FASTQ_VALIDATION_IMAGE = "quay.io/humancellatlas/ingest-fastq-validator"
+FASTQ_VALIDATION_IMAGE = "quay.io/humancellatlas/fastq_utils:master"
 FASTQ_VALIDATION_IMAGE = os.path.expandvars(os.environ.get('FASTQ_VALIDATION_IMAGE', FASTQ_VALIDATION_IMAGE))
 
-FASTQ_GZ_VALIDATION_IMAGE = "quay.io/humancellatlas/ingest-fastq-validator"
+FASTQ_GZ_VALIDATION_IMAGE = "quay.io/humancellatlas/fastq_utils:master"
 FASTQ_VALIDATION_IMAGE = os.path.expandvars(os.environ.get('FASTQ_VALIDATION_IMAGE', FASTQ_VALIDATION_IMAGE))
 
 

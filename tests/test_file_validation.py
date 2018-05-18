@@ -155,6 +155,17 @@ class TestFileValidation(unittest.TestCase):
         # then:
         self.assertEqual(config.DEFAULT_VALIDATION_IMAGE, image_name)
 
+    def test_elligible_files_for_validation(self):
+        # given:
+        util = FileValidationUtil()
+        file_metadata = {'file_core': {'file_name': 'mock-file.torrent'}}
+
+        # when:
+        is_elligible = util.is_elligible_for_file_validation(file_metadata)
+
+        self.assertFalse(is_elligible)
+
+
     @mock.patch('requests.put', side_effect=mocked_put)
     @mock.patch.object(config, 'UPLOAD_API_URL', "http://mock-upload-api")
     @mock.patch.object(config, 'FILE_VALIDATION_IMAGES', {"mockformat.tar.gz": "quay.io/mock-format-validator"})

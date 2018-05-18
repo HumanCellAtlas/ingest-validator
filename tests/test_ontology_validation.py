@@ -2,6 +2,7 @@ import unittest
 import os
 import ontologyvalidator.ontologyvalidateutil as ontology_validate_util
 import ontologyvalidator.ontologyvalidator as validator
+from common.missingschemaurlexception import MissingSchemaUrlException
 import json
 from unittest import mock
 
@@ -15,7 +16,7 @@ class TestOntologyValidation(unittest.TestCase):
         with open(BASE_PATH + "/test_files/metadata_documents/biomaterial_document.json") as document_file:
             document = json.load(document_file)
             fields_found = util.find_ontology_terms_in_document(document)
-            assert(len(fields_found) == 2 and (fields_found[0][0] == "development_stage.ontology" or fields_found[0][0] == "genus_species.ontology"))
+            assert(len(fields_found) == 2 and (fields_found[0][0] == "development_stage.ontology" or fields_found[0][0] == "genus_species.0.ontology"))
 
     def test_generate_ontology_schema_file_name_from_ontology_field(self):
         util = ontology_validate_util.OntologyValidationUtil()
@@ -85,9 +86,32 @@ class TestOntologyValidation(unittest.TestCase):
             assert(len(query_dict.keys()) == 4)
 
 
-    def test_ontology_validate(self):
+
+    def test_ontology_validate(self,):
         with open(BASE_PATH + "/test_files/metadata_documents/biomaterial_document.json") as document_file:
-            ontology_validator = validator.OntologyValidator(None)
+            ontology_validator = validator.OntologyValidator("http://ontology.dev.data.humancellatlas.org/api")
             ontology_validation_report = ontology_validator.validate(json.load(document_file))
 
             assert ontology_validation_report.validation_state == "VALID" and len(ontology_validation_report.error_reports) == 0
+
+    def test_extract_schema_url_from_metadata_no_schema_url(self):
+        with open(BASE_PATH + "/test_files/metadata_documents/biomaterial_document.json") as sample_document_file:
+            metadata_document = json.load(sample_document_file)
+            del metadata_document["describedBy"]
+            util = ontology_validate_util.OntologyValidationUtil()
+            try:
+                schema_url = util.extract_schema_url_from_document(metadata_document)
+                assert False
+            except MissingSchemaUrlException as e:
+                assert True
+
+    def test_extract_reference_url_from_schema_no_reference_url(self):
+        with open(BASE_PATH + "/test_files/schema/donor_organism.json") as sample_schema_file:
+            metadata_schema = json.load(sample_schema_file)
+            del metadata_schema["properties"]["biomaterial_core"]["$ref"]
+            util = ontology_validate_util.OntologyValidationUtil()
+            try:
+                schema_url = util.extract_reference_url_from_schema(metadata_schema["properties"]["biomaterial_core"])
+                assert False
+            except MissingSchemaUrlException as e:
+                    assert True
