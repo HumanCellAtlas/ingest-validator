@@ -4,6 +4,7 @@ import logging
 from common.errorreport import ErrorReport
 from common.validationreport import ValidationReport
 from common.criticalvalidationexception import CriticalValidationException
+from common.missingontologyclassexception import MissingOntologyClassException
 from common.skipvalidationexception import SkipValidationException
 
 
@@ -35,11 +36,16 @@ class OntologyValidator:
                 # schema = self.util.retrieve_ontology_schema(self.schema_base_url, file_name)
                 ontology_schema_url = self.util.extract_reference_url_from_schema(ontology_schema_field)
                 ontology_schema = self.util.get_schema_from_url(ontology_schema_url)
-                lookup_query = self.util.generate_ols_query(ontology_schema, ontology_term_id)
-                lookup_response = self.util.lookup_ontology_term(lookup_query)
+
+                try:
+                    lookup_query = self.util.generate_ols_query(ontology_schema, ontology_term_id)
+                    lookup_response = self.util.lookup_ontology_term(lookup_query)
+                except MissingOntologyClassException as e:
+                    error_reports.append(self.generate_error_report(ontology_term_field_path, ontology_term_id, metadata_document, str(e)))
+                    continue
 
                 if lookup_response.json()["response"]["numFound"] == 0:
-                    error_reports.append(self.generate_error_report(ontology_term_field_path, ontology_term_id, lookup_response, metadata_document))
+                    error_reports.append(self.generate_error_report(ontology_term_field_path, ontology_term_id, metadata_document))
             except SkipValidationException as e:
                 self.logger.info(str(e))
                 continue
@@ -54,8 +60,9 @@ class OntologyValidator:
 
         return validation_report
 
-    def generate_error_report(self, ontology_term_field_path, ontology_term_id, ols_lookup_response, metadata_document):
-        error_message = "Error: ontology id \"{}\" at {} was not found in OLS or failed to validate against the metadata schema. Query generated: {}".format(ontology_term_id, ontology_term_field_path, ols_lookup_response.url)
+    def generate_error_report(self, ontology_term_field_path, ontology_term_id, metadata_document, error_message=None):
+        if not error_message:
+            error_message = "Error: ontology id \"{}\" at {} was not found in OLS or failed to validate against the metadata schema. Query generated: {}".format(ontology_term_id, ontology_term_field_path, ols_lookup_response.url)
 
         ontology_validation_error = OntologyValidationError()
         ontology_validation_error.absolute_path = ontology_term_field_path
