@@ -3,6 +3,7 @@ import os
 import ontologyvalidator.ontologyvalidateutil as ontology_validate_util
 import ontologyvalidator.ontologyvalidator as validator
 from common.missingschemaurlexception import MissingSchemaUrlException
+from common.missingontologyclassexception import MissingOntologyClassException
 import json
 from unittest import mock
 
@@ -68,6 +69,10 @@ class TestOntologyValidation(unittest.TestCase):
                                  {"terms": [{"iri": "http://mock-ontology-library/obo/UBERON_0000465"}]}},
                             200)
 
+    def mock_get_ols_class_fail(*args, **keywargs):
+        raise MissingOntologyClassException("can't find ontology class")
+
+
     @mock.patch('requests.get', side_effect=mocked_get)
     def test_retrieve_ontology_validation_schema(self, mock_get):
         with open(BASE_PATH + "/test_files/schema/test_body_part_ontology_schema.json") as ontology_schema_file:
@@ -87,12 +92,21 @@ class TestOntologyValidation(unittest.TestCase):
 
 
 
-    def test_ontology_validate(self,):
+    def test_ontology_validate(self):
         with open(BASE_PATH + "/test_files/metadata_documents/biomaterial_document.json") as document_file:
             ontology_validator = validator.OntologyValidator("http://ontology.dev.data.humancellatlas.org/api")
             ontology_validation_report = ontology_validator.validate(json.load(document_file))
 
             assert ontology_validation_report.validation_state == "VALID" and len(ontology_validation_report.error_reports) == 0
+
+    @mock.patch.object(ontology_validate_util.OntologyValidationUtil, 'get_iri_for_ontology_class', mock_get_ols_class_fail)
+    def test_ontology_validation_unknown_root_term(self):
+        with open(BASE_PATH + "/test_files/metadata_documents/biomaterial_document.json") as document_file:
+            ontology_validator = validator.OntologyValidator("http://ontology.dev.data.humancellatlas.org/api")
+            ontology_validation_report = ontology_validator.validate(json.load(document_file))
+
+            assert ontology_validation_report.validation_state == "INVALID"
+            assert len(ontology_validation_report.error_reports) == 2  # 2 ontology terms in the doc so 2 errors
 
     def test_extract_schema_url_from_metadata_no_schema_url(self):
         with open(BASE_PATH + "/test_files/metadata_documents/biomaterial_document.json") as sample_document_file:
