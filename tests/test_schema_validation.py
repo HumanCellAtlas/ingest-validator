@@ -80,6 +80,7 @@ class TestSchemaValidation(unittest.TestCase):
                 report = schema_validator.validate(metadata_document, schema)
                 assert (report.validation_state == "INVALID")
 
+
     class MockConnectionFailure:
         attempts = 0
 
