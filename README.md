@@ -92,9 +92,9 @@ nodemon src/server
 ```
 
 ## Validation API
-This validator exposes one single endpoint that will accept POST requests. When running on you local machine it will look like: **http://localhost:3020/validate**.
+This validator exposes two endpoints that will accept POST requests: `/validate` and `/prototype`.
 
-### Usage
+### /validate
 The endpoint will expect the body to have the following structure:
 ```js
 {
@@ -104,8 +104,7 @@ The endpoint will expect the body to have the following structure:
 ```
 Where the schema should be a valid json schema to validate the object against.
 
-**Example:**
-Sending a POST request with the following body:
+**Example:** 
 ```js
 {
   "schema": {
@@ -139,16 +138,64 @@ Sending a POST request with the following body:
   }
 }
 ```
-will produce a response like:
+
+### /prototype
+The endpoint will expect the body to have the following structure:
+```js
+{
+  "schemas": [],
+  "entity": {},
+  "rootSchemaId": ""
+}
+```
+**Example:** 
+```js
+{
+  "schemas": 
+  [{
+    "$id": "http://example.com/schemas/schema.json",
+    "type": "object",
+    "properties": {
+      "foo": { "$ref": "defs.json#/definitions/int" },
+      "bar": { "$ref": "definitions.json#/definitions/str" },
+      "abc": { "$ref": "defs.json#/definitions/array" }
+    },
+    "required": ["foo"]
+  },
+  {
+    "$id": "http://example.com/schemas/defs.json",
+    "definitions": {
+      "int": { "type": "integer" },
+      "array": { "$ref": "definitions.json#/definitions/nextarray" }
+    }
+  },
+  {
+    "$id": "http://example.com/schemas/definitions.json",
+    "definitions": {
+      "str": { "type": "string" },
+      "nextarray": { "type": "string" }
+    }
+  }],
+  "rootSchemaId": "http://example.com/schemas/schema.json",
+  "entity": {
+    "foo": 3,
+    "abc": ""
+  }
+}
+```
+
+### Output
+
+Response with no validation errors:
 
 HTTP status code `200`
-```json
+```js
 []
 ```
 An example of a validation response with errors:
 
 HTTP status code `200`
-```json
+```js
 [
   {
     "errors": [
@@ -168,14 +215,36 @@ HTTP status code `200`
 Where *errors* is an array of error messages for a given input identified by its path on *dataPath*. There may be one or more error objects within the response array. An empty array represents a valid validation result.
 
 ### API Errors
-Sending malformed JSON or a body with either the schema or the submittable missing will result in an API error (the request will not reach the validation). API errors have the following structure:
+Sending malformed JSON or a body with either the schema or the submittable missing will result in an API error (the request will not reach the validation). 
 
-HTTP status code `400`
-```json
-{
-  "error": "Malformed JSON please check your request body."
-}
-```
+- When sending malformed JSON:
+
+  HTTP status code `400` - Bad Request
+  ```js
+  {
+    "errors": "Malformed JSON please check your request body."
+  }
+  ```
+- When any of the required body values is missing:
+
+  HTTP status code `422` - Unprocessable Entity
+  ```js
+  {
+    "errors": {
+      "schema": {
+        "location": "body",
+        "param": "schema",
+        "msg": "Required."
+      },
+      "object": {
+        "location": "body",
+        "param": "object",
+        "msg": "Required."
+      }
+    }
+  }
+  ```
+
 ## Custom keywords
 The AJV library supports the implementation of custom json schema keywords to address validation scenarios that go beyond what json schema can handle.
 This validator has two custom keywords implemented, `isChildTermOf` and `isValidTerm`.
