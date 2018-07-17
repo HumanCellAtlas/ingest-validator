@@ -1,6 +1,7 @@
 import unittest
 from unittest import mock
 from common.missingschemaurlexception import MissingSchemaUrlException
+from common.schemadoesnotexistexception import SchemaDoesNotExistException
 import os
 import schemavalidator.schemavalidator as validator
 import config
@@ -24,11 +25,24 @@ class TestSchemaValidation(unittest.TestCase):
         with open(BASE_PATH + "/test_files/schema/donor_organism.json") as sample_schema:
             return TestSchemaValidation.MockResponse(json.load(sample_schema), 200)
 
+    def mocked_failed_get(*args, **keywargs):
+        return TestSchemaValidation.MockResponse(None, 404)
+
     @mock.patch('requests.get', side_effect=mocked_get)
     def test_get_validation_schema(self, mock_get):
         schema_validator = validator.SchemaValidator()
         schema = schema_validator.get_schema_from_url("https://mock-schemas.org/v1/donor_organism.json")
         assert(schema is not None and len(schema) > 0)
+
+    @mock.patch('requests.get', side_effect=mocked_failed_get)
+    def test_get_validation_schema_nonexistent_schema(self, mock_failed_get):
+        schema_validator = validator.SchemaValidator()
+        try:
+            schema = schema_validator.get_schema_from_url("https://mock-schemas.org/v1/donor_organism.json")
+        except SchemaDoesNotExistException:
+            assert True
+        except Exception:
+            assert False
 
     def test_extract_schema_url_from_metadata(self):
         with open(BASE_PATH + "/test_files/metadata_documents/biomaterial_document.json") as sample_document_file:
@@ -65,6 +79,7 @@ class TestSchemaValidation(unittest.TestCase):
                 schema_validator = validator.SchemaValidator()
                 report = schema_validator.validate(metadata_document, schema)
                 assert (report.validation_state == "INVALID")
+
 
     class MockConnectionFailure:
         attempts = 0

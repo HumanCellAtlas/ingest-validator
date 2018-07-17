@@ -5,6 +5,8 @@ import time
 import common.validationreport as validationreport
 import common.errorreport as errorreport
 from common.missingschemaurlexception import MissingSchemaUrlException
+from common.schemadoesnotexistexception import SchemaDoesNotExistException
+from common.criticalvalidationexception import CriticalValidationException
 from functools import reduce
 
 
@@ -50,7 +52,13 @@ class SchemaValidator:
 
 
     def get_schema_from_url(self, schema_url):
-        return requests.get(schema_url).json()
+        response = requests.get(schema_url)
+        if 200 <= response.status_code < 300:
+            return response.json()
+        elif response.status_code == 404:
+            raise SchemaDoesNotExistException("Schema with URI {0} does not exist".format(schema_url))
+        else:
+            raise CriticalValidationException("Failed to retrieve schema {0}; Status code {1}".format(schema_url, str(response.status_code)))
 
 
 '''

@@ -37,3 +37,6 @@ class FileValidator:
         validation_report = self.util.extract_validation_report_from_job_results(results)
         self.ingest_api.post_validation_report_full_url(file_entity["_links"]["self"]["href"], validation_report)
         self.ingest_api.transition_document_validation_state_to(file_entity, validation_report.validation_state)
+
+    def is_elligible_for_file_validation(self, file_document: dict):
+        return self.util.is_elligible_for_file_validation(file_document)
