@@ -4,13 +4,14 @@ import logging
 from common.errorreport import ErrorReport
 from common.validationreport import ValidationReport
 from common.criticalvalidationexception import CriticalValidationException
+from common.missingontologyclassexception import MissingOntologyClassException
 from common.skipvalidationexception import SkipValidationException
 
 
 class OntologyValidator:
 
-    def __init__(self, schema_base_url=None):
-        self.util = ontologyvalidateutil.OntologyValidationUtil()
+    def __init__(self, ols_base_uri=None, schema_base_url=None):
+        self.util = ontologyvalidateutil.OntologyValidationUtil(ols_base_uri)
         self.schema_base_url = schema_base_url if schema_base_url else config.ONTOLOGY_SCHEMA_BASE_URL
         self.logger = logging.getLogger(__name__)
 
@@ -28,13 +29,23 @@ class OntologyValidator:
 
         for (ontology_term_field_path, ontology_term_id) in self.util.find_ontology_terms_in_document(metadata_document):
             try:
-                file_name = self.util.get_ontology_schema_file_name_from_ontology_field(ontology_term_field_path)
-                schema = self.util.retrieve_ontology_schema(self.schema_base_url, file_name)
-                lookup_query = self.util.generate_ols_query(schema, ontology_term_id)
-                lookup_response = self.util.lookup_ontology_term(lookup_query)
+                # file_name = self.util.get_ontology_schema_file_name_from_ontology_field(ontology_term_field_path)
+                parent_schema_url = self.util.extract_schema_url_from_document(metadata_document)
+                parent_schema = self.util.get_schema_from_url(parent_schema_url)
+                ontology_schema_field = parent_schema["properties"][ontology_term_field_path.split(".")[0]]
+                # schema = self.util.retrieve_ontology_schema(self.schema_base_url, file_name)
+                ontology_schema_url = self.util.extract_reference_url_from_schema(ontology_schema_field)
+                ontology_schema = self.util.get_schema_from_url(ontology_schema_url)
+
+                try:
+                    lookup_query = self.util.generate_ols_query(ontology_schema, ontology_term_id)
+                    lookup_response = self.util.lookup_ontology_term(lookup_query)
+                except MissingOntologyClassException as e:
+                    error_reports.append(self.generate_error_report(ontology_term_field_path, ontology_term_id, metadata_document, str(e)))
+                    continue
 
                 if lookup_response.json()["response"]["numFound"] == 0:
-                    error_reports.append(self.generate_error_report(ontology_term_field_path, ontology_term_id, lookup_response, metadata_document))
+                    error_reports.append(self.generate_error_report(ontology_term_field_path, ontology_term_id, metadata_document))
             except SkipValidationException as e:
                 self.logger.info(str(e))
                 continue
@@ -49,8 +60,9 @@ class OntologyValidator:
 
         return validation_report
 
-    def generate_error_report(self, ontology_term_field_path, ontology_term_id, ols_lookup_response, metadata_document):
-        error_message = "Error: ontology id \"{}\" at {} was not found in OLS or failed to validate against the metadata schema. Query generated: {}".format(ontology_term_id, ontology_term_field_path, ols_lookup_response.url)
+    def generate_error_report(self, ontology_term_field_path, ontology_term_id, metadata_document, error_message=None):
+        if not error_message:
+            error_message = "Error: ontology id \"{}\" at {} was not found in OLS or failed to validate against the metadata schema. Query generated: {}".format(ontology_term_id, ontology_term_field_path, ols_lookup_response.url)
 
         ontology_validation_error = OntologyValidationError()
         ontology_validation_error.absolute_path = ontology_term_field_path

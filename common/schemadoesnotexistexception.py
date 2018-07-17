@@ -1,0 +1,2 @@
+class SchemaDoesNotExistException(Exception):
+    pass
