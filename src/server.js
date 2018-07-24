@@ -1,6 +1,8 @@
 const express = require("express");
+const bodyParser = require("body-parser");
 const logger = require("./winston");
 const runValidation = require("./validation/validator");
+const runValidationWithRefs = require("./validation/validator-prototype");
 const AppError = require("./model/application-error");
 const { check, validationResult } = require("express-validator/check");
 const { handleValidation } = require("./validation/validation-handler");
@@ -11,7 +13,9 @@ const npid = require("npid");
 const app = express();
 const port = process.env.PORT || 3020;
 
-app.use(express.json());
+// app.use(express.json());
+app.use(bodyParser.json({limit: '50mb'}));
+app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
@@ -73,13 +77,21 @@ app.post("/prototype", [
       return res.status(422).json({ errors: errors.mapped() });
     } else {
       logger.log("debug", "Received POST request.");
-      try {
-        let errors = handleValidation(req.body.schemas, req.body.entity, req.body.rootSchemaId);
-        return res.json(errors || []);
-      } catch(err) {
-        logger.log("error", err);
-        return res.status(500).send(new AppError(err.message));
-      }
+        runValidationWithRefs(req.body.schemas, req.body.entity, req.body.rootSchemaId).then((output) => {
+            logger.log("silly", "Sent validation results.");
+            res.status(200).send(output);
+        }).catch((err) => {
+            logger.log("error", err.message);
+            res.status(500).send(new AppError(err.message));
+        });
+      // try {
+      //   let errors = handleValidation(req.body.schemas, req.body.entity, req.body.rootSchemaId);
+      //   // return res.json(errors || []);
+      //     return res.json(errors);
+      // } catch(err) {
+      //   logger.log("error", err);
+      //   return res.status(500).send(new AppError(err.message));
+      // }
     }
   }
 );
