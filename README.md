@@ -92,7 +92,7 @@ nodemon src/server
 ```
 
 ## Validation API
-This validator exposes two endpoints that will accept POST requests: `/validate` and `/prototype`.
+This validator exposes two endpoints that will accept POST requests: `/validate` for a single stand-alone schema and data object, and `/validateRefs` for a complex schema referencing other schemas and a related data object.
 
 ### /validate
 The endpoint will expect the body to have the following structure:
@@ -139,7 +139,7 @@ Where the schema should be a valid json schema to validate the object against.
 }
 ```
 
-### /prototype
+### /validateRefs
 The endpoint will expect the body to have the following structure:
 ```js
 {
@@ -247,10 +247,49 @@ Sending malformed JSON or a body with either the schema or the submittable missi
 
 ## Custom keywords
 The AJV library supports the implementation of custom json schema keywords to address validation scenarios that go beyond what json schema can handle.
-This validator has two custom keywords implemented, `isChildTermOf` and `isValidTerm`.
+This validator has three custom keywords implemented, `graph_restriction`, `isChildTermOf` and `isValidTerm`.
+
+### graph_restriction
+
+This custom keyword *evaluates if an ontology term is child of another*. This keyword is applied to a string (CURIE) and **passes validation if the term is a child of the term defined in the schema**.
+The keyword requires one or more **parent terms** *(classes)* and **ontology ids** *(ontologies)*, both of which should exist in [OLS - Ontology Lookup Service](https://www.ebi.ac.uk/ols).
+
+This keyword works by doing an asynchronous call to the [OLS API](https://www.ebi.ac.uk/ols/api/) that will respond with the required information to know if a given term is child of another. 
+Being an async validation step, whenever used is a schema, the schema must have the flag: `"$async": true` in it's object root.
+
+
+#### Usage
+Schema:
+```js
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://schema.dev.data.humancellatlas.org/module/ontology/5.3.0/organ_ontology",
+    "$async": true,
+    "properties": {
+        "ontology": {
+            "description": "A term from the ontology [UBERON](https://www.ebi.ac.uk/ols/ontologies/uberon) for an organ or a cellular bodily fluid such as blood or lymph.",
+            "type": "string",
+            "graph_restriction":  {
+                "ontologies" : ["obo:hcao", "obo:uberon"],
+                "classes": ["UBERON:0000062","UBERON:0000179"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            }
+        }
+    }
+}
+```
+JSON object:
+```js
+{
+    "ontology": "UBERON:0000955"
+}
+```
+
 
 ### isChildTermOf
-This custom keyword *evaluates if an ontology term is child of other*. This keyword is applied to a string (url) and **passes validation if the term is a child of the term defined in the schema**.
+This custom keyword also *evaluates if an ontology term is child of another* and is a simplified version of the graph_restriction keyword. This keyword is applied to a string (url) and **passes validation if the term is a child of the term defined in the schema**.
 The keyword requires the **parent term** and the **ontology id**, both of which should exist in [OLS - Ontology Lookup Service](https://www.ebi.ac.uk/ols).
 
 This keyword works by doing an asynchronous call to the [OLS API](https://www.ebi.ac.uk/ols/api/) that will respond with the required information to know if a given term is child of another. 
