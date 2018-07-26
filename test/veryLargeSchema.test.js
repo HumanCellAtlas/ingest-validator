@@ -1,5 +1,5 @@
 const fs = require("fs");
-const protoValidate = require("../src/validation/validator-prototype");
+const validation = require("../src/validation/validator");
 
 test("HCA ref schema, species and restriction schema test very large schema no errors", () => {
     let hcaSchemas = fs.readFileSync("examples/schemas/references/very-large-schema.json");
@@ -9,7 +9,7 @@ test("HCA ref schema, species and restriction schema test very large schema no e
 
     let rootSchemaId = "http://schema.dev.data.humancellatlas.org/type/biomaterial/8.2.7/donor_organism"
 
-    return protoValidate(
+    return validation.validateMultiSchema(
         schemas,
         {
             "describedBy": "https://schema.dev.data.humancellatlas.org/type/biomaterial/8.2.7/donor_organism",
@@ -49,7 +49,7 @@ test("HCA ref schema, species and restriction schema test very large schema with
 
     let rootSchemaId = "http://schema.dev.data.humancellatlas.org/type/biomaterial/8.2.7/donor_organism"
 
-    return protoValidate(
+    return validation.validateMultiSchema(
         schemas,
         {
             "describedBy": "https://schema.dev.data.humancellatlas.org/type/biomaterial/8.2.7/donor_organism",

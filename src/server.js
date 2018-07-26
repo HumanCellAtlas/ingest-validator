@@ -2,10 +2,10 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const logger = require("./winston");
 const runValidation = require("./validation/validator");
-const runValidationWithRefs = require("./validation/validator-prototype");
+// const runValidationWithRefs = require("./validation/validator-prototype");
 const AppError = require("./model/application-error");
 const { check, validationResult } = require("express-validator/check");
-const { handleValidation } = require("./validation/validation-handler");
+// const { handleValidation } = require("./validation/validation-handler");
 
 const argv = require("yargs").argv;
 const npid = require("npid");
@@ -45,7 +45,7 @@ app.post("/validate", [
     return res.status(422).json({ errors: errors.mapped() });
   } else {
     logger.log("debug", "Received POST request.");
-    runValidation(req.body.schema, req.body.object).then((output) => {
+    runValidation.validateSingleSchema(req.body.schema, req.body.object).then((output) => {
       logger.log("silly", "Sent validation results.");
       res.status(200).send(output);
     }).catch((err) => {
@@ -63,11 +63,11 @@ app.get("/validate", (req, res) => {
       schema: {},
       object: {}
     },
-    repository: "https://github.com/EMBL-EBI-SUBS/json-schema-validator"
+    repository: "https://github.com/HumanCellAtlas/ingest-validator-js"
   });
 });
 
-app.post("/prototype", [
+app.post("/validateRefs", [
     check("schemas", "Required and must be a non empty array.").isArray().not().isEmpty(),
     check("rootSchemaId", "Required.").optional(),
     check("entity", "Required.").exists()
@@ -77,7 +77,7 @@ app.post("/prototype", [
       return res.status(422).json({ errors: errors.mapped() });
     } else {
       logger.log("debug", "Received POST request.");
-        runValidationWithRefs(req.body.schemas, req.body.entity, req.body.rootSchemaId).then((output) => {
+        runValidation.validateMultiSchema(req.body.schemas, req.body.entity, req.body.rootSchemaId).then((output) => {
             logger.log("silly", "Sent validation results.");
             res.status(200).send(output);
         }).catch((err) => {
@@ -96,7 +96,7 @@ app.post("/prototype", [
   }
 );
 
-app.get("/prototype", (req, res) => {
+app.get("/validateRefs", (req, res) => {
   logger.log("silly", "Received GET request.");
   res.send({
     message: "This is the Submissions JSON Schema Validator. Please POST to this endpoint the schema and object to validate structured as showed in bodyStructure.",
@@ -105,7 +105,7 @@ app.get("/prototype", (req, res) => {
       rootSchemaId: "",
       entity: {}
     },
-    repository: "https://github.com/EMBL-EBI-SUBS/json-schema-validator"
+    repository: "https://github.com/HumanCellAtlas/ingest-validator-js"
   });
 });
 

@@ -1,5 +1,5 @@
 const fs = require("fs");
-const protoValidate = require("../src/validation/validator-prototype");
+const validation = require("../src/validation/validator");
 
 // test("Base schema and definitions schema test WITH erros", () => {
 //     let baseSchema = fs.readFileSync("examples/schemas/references/base-sample-schema.json");
@@ -33,7 +33,7 @@ test("Base schema and definitions schema test WITH erros", () => {
     let definitionsSchema = fs.readFileSync("examples/schemas/references/definitions-schema.json");
     let jsonDefinitionsSchema = JSON.parse(definitionsSchema);
 
-    return protoValidate(
+    return validation.validateMultiSchema(
         [jsonBaseSchema, jsonDefinitionsSchema],
         {
             alias: "abc",
@@ -60,7 +60,7 @@ test("Base schema and definitions schema test WITHOUT errors", () => {
     let definitionsSchema = fs.readFileSync("examples/schemas/references/definitions-schema.json");
     let jsonDefinitionsSchema = JSON.parse(definitionsSchema);
 
-    return protoValidate(
+    return validation.validateMultiSchema(
         [jsonBaseSchema, jsonDefinitionsSchema],
         {
             alias: "abc",
@@ -88,7 +88,7 @@ test("ML schema -> base schema -> definitions schema test", () => {
     let definitionsSchema = fs.readFileSync("examples/schemas/references/definitions-schema.json");
     let jsonDefinitionsSchema = JSON.parse(definitionsSchema);
 
-    return protoValidate(
+    return validation.validateMultiSchema(
         [jsonMLSchema, jsonBaseSchema, jsonDefinitionsSchema],
         {
             alias: "abc",
@@ -112,7 +112,7 @@ test("HCA ref schema and species schema test WITHOUT errors", () => {
     let speciesSchema = fs.readFileSync("examples/schemas/references/hca-species-schema.json");
     let jsonSpeciesSchema = JSON.parse(speciesSchema);
 
-    return protoValidate(
+    return validation.validateMultiSchema(
         [jsonHcaSchema, jsonSpeciesSchema],
         {
             biomaterial_id: "abc",
@@ -142,7 +142,7 @@ test("HCA ref schema, species and restriction schema test WITHOUT errors", () =>
     let inputSchema = fs.readFileSync("examples/schemas/references/graphRestriction-ref-schema.json");
     let jsonRestrictionSchema = JSON.parse(inputSchema);
 
-    return protoValidate(
+    return validation.validateMultiSchema(
         [jsonHcaSchema, jsonSpeciesSchema, jsonRestrictionSchema],
         {
             biomaterial_id: "abc",
@@ -177,7 +177,7 @@ test("HCA ref schema, species and restriction schema test WITH errors", () => {
     let inputSchema = fs.readFileSync("examples/schemas/references/graphRestriction-ref-schema.json");
     let jsonRestrictionSchema = JSON.parse(inputSchema);
 
-    return protoValidate(
+    return validation.validateMultiSchema(
         [jsonHcaSchema, jsonSpeciesSchema, jsonRestrictionSchema],
         {
             biomaterial_id: "abc",

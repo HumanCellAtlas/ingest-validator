@@ -1,5 +1,5 @@
 const fs = require("fs");
-const protoValidate = require("../src/validation/validator-prototype");
+const validator = require("../src/validation/validator");
 
 test("HCA ref schema, species and restriction schema test WITHOUT errors", () => {
     let hcaSchema = fs.readFileSync("examples/schemas/draft-04/donor_organism.json");
@@ -17,7 +17,7 @@ test("HCA ref schema, species and restriction schema test WITHOUT errors", () =>
     let ethnicitySchema = fs.readFileSync("examples/schemas/draft-04/ethnicity_ontology.json")
     let jsonEthnicitySchema = JSON.parse(ethnicitySchema)
 
-    return protoValidate(
+    return validator.validateMultiSchema(
         [jsonHcaSchema, jsonSpeciesSchema, jsonCoreSchema, jsonHumanSchema, jsonEthnicitySchema],
         {
 

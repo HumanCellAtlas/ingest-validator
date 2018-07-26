@@ -8,7 +8,7 @@ test("isValidTerm", () => {
   let inputObj = fs.readFileSync("examples/objects/isValidTerm.json");
   let jsonObj = JSON.parse(inputObj);
 
-  return runValidation(jsonSchema, jsonObj).then( (data) => {
+  return runValidation.validateSingleSchema(jsonSchema, jsonObj).then( (data) => {
     expect(data).toBeDefined();
     expect(data[0]).toBeDefined();
   });

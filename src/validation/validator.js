@@ -27,29 +27,64 @@ function convertToValidationErrors(ajvErrorObjects) {
   return localErrors;
 }
 
-function runValidation(inputSchema, inputObject) {
-  logger.log("silly", "Running validation...");
-  return new Promise((resolve, reject) => {
-    var validate = ajv.compile(inputSchema);
-    Promise.resolve(validate(inputObject))
-    .then((data) => {
-        if (validate.errors) {
-          logger.log("debug", ajv.errorsText(validate.errors, {dataVar: inputObject.alias}));
-          resolve(convertToValidationErrors(validate.errors));
-        } else {
-          resolve([]);
-        }
-      }
-    ).catch((err, errors) => {
-      if (!(err instanceof Ajv.ValidationError)) {
-        logger.log("error", "An error ocurred while running the validation.");
-        reject(new AppError("An error ocurred while running the validation."));
-      } else {
-        logger.log("debug", ajv.errorsText(err.errors, {dataVar: inputObject.alias}));
-        resolve(convertToValidationErrors(err.errors));
-      }
+module.exports = {
+    validateSingleSchema: function(inputSchema, inputObject)
+    {
+    logger.log("silly", "Running validation...");
+    return new Promise((resolve, reject) => {
+        var validate = ajv.compile(inputSchema);
+        Promise.resolve(validate(inputObject))
+            .then((data) => {
+                    if (validate.errors) {
+                        logger.log("debug", ajv.errorsText(validate.errors, {dataVar: inputObject.alias}));
+                        resolve(convertToValidationErrors(validate.errors));
+                    } else {
+                        resolve([]);
+                    }
+                }
+            ).catch((err, errors) => {
+            if (!(err instanceof Ajv.ValidationError)) {
+                logger.log("error", "An error ocurred while running the validation.");
+                reject(new AppError("An error ocurred while running the validation."));
+            } else {
+                logger.log("debug", ajv.errorsText(err.errors, {dataVar: inputObject.alias}));
+                resolve(convertToValidationErrors(err.errors));
+            }
+        });
     });
-  });
+  },
+
+  validateMultiSchema: function(schemas, entity, rootSchemaId) {
+      logger.log("silly", "Running validation...");
+
+
+      return new Promise((resolve, reject) => {
+          for (var s of schemas){
+              if (!ajv.getSchema(s.$id)){
+                  // if (!ajv.getSchema(s.id)){
+                  ajv.addSchema(s);
+              }
+          }
+          var validate = ajv.getSchema(rootSchemaId);
+          Promise.resolve(validate(entity))
+              .then((data) => {
+                      if (validate.errors) {
+                          logger.log("debug", ajv.errorsText(validate.errors, {dataVar: entity.alias}));
+                          resolve(convertToValidationErrors(validate.errors));
+                      } else {
+                          resolve([]);
+                      }
+                  }
+              ).catch((err, errors) => {
+              if (!(err instanceof Ajv.ValidationError)) {
+                  logger.log("error", "An error ocurred while running the validation.");
+                  reject(new AppError("An error ocurred while running the validation."));
+              } else {
+                  logger.log("debug", ajv.errorsText(err.errors, {dataVar: entity.alias}));
+                  resolve(convertToValidationErrors(err.errors));
+              }
+          });
+      });
+  }
 }
 
-module.exports = runValidation;
