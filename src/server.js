@@ -1,7 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const logger = require("./winston");
-const runValidation = require("./validator");
+const validator = require("./validator");
 const AppError = require("./model/application-error");
 
 const argv = require("yargs").argv;
@@ -37,7 +37,25 @@ app.post("/validate", (req, res) => {
   var inputObject = req.body.object;
 
   if (inputSchema && inputObject) {
-    runValidation(inputSchema, inputObject).then((output) => {
+    validator.runValidation(inputSchema, inputObject).then((output) => {
+      logger.log("silly", "Sent validation results.");
+      res.status(200).send(output);
+    }).catch((error) => {
+      res.status(500).send(error);
+    });
+  } else {
+    let appError = new AppError("Something is missing, both schema and object are required to execute validation.");
+    logger.log("info", appError.error);
+    res.status(400).send(appError);
+  }
+});
+
+app.post("/autovalidate", (req, res) => {
+  logger.log("debug", "Received POST request.");
+  var inputObject = req.body.object;
+
+  if (inputObject) {
+    validator.runAutoValidation(inputSchema, inputObject).then((output) => {
       logger.log("silly", "Sent validation results.");
       res.status(200).send(output);
     }).catch((error) => {
