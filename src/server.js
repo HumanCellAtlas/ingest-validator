@@ -55,7 +55,7 @@ app.post("/autovalidate", (req, res) => {
   var inputObject = req.body.object;
 
   if (inputObject) {
-    validator.runAutoValidation(inputSchema, inputObject).then((output) => {
+    validator.runAutoValidation(inputObject).then((output) => {
       logger.log("silly", "Sent validation results.");
       res.status(200).send(output);
     }).catch((error) => {
