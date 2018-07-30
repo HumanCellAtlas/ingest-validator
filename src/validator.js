@@ -1,4 +1,5 @@
 let Ajv = require("ajv");
+let request = require("request")
 const logger = require("./winston");
 let IsChildTermOf = require("./custom/ischildtermof");
 let IsValidTerm = require("./custom/isvalidterm");
@@ -46,6 +47,34 @@ function runValidation(inputSchema, inputObject) {
         resolve(convertToValidationErrors(err.errors));
       }
     });
+  });
+}
+/**
+ *
+ * Attempts "automatic" validation of a JSON document by picking the schema to use
+ * from the document's "describedBy" field
+ *
+ * @param inputObject JSON document/object to validate
+ */
+function runAutoValidation(inputObject) {
+  return new Promise((resolve, reject) => {
+    if(! inputObject["describedBy"]) {
+      reject(new Error("document to be validated has no describedBy field"));
+    } else {
+        let schemaUri = inputObject["describedBy"];
+        let reqOptions = {
+            method: "GET",
+            url: schemaUri,
+            json: true
+        };
+        request.options(reqOptions)
+            .on("response", (resp) => {
+              resolve(resp.body);
+            })
+            .on("error", (err) => {
+              reject(new Error("Error retrieving schema at uri " + schemaUri + "; status code " + err.statusCode));
+            });
+    }
   });
 }
 
