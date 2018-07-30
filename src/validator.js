@@ -69,7 +69,8 @@ function runAutoValidation(inputObject) {
         };
         request.options(reqOptions)
             .on("response", (resp) => {
-              resolve(resp.body);
+              let inputSchema = resp.body;
+              return runValidation(inputSchema, inputObject)
             })
             .on("error", (err) => {
               reject(new Error("Error retrieving schema at uri " + schemaUri + "; status code " + err.statusCode));
