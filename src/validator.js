@@ -78,5 +78,3 @@ function runAutoValidation(inputObject) {
     }
   });
 }
-
-module.exports = runValidation;
