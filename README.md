@@ -92,9 +92,9 @@ nodemon src/server
 ```
 
 ## Validation API
-This validator exposes one single endpoint that will accept POST requests. When running on you local machine it will look like: **http://localhost:3020/validate**.
+This validator exposes two endpoints that will accept POST requests: `/validate` for a single stand-alone schema and data object, and `/validateRefs` for a complex schema referencing other schemas and a related data object.
 
-### Usage
+### /validate
 The endpoint will expect the body to have the following structure:
 ```js
 {
@@ -104,8 +104,7 @@ The endpoint will expect the body to have the following structure:
 ```
 Where the schema should be a valid json schema to validate the object against.
 
-**Example:**
-Sending a POST request with the following body:
+**Example:** 
 ```js
 {
   "schema": {
@@ -139,16 +138,64 @@ Sending a POST request with the following body:
   }
 }
 ```
-will produce a response like:
+
+### /validateRefs
+The endpoint will expect the body to have the following structure:
+```js
+{
+  "schemas": [],
+  "entity": {},
+  "rootSchemaId": ""
+}
+```
+**Example:** 
+```js
+{
+  "schemas": 
+  [{
+    "$id": "http://example.com/schemas/schema.json",
+    "type": "object",
+    "properties": {
+      "foo": { "$ref": "defs.json#/definitions/int" },
+      "bar": { "$ref": "definitions.json#/definitions/str" },
+      "abc": { "$ref": "defs.json#/definitions/array" }
+    },
+    "required": ["foo"]
+  },
+  {
+    "$id": "http://example.com/schemas/defs.json",
+    "definitions": {
+      "int": { "type": "integer" },
+      "array": { "$ref": "definitions.json#/definitions/nextarray" }
+    }
+  },
+  {
+    "$id": "http://example.com/schemas/definitions.json",
+    "definitions": {
+      "str": { "type": "string" },
+      "nextarray": { "type": "string" }
+    }
+  }],
+  "rootSchemaId": "http://example.com/schemas/schema.json",
+  "entity": {
+    "foo": 3,
+    "abc": ""
+  }
+}
+```
+
+### Output
+
+Response with no validation errors:
 
 HTTP status code `200`
-```json
+```js
 []
 ```
 An example of a validation response with errors:
 
 HTTP status code `200`
-```json
+```js
 [
   {
     "errors": [
@@ -168,20 +215,81 @@ HTTP status code `200`
 Where *errors* is an array of error messages for a given input identified by its path on *dataPath*. There may be one or more error objects within the response array. An empty array represents a valid validation result.
 
 ### API Errors
-Sending malformed JSON or a body with either the schema or the submittable missing will result in an API error (the request will not reach the validation). API errors have the following structure:
+Sending malformed JSON or a body with either the schema or the submittable missing will result in an API error (the request will not reach the validation). 
 
-HTTP status code `400`
-```json
-{
-  "error": "Malformed JSON please check your request body."
-}
-```
+- When sending malformed JSON:
+
+  HTTP status code `400` - Bad Request
+  ```js
+  {
+    "errors": "Malformed JSON please check your request body."
+  }
+  ```
+- When any of the required body values is missing:
+
+  HTTP status code `422` - Unprocessable Entity
+  ```js
+  {
+    "errors": {
+      "schema": {
+        "location": "body",
+        "param": "schema",
+        "msg": "Required."
+      },
+      "object": {
+        "location": "body",
+        "param": "object",
+        "msg": "Required."
+      }
+    }
+  }
+  ```
+
 ## Custom keywords
 The AJV library supports the implementation of custom json schema keywords to address validation scenarios that go beyond what json schema can handle.
-This validator has two custom keywords implemented, `isChildTermOf` and `isValidTerm`.
+This validator has three custom keywords implemented, `graph_restriction`, `isChildTermOf` and `isValidTerm`.
+
+### graph_restriction
+
+This custom keyword *evaluates if an ontology term is child of another*. This keyword is applied to a string (CURIE) and **passes validation if the term is a child of the term defined in the schema**.
+The keyword requires one or more **parent terms** *(classes)* and **ontology ids** *(ontologies)*, both of which should exist in [OLS - Ontology Lookup Service](https://www.ebi.ac.uk/ols).
+
+This keyword works by doing an asynchronous call to the [OLS API](https://www.ebi.ac.uk/ols/api/) that will respond with the required information to know if a given term is child of another. 
+Being an async validation step, whenever used is a schema, the schema must have the flag: `"$async": true` in it's object root.
+
+
+#### Usage
+Schema:
+```js
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://schema.dev.data.humancellatlas.org/module/ontology/5.3.0/organ_ontology",
+    "$async": true,
+    "properties": {
+        "ontology": {
+            "description": "A term from the ontology [UBERON](https://www.ebi.ac.uk/ols/ontologies/uberon) for an organ or a cellular bodily fluid such as blood or lymph.",
+            "type": "string",
+            "graph_restriction":  {
+                "ontologies" : ["obo:hcao", "obo:uberon"],
+                "classes": ["UBERON:0000062","UBERON:0000179"],
+                "relations": ["rdfs:subClassOf"],
+                "direct": false,
+                "include_self": false
+            }
+        }
+    }
+}
+```
+JSON object:
+```js
+{
+    "ontology": "UBERON:0000955"
+}
+```
+
 
 ### isChildTermOf
-This custom keyword *evaluates if an ontology term is child of other*. This keyword is applied to a string (url) and **passes validation if the term is a child of the term defined in the schema**.
+This custom keyword also *evaluates if an ontology term is child of another* and is a simplified version of the graph_restriction keyword. This keyword is applied to a string (url) and **passes validation if the term is a child of the term defined in the schema**.
 The keyword requires the **parent term** and the **ontology id**, both of which should exist in [OLS - Ontology Lookup Service](https://www.ebi.ac.uk/ols).
 
 This keyword works by doing an asynchronous call to the [OLS API](https://www.ebi.ac.uk/ols/api/) that will respond with the required information to know if a given term is child of another. 
