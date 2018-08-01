@@ -1,8 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const logger = require("./winston");
-const runValidation = require("./validation/validator");
-// const runValidationWithRefs = require("./validation/validator-prototype");
+const validator = require("./validation/validator");
 const AppError = require("./model/application-error");
 const { check, validationResult } = require("express-validator/check");
 // const { handleValidation } = require("./validation/validation-handler");
@@ -45,7 +44,7 @@ app.post("/validate", [
     return res.status(422).json({ errors: errors.mapped() });
   } else {
     logger.log("debug", "Received POST request.");
-    runValidation.validateSingleSchema(req.body.schema, req.body.object).then((output) => {
+    validator.validateSingleSchema(req.body.schema, req.body.object).then((output) => {
       logger.log("silly", "Sent validation results.");
       res.status(200).send(output);
     }).catch((err) => {
@@ -53,6 +52,25 @@ app.post("/validate", [
       res.status(500).send(new AppError(err.message));
     });
   }
+});
+
+// -- Endpoint definition -- //
+app.post("/autovalidate", [
+    check("object", "Required.").exists()
+],(req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(422).json({ errors: errors.mapped() });
+    } else {
+        logger.log("debug", "Received POST request.");
+        validator.autoValidate(req.body.object).then((output) => {
+            logger.log("silly", "Sent validation results.");
+            res.status(200).send(output);
+        }).catch((err) => {
+            logger.log("error", err.message);
+            res.status(500).send(new AppError(err.message));
+        });
+    }
 });
 
 app.get("/validate", (req, res) => {
