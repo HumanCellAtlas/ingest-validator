@@ -23,6 +23,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "ajv": "^6.0.0",
+    "amqplib": "^0.5.2",
     "express": "^4.16.2",
     "express-validator": "^5.2.0",
     "npid": "^0.4.0",
