@@ -1,0 +1,16 @@
+{
+  "AMQP" : {
+    "metadataValidation" : {
+      "connection" : {
+        "scheme": "amqp",
+        "host" : "localhost",
+        "port" : 5672
+      },
+      "messaging" : {
+        "exchange" : "ingest.metadata.validation",
+        "queueName" : "ingest.metadata.document.update",
+        "routingKey" : "ingest.metadata.document.update"
+      }
+    }
+  }
+}

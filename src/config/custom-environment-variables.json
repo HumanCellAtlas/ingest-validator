@@ -1,0 +1,10 @@
+{
+  "AMQP" : {
+    "metadataValidation" : {
+      "connection" : {
+        "host" : "RABBIT_HOST",
+        "port" : "RABBIT_PORT"
+      }
+    }
+  }
+}
