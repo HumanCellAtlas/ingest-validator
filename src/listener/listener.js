@@ -4,8 +4,9 @@
 const amqp = require('amqplib');
 
 class Listener {
-    constructor(rabbitUrl, exchange, queue) {
-        this.rabbitUrl = rabbitUrl;
+    constructor(rabbitConnectionProperties, exchange, queue) {
+        this.rabbitConnectionProperties = rabbitConnectionProperties;
+        this.rabbitUrl = rabbitConnectionProperties["scheme"] + "://" + rabbitConnectionProperties["host"] + ":" + rabbitConnectionProperties["port"];
         this.exchange = exchange;
         this.queue = queue;
     }
