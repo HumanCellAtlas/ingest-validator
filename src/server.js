@@ -95,7 +95,7 @@ app.post("/validateRefs", [
       return res.status(422).json({ errors: errors.mapped() });
     } else {
       logger.log("debug", "Received POST request.");
-        runValidation.validateMultiSchema(req.body.schemas, req.body.entity, req.body.rootSchemaId).then((output) => {
+        validator.validateMultiSchema(req.body.schemas, req.body.entity, req.body.rootSchemaId).then((output) => {
             logger.log("silly", "Sent validation results.");
             res.status(200).send(output);
         }).catch((err) => {
