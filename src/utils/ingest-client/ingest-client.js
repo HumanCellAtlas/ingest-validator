@@ -10,7 +10,7 @@ class IngestClient {
         this.ingestUrl = connectionConfig["scheme"] + "://" + connectionConfig["host"] + ":" + connectionConfig["port"];
     }
 
-    getMetadataDocument(entityCallback) {
+    retrieveMetadataDocument(entityCallback) {
         const entityUrl = this.urlFor(entityCallback);
 
         return new Promise((resolve, reject) => {
@@ -26,11 +26,20 @@ class IngestClient {
         });
     }
 
-    getMetadataDocumentUuid(entityCallback) {
+    /**
+     *
+     * retrieves the metadata document, but throws a NoUuidError if the document has no uuid
+     *
+     * @param entityCallback
+     * @returns {Promise} resolving to the metadata document JSON
+     */
+    getMetadataDocument(entityCallback) {
+        const entityUrl = this.urlFor(entityCallback);
+
         return new Promise((resolve, reject) => {
-            this.getMetadataDocument(entityCallback).then(doc => {
+            this.retrieveMetadataDocument(entityCallback).then(doc => {
                 if(doc["uuid"] && doc["uuid"]["uuid"]) {
-                    resolve(doc["uuid"]["uuid"]);
+                    resolve(doc);
                 } else {
                     reject(new NoUuidError("document at " + entityCallback + "has no UUID"));
                 }
@@ -38,7 +47,6 @@ class IngestClient {
                 reject(err);
             })
         });
-
     }
 
     setDocumentState(entityCallback, validationState){
