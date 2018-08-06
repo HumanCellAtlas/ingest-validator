@@ -8,6 +8,37 @@ class IngestClient {
         this.ingestUrl = ingestUrl;
     }
 
+    getMetadataDocument(entityCallback) {
+        const entityUrl = this.urlFor(entityCallback);
+
+        return new Promise((resolve, reject) => {
+            request({
+                method: "GET",
+                url: entityUrl,
+                json: true
+            }).then(resp => {
+                resolve(resp.body);
+            }).catch(err => {
+                reject(err);
+            });
+        });
+    }
+
+    getMetadataDocumentUuid(entityCallback) {
+        return new Promise((resolve, reject) => {
+            this.getMetadataDocument(entityCallback).then(doc => {
+                if(doc["uuid"] && doc["uuid"]["uuid"]) {
+                    resolve(doc["uuid"]["uuid"]);
+                } else {
+                    resolve(null);
+                }
+            }).catch(err => {
+                reject(err);
+            })
+        });
+
+    }
+
     setDocumentState(entityCallback, validationState){
         patchPayload = {
           "validationState" : validationState
