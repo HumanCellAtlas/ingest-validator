@@ -2,6 +2,8 @@
  * Created by rolando on 01/08/2018.
  */
 const request = require('request-promise');
+const exceptions = require('./ingest-client-exceptions');
+const NoUuidError = exceptions.NoUuidError;
 
 class IngestClient {
     constructor(ingestUrl) {
@@ -30,7 +32,7 @@ class IngestClient {
                 if(doc["uuid"] && doc["uuid"]["uuid"]) {
                     resolve(doc["uuid"]["uuid"]);
                 } else {
-                    resolve(null);
+                    reject(new NoUuidError("document at " + entityCallback + "has no UUID"));
                 }
             }).catch(err => {
                 reject(err);
