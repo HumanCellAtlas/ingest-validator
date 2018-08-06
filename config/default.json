@@ -17,7 +17,7 @@
     "connection" : {
       "scheme": "http",
       "host" : "localhost",
-      "port" : 5672
+      "port" : 8080
     }
   }
 }
