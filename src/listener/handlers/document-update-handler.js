@@ -28,7 +28,7 @@ class DocumentUpdateHandler {
             }).catch(NoUuidError, (err) => {
                 console.info("Document at " + callbackLink + " has no uuid, ignoring...");
             }).catch(err => {
-                console.error("Document at " + callbackLink + " has no uuid, ignoring...");
+                console.error(err);
             });
         });
     }
