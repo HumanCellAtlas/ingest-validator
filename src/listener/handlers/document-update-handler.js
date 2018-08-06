@@ -15,19 +15,22 @@ class DocumentUpdateHandler {
 
         return new Promise((resolve, reject) => {
             this.ingestClient.getMetadataDocument(callbackLink).then(doc => {
-                documentContent = doc["content"];
+                const documentContent = doc["content"];
                 this.validator.autoValidate(documentContent).then(validationErrors => {
-                    resolve(validationErrors);
+                    this.ingestClient.setValidationErrors(callbackLink, validationErrors).then(resp => {
+                        console.info("Patched validation errors to document at " + callbackLink);
+                        resolve(resp);
+                    })
+                }).catch(err => {
+                    console.error("Error validating document with callback link " + callbackLink);
+                    reject(err);
                 })
-            }).catch(NoUuidError,(err) => {
+            }).catch(NoUuidError, (err) => {
                 console.info("Document at " + callbackLink + " has no uuid, ignoring...");
-                reject(err);
             }).catch(err => {
-                console.error("Error validating document with callback link " + callbackLink);
-                reject(err);
-            })
+                console.error("Document at " + callbackLink + " has no uuid, ignoring...");
+            });
         });
-
     }
 }
 

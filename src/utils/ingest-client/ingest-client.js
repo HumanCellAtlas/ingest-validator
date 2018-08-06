@@ -2,6 +2,7 @@
  * Created by rolando on 01/08/2018.
  */
 const request = require('request-promise');
+const Promise = require('bluebird');
 const exceptions = require('./ingest-client-exceptions');
 const NoUuidError = exceptions.NoUuidError;
 
@@ -19,7 +20,7 @@ class IngestClient {
                 url: entityUrl,
                 json: true
             }).then(resp => {
-                resolve(resp.body);
+                resolve(resp);
             }).catch(err => {
                 reject(err);
             });
@@ -28,29 +29,27 @@ class IngestClient {
 
     /**
      *
-     * retrieves the metadata document, but throws a NoUuidError if the document has no uuid
+     * Retrieves the metadata document, but throws a NoUuidError if the document has no uuid
      *
      * @param entityCallback
      * @returns {Promise} resolving to the metadata document JSON
      */
     getMetadataDocument(entityCallback) {
-        const entityUrl = this.urlFor(entityCallback);
-
         return new Promise((resolve, reject) => {
             this.retrieveMetadataDocument(entityCallback).then(doc => {
                 if(doc["uuid"] && doc["uuid"]["uuid"]) {
                     resolve(doc);
                 } else {
-                    reject(new NoUuidError("document at " + entityCallback + "has no UUID"));
+                    throw new NoUuidError("document at " + entityCallback + "has no UUID");
                 }
-            }).catch(err => {
+            }).catch(NoUuidError, (err) => {
                 reject(err);
             })
         });
     }
 
     setDocumentState(entityCallback, validationState){
-        patchPayload = {
+        const patchPayload = {
           "validationState" : validationState
         };
 
@@ -61,7 +60,7 @@ class IngestClient {
                 method: "PATCH",
                 url: entityUrl,
                 json: true,
-                data: patchPayload
+                body: patchPayload
             }).then(resp => {
                 resolve(resp);
             }).catch(err => {
@@ -71,7 +70,7 @@ class IngestClient {
     }
 
     setValidationErrors(entityCallback, validationErrors) {
-        patchPayload = {
+        const patchPayload = {
             "validationErrors" : validationErrors
         };
 
@@ -82,7 +81,7 @@ class IngestClient {
                 method: "PATCH",
                 url: entityUrl,
                 json: true,
-                data: patchPayload
+                body: patchPayload
             }).then(resp => {
                 resolve(resp);
             }).catch(err =>{
@@ -90,7 +89,6 @@ class IngestClient {
             });
         });
     }
-
 
     urlFor(entityCallback) {
         return this.ingestUrl + entityCallback;
