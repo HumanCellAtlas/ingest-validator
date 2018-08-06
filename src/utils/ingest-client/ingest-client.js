@@ -6,8 +6,8 @@ const exceptions = require('./ingest-client-exceptions');
 const NoUuidError = exceptions.NoUuidError;
 
 class IngestClient {
-    constructor(ingestUrl) {
-        this.ingestUrl = ingestUrl;
+    constructor(connectionConfig) {
+        this.ingestUrl = connectionConfig["scheme"] + "://" + connectionConfig["host"] + ":" + connectionConfig["port"];
     }
 
     getMetadataDocument(entityCallback) {
