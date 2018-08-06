@@ -69,6 +69,28 @@ class IngestClient {
         });
     }
 
+    transitionDocumentState(document, validationState) {
+        const validationStateTransitionUrl = document["_links"][validationState.toLowerCase()]["href"];
+
+        return request({
+            method: "PUT",
+            url: validationStateTransitionUrl,
+            body: {},
+            json: true
+        });
+    }
+
+    findFileByValidationId(validationId) {
+        // TODO: determine search endpoint by following rels; cache the result
+        const findByValidationUrl = this.ingestUrl + "/files/search/findByValidationId?validationId=" + validationId;
+
+        return request({
+                method: "GET",
+                url: findByValidationUrl,
+                json: true
+        });
+    }
+
     setValidationErrors(entityCallback, validationErrors) {
         const patchPayload = {
             "validationErrors" : validationErrors
