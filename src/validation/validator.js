@@ -52,7 +52,7 @@ module.exports = {
         inputSchema["$async"] = true;
         logger.log("silly", "Running validation...");
         return new Promise((resolve, reject) => {
-            var compiledSchemaPromise = ajv.compileAsync(inputSchema);
+            const compiledSchemaPromise = ajv.compileAsync(inputSchema);
 
             compiledSchemaPromise.then((validate) => {
                 Promise.resolve(validate(inputObject))

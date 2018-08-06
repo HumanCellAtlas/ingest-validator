@@ -12,5 +12,12 @@
         "routingKey" : "ingest.metadata.document.update"
       }
     }
+  },
+  "INGEST_API" : {
+    "connection" : {
+      "scheme": "http",
+      "host" : "localhost",
+      "port" : 8080
+    }
   }
 }

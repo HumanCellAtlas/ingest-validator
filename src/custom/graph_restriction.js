@@ -65,6 +65,13 @@ module.exports = function graph_restriction(ajv) {
                       reject(new Ajv.ValidationError(errors));
                   }
               });
+          }).catch(err => {
+              errors.push(
+                  new CustomAjvError(
+                      "graph_restriction", err,
+                      {keyword: "graph_restriction"})
+              );
+              reject(new Ajv.ValidationError(errors));
           });
       }
         else {
