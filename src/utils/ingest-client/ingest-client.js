@@ -103,6 +103,10 @@ class IngestClient {
     urlForCallbackLink(entityCallback) {
         return this.ingestUrl + entityCallback;
     }
+
+    selfLinkForResource(resource) {
+        return resource["_links"]["self"]["href"];
+    }
 }
 
 module.exports = IngestClient;
