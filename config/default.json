@@ -8,8 +8,8 @@
       },
       "messaging" : {
         "exchange" : "ingest.metadata.validation",
-        "queueName" : "ingest.metadata.document.update",
-        "routingKey" : "ingest.metadata.document.update",
+        "queueName" : "ingest.metadata.validation.queue",
+        "routingKey" : "ingest.metadata.validation.queue",
         "exchangeType": "direct"
       }
     },
