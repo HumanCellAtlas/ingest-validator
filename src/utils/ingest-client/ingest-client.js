@@ -11,19 +11,11 @@ class IngestClient {
         this.ingestUrl = connectionConfig["scheme"] + "://" + connectionConfig["host"] + ":" + connectionConfig["port"];
     }
 
-    retrieveMetadataDocument(entityCallback) {
-        const entityUrl = this.urlFor(entityCallback);
-
-        return new Promise((resolve, reject) => {
-            request({
+    retrieveMetadataDocument(entityUrl) {
+        return request({
                 method: "GET",
                 url: entityUrl,
                 json: true
-            }).then(resp => {
-                resolve(resp);
-            }).catch(err => {
-                reject(err);
-            });
         });
     }
 
@@ -31,16 +23,16 @@ class IngestClient {
      *
      * Retrieves the metadata document, but throws a NoUuidError if the document has no uuid
      *
-     * @param entityCallback
+     * @param entityUrl
      * @returns {Promise} resolving to the metadata document JSON
      */
-    getMetadataDocument(entityCallback) {
+    getMetadataDocument(entityUrl) {
         return new Promise((resolve, reject) => {
-            this.retrieveMetadataDocument(entityCallback).then(doc => {
+            this.retrieveMetadataDocument(entityUrl).then(doc => {
                 if(doc["uuid"] && doc["uuid"]["uuid"]) {
                     resolve(doc);
                 } else {
-                    throw new NoUuidError("document at " + entityCallback + "has no UUID");
+                    throw new NoUuidError("document at " + entityUrl + "has no UUID");
                 }
             }).catch(NoUuidError, (err) => {
                 reject(err);
@@ -48,12 +40,10 @@ class IngestClient {
         });
     }
 
-    setDocumentState(entityCallback, validationState){
+    setDocumentState(entityUrl, validationState){
         const patchPayload = {
           "validationState" : validationState
         };
-
-        const entityUrl = this.urlFor(entityCallback);
 
         return new Promise((resolve, reject) => {
             request({
@@ -91,12 +81,10 @@ class IngestClient {
         });
     }
 
-    setValidationErrors(entityCallback, validationErrors) {
+    setValidationErrors(entityUrl, validationErrors) {
         const patchPayload = {
             "validationErrors" : validationErrors
         };
-
-        const entityUrl = this.urlFor(entityCallback);
 
         return new Promise((resolve, reject) => {
             request({
@@ -112,7 +100,7 @@ class IngestClient {
         });
     }
 
-    urlFor(entityCallback) {
+    urlForCallbackLink(entityCallback) {
         return this.ingestUrl + entityCallback;
     }
 }

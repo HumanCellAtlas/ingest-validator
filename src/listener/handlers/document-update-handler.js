@@ -11,22 +11,23 @@ class DocumentUpdateHandler {
     }
 
     handle(msg) {
-        let callbackLink = JSON.parse(msg.content)['callbackLink'];
+
+        const documentUrl = this.ingestClient.urlForCallbackLink(JSON.parse(msg.content)['callbackLink']);
 
         return new Promise((resolve, reject) => {
-            this.ingestClient.getMetadataDocument(callbackLink).then(doc => {
+            this.ingestClient.getMetadataDocument(documentUrl).then(doc => {
                 const documentContent = doc["content"];
                 this.validator.autoValidate(documentContent).then(validationErrors => {
-                    this.ingestClient.setValidationErrors(callbackLink, validationErrors).then(resp => {
-                        console.info("Patched validation errors to document at " + callbackLink);
+                    this.ingestClient.setValidationErrors(documentUrl, validationErrors).then(resp => {
+                        console.info("Patched validation errors to document at " + documentUrl);
                         resolve(resp);
                     })
                 }).catch(err => {
-                    console.error("Error validating document with callback link " + callbackLink);
+                    console.error("Error validating document with at " + documentUrl);
                     reject(err);
                 })
             }).catch(NoUuidError, (err) => {
-                console.info("Document at " + callbackLink + " has no uuid, ignoring...");
+                console.info("Document at " + documentUrl + " has no uuid, ignoring...");
             }).catch(err => {
                 console.error(err);
             });

@@ -9,7 +9,21 @@
       "messaging" : {
         "exchange" : "ingest.metadata.validation",
         "queueName" : "ingest.metadata.document.update",
-        "routingKey" : "ingest.metadata.document.update"
+        "routingKey" : "ingest.metadata.document.update",
+        "exchangeType": "direct"
+      }
+    },
+    "fileValidationResults" : {
+      "connection" : {
+        "scheme": "amqp",
+        "host" : "localhost",
+        "port" : 5672
+      },
+      "messaging" : {
+        "exchange" : "ingest.metadata.validation",
+        "queueName" : "ingest.file.validation.queue",
+        "routingKey" : "ingest.file.validation.queue",
+        "exchangeType": "direct"
       }
     }
   },
