@@ -145,6 +145,10 @@ class IngestApi:
                 return True
 
     def transition_document_validation_state_to(self, document, validation_state):
+        if validation_state.lower() == 'draft':
+            self.logger.error("ERROR: attempted to transition a document to draft state. Document:")
+            self.logger.error(json.dumps(document))
+
         transition_link = document['_links'][validation_state.lower()]['href']
         response = requests.put(transition_link, data={}, headers=self.headers)
         status_code = response.status_code
