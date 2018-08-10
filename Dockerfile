@@ -2,7 +2,9 @@ FROM frolvlad/alpine-python3
 MAINTAINER Alegria Aclan "aaclan@ebi.ac.uk"
 
 RUN mkdir /app
-COPY config.py ingestapi.py validation-app.py requirements.txt /app/
+COPY config.py ingestapi.py validation-app.py requirements.txt start_up.sh /app/
+
+RUN chmod +x /app/start_up.sh
 
 ADD validator /app/validator
 ADD common /app/common
@@ -23,5 +25,4 @@ ENV JSON_SCHEMA_VALIDATION=ACTIVE
 ENV OLS_VALIDATION=ACTIVE
 
 EXPOSE 5000
-ENTRYPOINT ["python"]
-CMD ["validation-app.py"]
+ENTRYPOINT ["/app/start_up.sh"]
