@@ -20,7 +20,7 @@ class ErrorReport {
         } else if(!this.message) {
             throw new Error("Can't construct a user friendly message: error message not set");
         } else {
-            this.userFriendlyMessage = message + " at " + this.absoluteDataPath;
+            this.userFriendlyMessage = this.message + " at " + this.absoluteDataPath;
         }
     }
 
@@ -31,3 +31,5 @@ class ErrorReport {
         this.constructUserFriendlyMessage();
     }
 }
+
+module.exports = ErrorReport;

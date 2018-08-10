@@ -4,23 +4,13 @@
 
 class ValidationReport {
     constructor(validationState, validationErrors) {
-        this._validationState = validationState;
-        this._validationErrors = validationErrors;
+        this.validationState = validationState;
+        this.validationErrors = validationErrors;
     }
 
-    get validationErrors() {
-        return this._validationErrors;
-    }
-
-    set validationErrors(value) {
-        this._validationErrors = value;
-    }
-
-    get validationState() {
-        return this._validationState;
-    }
-
-    set validationState(value) {
-        this._validationState = value;
+    static okReport(){
+        return new ValidationReport("VALID", []);
     }
 }
+
+module.exports = ValidationReport;
