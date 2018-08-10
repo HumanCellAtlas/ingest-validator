@@ -110,33 +110,6 @@ module.exports = {
               }
           });
         });
-    },
-    autoValidate: function (inputObject) {
-        return new Promise((resolve, reject) => {
-            if(! inputObject["describedBy"]) {
-                reject(new Error("document to be validated has no describedBy field"));
-            } else {
-                let schemaUri = inputObject["describedBy"];
-                let reqOptions = {
-                    method: "GET",
-                    url: schemaUri,
-                    json: true
-                };
-                request(reqOptions, (err, resp, body) => {
-                    if(resp.statusCode === 200) {
-                        let inputSchema = resp.body;
-                        inputSchema["$id"] = inputSchema["id"];
-                        this.validateSingleSchema(inputSchema, inputObject).then((allGood) => {
-                            resolve(allGood);
-                        }).catch((err) => {
-                            reject(err);
-                        });
-                    } else {
-                        reject(new Error("Error retrieving schema at uri " + schemaUri + "; status code " + err.statusCode));
-                    }
-                });
-            }
-        });
     }
 };
 
