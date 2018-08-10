@@ -47,40 +47,33 @@ module.exports = function graph_restriction(ajv) {
 
                   if (jsonBody.response.numFound === 1) {
                       logger.log("debug", "It's a child term!");
-                      resolve(true);
                   } else if (jsonBody.response.numFound === 0) {
                       logger.log("debug", `Provided term is not child of [${parentTerm}]`);
-                      errors.push(
-                          new CustomAjvError(
-                              "graph_restriction", `Provided term is not child of [${parentTerm}]`,
-                              {keyword: "graph_restriction"})
-                      );
-                      reject(new Ajv.ValidationError(errors));
+                      errors.push({
+                          keyword: "graph_restriction",
+                          message: `Provided term is not child of [${parentTerm}]`
+                      });
                   } else {
-                      errors.push(
-                          new CustomAjvError(
-                              "graph_restriction", "Something went wrong while validating term, try again.",
-                              {keyword: "graph_restriction"})
-                      );
-                      reject(new Ajv.ValidationError(errors));
+                      errors.push({
+                          keyword: "graph_restriction",
+                          message: "Something went wrong while validating term, try again."
+                      });
                   }
+                  reject(new Ajv.ValidationError(errors));
               });
           }).catch(err => {
-              errors.push(
-                  new CustomAjvError(
-                      "graph_restriction", err,
-                      {keyword: "graph_restriction"})
-              );
+              errors.push({
+                  keyword: "graph_restriction",
+                  message: err
+              });
               reject(new Ajv.ValidationError(errors));
           });
       }
         else {
-          errors.push(
-            new CustomAjvError(
-              "isChilisdTermOf",
-              "Missing required variable in schema graph_restriction, required properties are: parentTerm and ontologyId.",
-              {keyword: "graph_restriction"})
-            );
+          errors.push({
+              keyword: "graph_restriction",
+              message: "Missing required variable in schema graph_restriction, required properties are: parentTerm and ontologyId."
+          });
           reject(new Ajv.ValidationError(errors));
         }
       });
