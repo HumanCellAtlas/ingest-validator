@@ -2,7 +2,7 @@
  * Created by rolando on 08/08/2018.
  */
 const Promise = require('bluebird');
-const NoDescribedBy = require('ingest-validation-exceptions').NoDescribedBy;
+const NoDescribedBy = require('./ingest-validation-exceptions').NoDescribedBy;
 
 /**
  *
@@ -16,7 +16,8 @@ class IngestValidator {
         this.ingestClient = ingestClient
     }
 
-    validate(documentContent) {
+    validate(document) {
+        const documentContent = document["content"];
         if(! documentContent["describedBy"]) {
             return Promise.reject(new NoDescribedBy("describedBy is a required field"));
         } else {
