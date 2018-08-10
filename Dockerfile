@@ -1,6 +1,9 @@
 FROM frolvlad/alpine-python3
 MAINTAINER Alegria Aclan "aaclan@ebi.ac.uk"
 
+RUN apk update && \
+    apk add curl
+
 RUN mkdir /app
 COPY config.py ingestapi.py validation-app.py requirements.txt start_up.sh /app/
 
