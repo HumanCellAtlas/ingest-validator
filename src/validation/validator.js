@@ -70,7 +70,7 @@ module.exports = {
                         reject(new AppError("An error ocurred while running the validation."));
                     } else {
                         logger.log("debug", ajv.errorsText(err.errors, {dataVar: inputObject.alias}));
-                        resolve(convertToValidationErrors(err.errors));
+                        resolve(err.errors);
                     }
                 });
             }).catch((err) => {
