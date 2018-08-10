@@ -38,3 +38,5 @@ class IngestValidator {
         // TODO: return errors how we want them
     }
 }
+
+module.exports = IngestValidator;

@@ -22,7 +22,7 @@ class DocumentUpdateHandler {
         return new Promise((resolve, reject) => {
             this.ingestClient.getMetadataDocument(documentUrl)
                 .then(doc => {return this.checkForCloudUrl(doc, documentType)})
-                .then(doc => {return this.validator.autoValidate(doc['content'])})
+                .then(doc => {return this.validator.validate(doc)})
                 .then(validationErrors => {return this.ingestClient.setValidationErrors(documentUrl, validationErrors)})
                 .then(resp => resolve(resp))
                 .catch(NoCloudUrl, err => console.info("File document at " + documentUrl + "has no cloudUrl, ignoring.."))

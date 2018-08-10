@@ -9,10 +9,11 @@ const DocumentUpdateHandler = require('./listener/handlers/document-update-handl
 const FileValidationListener = require('./listener/file-validation-listener');
 const FileValidationHandler = require('./listener/handlers/file-validation-handler');
 
-const Validator = require('./validation/validator');
 const IngestClient = require('./utils/ingest-client/ingest-client');
+const IngestValidator = require('./validation/ingest-validator');
 
-const validator = Validator;
+const Validator = require('./validation/validator');
+
 
 const ingestClient = (() => {
     const ingestConnectionConfig = config.get("INGEST_API.connection");
@@ -20,8 +21,13 @@ const ingestClient = (() => {
 })();
 
 
+const ingestValidator = (() => {
+    return new IngestValidator(Validator, ingestClient);
+})();
+
+
 const documentUpdateListener = (() => {
-    const handler = new DocumentUpdateHandler(validator, ingestClient);
+    const handler = new DocumentUpdateHandler(ingestValidator, ingestClient);
 
     const rabbitConnectionConfig = config.get("AMQP.metadataValidation.connection");
     const rabbitMessagingConfig = config.get("AMQP.metadataValidation.messaging");
@@ -32,6 +38,7 @@ const documentUpdateListener = (() => {
 
     return new DocumentUpdateListener(rabbitConnectionConfig, exchange, queue, handler, exchangeType);
 })();
+
 
 const fileValidationListener = (() => {
     const handler = new FileValidationHandler(ingestClient);
@@ -48,7 +55,9 @@ const fileValidationListener = (() => {
 })();
 
 
-(function(){
+function begin() {
     documentUpdateListener.start();
     fileValidationListener.start();
-})();
+}
+
+begin();
