@@ -100,6 +100,14 @@ class IngestClient {
         });
     }
 
+    fetchSchema(schemaUrl) {
+        return request({
+            method: "GET",
+            url: schemaUrl,
+            json: true,
+        });
+    }
+
     urlForCallbackLink(entityCallback) {
         return this.ingestUrl + entityCallback;
     }
