@@ -3,6 +3,7 @@
  */
 
 const Promise = require('bluebird');
+const ValidationReport = require('../../model/validation-report');
 
 class FileValidationHandler {
     constructor(ingestClient) {
@@ -16,11 +17,13 @@ class FileValidationHandler {
         const validationState = msgContent['validation_state'];
         const validationErrors = msgContent['validation_errors'];
 
+        const validationReport = new ValidationReport(validationState, validationErrors);
+
         try {
+            // TODO: extra GET request here could be cut out
             const fileDocument = await this.ingestClient.findFileByValidationId(validationJobId);
-            await this.ingestClient.transitionDocumentState(fileDocument, validationState);
             const documentUrl = this.ingestClient.selfLinkForResource(fileDocument);
-            await this.ingestClient.setValidationErrors(documentUrl, validationErrors);
+            await this.ingestClient.postValidationReport(documentUrl, validationReport);
         } catch(err) {
             console.error(err);
         }
