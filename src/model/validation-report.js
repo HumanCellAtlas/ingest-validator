@@ -3,9 +3,10 @@
  */
 
 class ValidationReport {
-    constructor(validationState, validationErrors) {
+    constructor(validationState, validationErrors, validationJobId=null) {
         this.validationState = validationState;
         this.validationErrors = validationErrors;
+        this.validationJobId = validationJobId;
     }
 
     static okReport(){

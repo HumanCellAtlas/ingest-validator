@@ -84,9 +84,14 @@ class IngestClient {
 
     postValidationReport(entityUrl, validationReport) {
         return this.transitionDocumentState(entityUrl, validationReport.validationState)
-            .then(() => {
-            return this.postValidationReport(entityUrl, validationReport.validationErrors)
-        });
+            .then(() => {return this.setValidationErrors(entityUrl, validationReport.validationErrors)})
+            .then((resp) => {
+                if(validationReport.validationJobId) {
+                    return this.reportValidationJobId(entityUrl, validationReport.validationJobId);
+                } else {
+                    return Promise.resolve(resp);
+                }
+            });
     }
 
     fetchSchema(schemaUrl) {
@@ -126,9 +131,18 @@ class IngestClient {
                 reject(err);
             });
         });
-
     }
 
+    reportValidationJobId(fileDocumentUrl, validationJobId) {
+        return request({
+            method: "PATCH",
+            url: fileDocumentUrl,
+            body: {
+                "validationId": validationJobId
+            },
+            json: true
+        });
+    }
 }
 
 module.exports = IngestClient;
