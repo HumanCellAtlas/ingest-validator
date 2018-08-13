@@ -7,7 +7,7 @@
         "port" : 5672
       },
       "messaging" : {
-        "exchange" : "ingest.metadata.validation",
+        "exchange" : "ingest.validation.exchange",
         "queueName" : "ingest.metadata.validation.queue",
         "routingKey" : "ingest.metadata.validation.queue",
         "exchangeType": "direct"
@@ -20,7 +20,7 @@
         "port" : 5672
       },
       "messaging" : {
-        "exchange" : "ingest.metadata.validation",
+        "exchange" : "ingest.validation.exchange",
         "queueName" : "ingest.file.validation.queue",
         "routingKey" : "ingest.file.validation.queue",
         "exchangeType": "direct"
