@@ -3,7 +3,9 @@
  */
 
 class NoDescribedBy extends Error {}
+class NoFileValidationJob extends Error {}
 
 module.exports = {
-    "NoDescribedBy" : NoDescribedBy
+    "NoDescribedBy" : NoDescribedBy,
+    "NoFileValidationJob" : NoFileValidationJob
 };

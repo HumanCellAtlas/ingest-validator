@@ -5,6 +5,8 @@ const R = require('rambda');
 const Promise = require('bluebird');
 const request = require('request-promise');
 
+const NoFileValidationJob = require('../../validation/ingest-validation-exceptions').NoFileValidationJob;
+
 class IngestFileValidator {
     constructor(connectionConfig, apiKey, fileValidationImages, ingestClient) {
         this.fileValidationUrl = connectionConfig["scheme"] + "://" + connectionConfig["host"] + ":" + connectionConfig["port"];
@@ -18,25 +20,28 @@ class IngestFileValidator {
         const imageUrl = this.imageFor(fileFormat).imageUrl;
         const validateFileUrl = this.fileValidationUrl + "/v1/area/" + uploadAreaId + encodeURIComponent(fileName) + "/validate";
 
-        return new Promise((resolve, reject) => {
-            request({
-                method: "PUT",
-                url: validateFileUrl,
-                json: true,
-                headers: {
-                    "Api-key" : this.fileValidationServiceApiKey
-                },
-                body: {
-                    "validator_image": imageUrl
-                }
-            }).then(resp => {
-                resolve(resp['validation_id']);
-            }).catch(err => {
-                console.error("ERROR: Failed to request a validation job for file at " + this.ingestClient.selfLinkForResource(fileDocument));
-                reject(err);
+        if(! imageUrl) { // no validation image for files with this format
+            return Promise.reject(new NoFileValidationJob());
+        } else {
+            return new Promise((resolve, reject) => {
+                request({
+                    method: "PUT",
+                    url: validateFileUrl,
+                    json: true,
+                    headers: {
+                        "Api-key" : this.fileValidationServiceApiKey
+                    },
+                    body: {
+                        "validator_image": imageUrl
+                    }
+                }).then(resp => {
+                    resolve(resp['validation_id']);
+                }).catch(err => {
+                    console.error("ERROR: Failed to request a validation job for file at " + this.ingestClient.selfLinkForResource(fileDocument));
+                    reject(err);
+                });
             });
-        });
-
+        }
     }
 
     imageFor(fileFormat) {
