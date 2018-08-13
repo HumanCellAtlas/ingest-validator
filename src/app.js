@@ -2,6 +2,7 @@
  * Created by rolando on 02/08/2018.
  */
 const config = require('config');
+const R = require('rambda');
 
 const DocumentUpdateListener = require('./listener/document-update-listener');
 const DocumentUpdateHandler = require('./listener/handlers/document-update-handler');
@@ -11,8 +12,9 @@ const FileValidationHandler = require('./listener/handlers/file-validation-handl
 
 const IngestClient = require('./utils/ingest-client/ingest-client');
 const IngestValidator = require('./validation/ingest-validator');
+const IngestFileValidator = require('./utils/ingest-client/ingest-file-validator');
 
-const Validator = require('./validation/validator');
+const schemaValidator = require('./validation/validator');
 
 
 const ingestClient = (() => {
@@ -20,11 +22,18 @@ const ingestClient = (() => {
     return new IngestClient(ingestConnectionConfig);
 })();
 
+const ingestFileValidator = (() => {
+    const fileValidationConnectionConfig = config.get("UPLOAD_API.connection");
+    const apiKey = config.get("UPLOAD_API.apiKey");
+    const validationImageConfigs = config.get("FILE_VALIDATION_IMAGES");
+    const validationImages = R.map(config => new IngestFileValidator.FileValidationImage(config['fileFormat'], config['imageUrl']) (validationImageConfigs);
 
-const ingestValidator = (() => {
-    return new IngestValidator(Validator, ingestClient);
+    return new IngestFileValidator(fileValidationConnectionConfig, apiKey, validationImages, ingestClient);
 })();
 
+const ingestValidator = (() => {
+    return new IngestValidator(schemaValidator, ingestFileValidator, ingestClient);
+})();
 
 const documentUpdateListener = (() => {
     const handler = new DocumentUpdateHandler(ingestValidator, ingestClient);
