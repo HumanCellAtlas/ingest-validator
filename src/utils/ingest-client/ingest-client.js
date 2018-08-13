@@ -12,11 +12,18 @@ class IngestClient {
     }
 
     retrieveMetadataDocument(entityUrl) {
-        return request({
+        return new Promise((resolve, reject) => {
+            request({
                 method: "GET",
                 url: entityUrl,
                 json: true
+            }).then(resp => {
+                resolve(resp);
+            }).catch(err => {
+                reject(err);
+            });
         });
+
     }
 
     /**
@@ -40,16 +47,54 @@ class IngestClient {
         });
     }
 
-    transitionDocumentState(entityUrl, validationState) {
-        return this.retrieveMetadataDocument(entityUrl)
-            .then(doc => {
-                return request({
-                    method: "PUT",
-                    url: doc["_links"][validationState.toLowerCase()]["href"],
-                    body: {},
-                    json: true
-                });
+    transitionDocumentState(...args) {
+        return this.retry(5, this._transitionDocumentState.bind(this), args, "Retrying transitionDocumentState()")
+    }
+
+    _transitionDocumentState(entityUrl, validationState) {
+        return new Promise((resolve, reject) => {
+            this.retrieveMetadataDocument(entityUrl).then(doc => {
+                    if(doc['validationState'].toUpperCase() === validationState.toUpperCase()) {
+                        resolve(doc);
+                    } else {
+                        request({
+                            method: "PUT",
+                            url: doc["_links"][validationState.toLowerCase()]["href"],
+                            body: {},
+                            json: true
+                        }).then(resp => {
+                            resolve(resp);
+                        }).catch(err => {
+                            reject(err);
+                        });
+                    }
+                }).catch(err => {
+                    reject(err);
             });
+        });
+    }
+
+    setValidationErrors(...args) {
+        return this.retry(5, this._setValidationErrors.bind(this), args, "Retrying setValidationErrors()")
+    }
+
+    _setValidationErrors(entityUrl, validationErrors) {
+        const patchPayload = {
+            "validationErrors" : validationErrors
+        };
+
+        return new Promise((resolve, reject) => {
+            request({
+                method: "PATCH",
+                url: entityUrl,
+                json: true,
+                body: patchPayload
+            }).then(resp => {
+                resolve(resp);
+            }).catch(err =>{
+                reject(err);
+            });
+        });
     }
 
     findFileByValidationId(validationId) {
@@ -63,35 +108,32 @@ class IngestClient {
         });
     }
 
-    setValidationErrors(entityUrl, validationErrors) {
-        const patchPayload = {
-            "validationErrors" : validationErrors
-        };
+    postValidationReport(entityUrl, validationReport) {
+        if(! validationReport || ! validationReport.validationState) {
+            console.info("Broken validation report");
+        }
+
+        if(validationReport.validationState.toUpperCase() === 'VALID') {
+            console.info("posting a valid report")
+        }
 
         return new Promise((resolve, reject) => {
-            request({
-                method: "PATCH",
-                url: entityUrl,
-                json: true,
-                body: JSON.stringify(patchPayload)
-            }).then(resp => {
-                resolve(resp);
-            }).catch(err =>{
+            this.transitionDocumentState(entityUrl, validationReport.validationState).then(() => {
+                this.setValidationErrors(entityUrl, validationReport.validationErrors).then((resp) => {
+                    if(validationReport.validationJobId) {
+                        resolve(this.reportValidationJobId(entityUrl, validationReport.validationJobId));
+                    } else {
+                        resolve(resp);
+                    }
+                }).catch(err => {
+                    console.info("here now");
+                    reject(err);
+                });
+            }).catch(err => {
+                console.info("here now");
                 reject(err);
             });
         });
-    }
-
-    postValidationReport(entityUrl, validationReport) {
-        return this.transitionDocumentState(entityUrl, validationReport.validationState)
-            .then(() => {return this.setValidationErrors(entityUrl, validationReport.validationErrors)})
-            .then((resp) => {
-                if(validationReport.validationJobId) {
-                    return this.reportValidationJobId(entityUrl, validationReport.validationJobId);
-                } else {
-                    return Promise.resolve(resp);
-                }
-            });
     }
 
     fetchSchema(schemaUrl) {
@@ -142,6 +184,25 @@ class IngestClient {
             },
             json: true
         });
+    }
+
+    retry(maxRetries, func, args, retryMessage) {
+        return this._retry(0, maxRetries, null, func, args, retryMessage);
+    }
+
+    _retry(attemptsSoFar, maxRetries, prevErr, func, args, retryMessage) {
+        if(attemptsSoFar === maxRetries) {
+            return Promise.reject(prevErr);
+        } else {
+            const boundFunc = func.bind(this);
+            return boundFunc.apply(null, args)
+                .then(allGood => {return Promise.resolve(allGood)})
+                .catch(err => {
+                    const incAttempts = attemptsSoFar + 1;
+                    console.info(retryMessage + " :: Attempt # " + incAttempts + " out of " + maxRetries);
+                    return this._retry(attemptsSoFar + 1, maxRetries, err, func, args, retryMessage);
+                });
+        }
     }
 }
 
