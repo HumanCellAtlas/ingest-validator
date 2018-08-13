@@ -25,8 +25,8 @@ const ingestClient = (() => {
 const ingestFileValidator = (() => {
     const fileValidationConnectionConfig = config.get("UPLOAD_API.connection");
     const apiKey = config.get("UPLOAD_API.apiKey");
-    const validationImageConfigs = config.get("FILE_VALIDATION_IMAGES");
-    const validationImages = R.map(config => new IngestFileValidator.FileValidationImage(config['fileFormat'], config['imageUrl']) (validationImageConfigs);
+    const validationImageConfigs = Object.entries(config.get("FILE_VALIDATION_IMAGES"));
+    const validationImages = R.map(configEntry => IngestFileValidator.FileValidationImage(configEntry[0], configEntry[1])) (validationImageConfigs);
 
     return new IngestFileValidator(fileValidationConnectionConfig, apiKey, validationImages, ingestClient);
 })();

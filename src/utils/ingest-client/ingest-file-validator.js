@@ -58,12 +58,16 @@ class IngestFileValidator {
         });
     }
 
-    static FileValidationImage = class {
-        constructor(fileFormat, imageUrl) {
-            this.fileFormat = fileFormat;
-            this.imageUrl = imageUrl;
-        }
-    };
+    static FileValidationImage(fileFormat, imageUrl) {
+        return new _FileValidationImage(fileFormat, imageUrl);
+    }
+}
+
+class _FileValidationImage {
+    constructor(fileFormat, imageUrl) {
+        this.fileFormat = fileFormat;
+        this.imageUrl = imageUrl;
+    }
 }
 
 module.exports = IngestFileValidator;
