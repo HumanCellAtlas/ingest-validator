@@ -5,6 +5,8 @@ const Promise = require('bluebird');
 const R = require('rambda');
 
 const NoDescribedBy = require('./ingest-validation-exceptions').NoDescribedBy;
+const NoFileValidationJob = require('./ingest-validation-exceptions').NoFileValidationJob;
+
 const ErrorReport = require('../model/error-report');
 const ValidationReport = require('../model/validation-report');
 
@@ -86,10 +88,13 @@ class IngestValidator {
                         fileValidatingReport.validationJobId = validationJobId;
                         resolve(fileValidatingReport);
                     })
-                    .catch(err => {
-                        console.error(err);
+                    .catch(NoFileValidationJob, err => {
+                        console.info("No matching validation image for file with file name " + fileName);
+                        resolve(report);
+                    }).catch(err => {
+                        console.error("ERROR: error requesting file validation job " + err);
                         reject(err);
-                    })
+                    });
             });
         } else {
             return Promise.resolve(report); // just return original report if not eligible for file validation
