@@ -11,6 +11,10 @@ class ValidationReport {
     static okReport(){
         return new ValidationReport("VALID", []);
     }
+
+    static validatingReport () {
+        return new ValidationReport("VALIDATING", []);
+    }
 }
 
 module.exports = ValidationReport;
