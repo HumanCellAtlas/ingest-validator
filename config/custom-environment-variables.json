@@ -12,5 +12,12 @@
       "host" : "INGEST_HOST",
       "port" : "INGEST_PORT"
     }
+  },
+  "UPLOAD_API" : {
+    "connection" : {
+      "host" : "UPLOAD_HOST",
+      "port" : "UPLOAD_PORT"
+    },
+    "apiKey" : "UPLOAD_API_KEY"
   }
 }

@@ -33,5 +33,13 @@
       "host" : "localhost",
       "port" : 8080
     }
+  },
+  "UPLOAD_API" : {
+    "connection" : {
+      "scheme": "https",
+      "host" : "upload.dev.data.humancellatlas.org",
+      "port" : 80
+    },
+    "apiKey" : "redacted"
   }
 }
