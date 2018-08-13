@@ -19,5 +19,19 @@
       "port" : "UPLOAD_PORT"
     },
     "apiKey" : "UPLOAD_API_KEY"
-  }
+  },
+  "FILE_VALIDATION_IMAGES" : [
+    {
+      "format" : "fastq",
+      "imageUrl" : "FASTQ_VALIDATION_IMAGE"
+    },
+    {
+      "format" : "fastq.gz",
+      "imageUrl" : "FASTQ_VALIDATION_IMAGE"
+    },
+    {
+      "format" : "fastq.tar.gz",
+      "imageUrl" : "FASTQ_VALIDATION_IMAGE"
+    }
+  ]
 }

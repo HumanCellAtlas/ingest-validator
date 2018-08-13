@@ -41,5 +41,19 @@
       "port" : 80
     },
     "apiKey" : "redacted"
-  }
+  },
+  "FILE_VALIDATION_IMAGES" : [
+    {
+      "format" : "fastq",
+      "imageUrl" : "quay.io/humancellatlas/fastq_utils:master"
+    },
+    {
+      "format" : "fastq.gz",
+      "imageUrl" : "quay.io/humancellatlas/fastq_utils:master"
+    },
+    {
+      "format" : "fastq",
+      "imageUrl" : "quay.io/humancellatlas/fastq_utils:master"
+    }
+  ]
 }
