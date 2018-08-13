@@ -20,18 +20,9 @@
     },
     "apiKey" : "UPLOAD_API_KEY"
   },
-  "FILE_VALIDATION_IMAGES" : [
-    {
-      "format" : "fastq",
-      "imageUrl" : "FASTQ_VALIDATION_IMAGE"
-    },
-    {
-      "format" : "fastq.gz",
-      "imageUrl" : "FASTQ_VALIDATION_IMAGE"
-    },
-    {
-      "format" : "fastq.tar.gz",
-      "imageUrl" : "FASTQ_VALIDATION_IMAGE"
-    }
-  ]
+  "FILE_VALIDATION_IMAGES" : {
+    "fastq" : "FASTQ_VALIDATION_IMAGE",
+    "fastq.gz" : "FASTQ_VALIDATION_IMAGE",
+    "fastq.tar.gz" : "FASTQ_VALIDATION_IMAGE"
+  }
 }
