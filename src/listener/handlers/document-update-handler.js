@@ -27,7 +27,7 @@ class DocumentUpdateHandler {
                 .then(doc => {return this.checkForCloudUrl(doc, documentType)})
                 .then(doc => {return this.signalValidationStarted(doc)})
                 .then(doc => {return this.validator.validate(doc, documentType)})
-                .then(validationReport => {return this.ingestClient.postValidationReport(validationReport)})
+                .then(validationReport => {return this.ingestClient.postValidationReport(documentUrl, validationReport)})
                 .then(resp => resolve(resp))
                 .catch(NotEligibleForValidation, err => console.info("Document at " + documentUrl + " not eligible for validation, ignoring.."))
                 .catch(NoCloudUrl, err => console.info("File document at " + documentUrl + " has no cloudUrl, ignoring.."))
@@ -62,7 +62,7 @@ class DocumentUpdateHandler {
      * @param documentType
      */
     checkElegibleForValidation(document) {
-        if(document['validationState'] === 'DRAFT') {
+        if(document['validationState'].toUpperCase() === 'DRAFT') {
             return Promise.resolve(document);
         } else {
             return Promise.reject(new NotEligibleForValidation());
