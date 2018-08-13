@@ -43,7 +43,7 @@ const documentUpdateListener = (() => {
 
     const exchange = rabbitMessagingConfig["exchange"];
     const queue = rabbitMessagingConfig["queueName"];
-    const exchangeType = rabbitConnectionConfig["exchangeType"];
+    const exchangeType = rabbitMessagingConfig["exchangeType"];
 
     return new DocumentUpdateListener(rabbitConnectionConfig, exchange, queue, handler, exchangeType);
 })();
@@ -58,7 +58,7 @@ const fileValidationListener = (() => {
 
     const exchange = rabbitMessagingConfig["exchange"];
     const queue = rabbitMessagingConfig["queueName"];
-    const exchangeType = rabbitConnectionConfig["exchangeType"];
+    const exchangeType = rabbitMessagingConfig["exchangeType"];
 
     return new FileValidationListener(rabbitConnectionConfig, exchange, queue, handler, exchangeType);
 })();
