@@ -2,7 +2,11 @@
  * Created by rolando on 08/08/2018.
  */
 const Promise = require('bluebird');
+const R = require('rambda');
+
 const NoDescribedBy = require('./ingest-validation-exceptions').NoDescribedBy;
+const ErrorReport = require('../model/error-report');
+const ValidationReport = require('../model/validation-report');
 
 /**
  *
@@ -11,12 +15,13 @@ const NoDescribedBy = require('./ingest-validation-exceptions').NoDescribedBy;
  *
  */
 class IngestValidator {
-    constructor(validator, ingestClient) {
-        this.validator = validator;
+    constructor(schemaValidator, fileValidator, ingestClient) {
+        this.schemaValidator = schemaValidator;
+        this.fileValidator = fileValidator;
         this.ingestClient = ingestClient
     }
 
-    validate(document) {
+    validate(document, documentType) {
         const documentContent = document["content"];
         if(! documentContent["describedBy"]) {
             return Promise.reject(new NoDescribedBy("describedBy is a required field"));
@@ -25,8 +30,10 @@ class IngestValidator {
 
             return this.ingestClient.fetchSchema(schemaUri)
                 .then(schema => {return this.insertSchemaId(schema)})
-                .then(schema => {return this.validator.validateSingleSchema(schema, documentContent)})
-                .then(valErrors => {return this.parseValidationErrors(valErrors)});
+                .then(schema => {return this.schemaValidator.validateSingleSchema(schema, documentContent)})
+                .then(valErrors => {return this.parseValidationErrors(valErrors)})
+                .then(parsedErrors => {return this.generateValidationReport(parsedErrors)})
+                .then(report => {return this.attemptFileValidation(report, document, documentType)})
         }
     }
 
@@ -35,8 +42,71 @@ class IngestValidator {
         return Promise.resolve(schema);
     }
 
+    /**
+     * Ingest error reports from ajvError objects
+     * @param errors
+     */
     parseValidationErrors(errors){
-        // TODO: return errors how we want them
+        return Promise.resolve(R.map(ajvErr => new ErrorReport(ajvErr), errors));
+    }
+
+    generateValidationReport(errors) {
+        let report = null;
+
+        if(errors.length > 0) {
+            report = new ValidationReport("INVALID", errors);
+        } else {
+            report =  ValidationReport.okReport();
+        }
+
+        return Promise.resolve(report);
+    }
+
+
+    /**
+     *
+     * Only do file validation if schema validation passes for the resource and if
+     * the resource is a file
+     *
+     * @param report
+     * @param fileDocument
+     * @param documentType
+     *
+     * @returns {Promise.<ValidationReport>}
+     */
+    attemptFileValidation(report, fileDocument, documentType) {
+        if(documentType === 'FILE' && report.validationState === 'VALID') {
+            const fileName = fileDocument['fileName'];
+            const fileFormat = this.fileFormatFromFileName(fileName);
+
+            return new Promise((resolve, reject) => {
+                this.fileValidator.requestFileValidationJob(fileDocument, fileFormat, fileName)
+                    .then(validationJobId => {
+                        const fileValidatingReport = ValidationReport.validatingReport();
+                        fileValidatingReport.validationJobId = validationJobId;
+                        resolve(fileValidatingReport);
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        reject(err);
+                    })
+            });
+        } else {
+            return Promise.resolve(report); // just return original report if not eligible for file validation
+        }
+    }
+
+    /**
+     *  returns file extension given a file name, e.g
+     *  given aaaabbbcc.fastq, returns fastq
+     *  given aaabbbccc.fastq.gz, returns fastq.gz
+     *  given aaaabbbccc.fastq.tar.gz, returns fastq.tar.gz
+     *
+     * @param fileName
+     */
+    fileFormatFromFileName(fileName) {
+        const splitFilename = fileName.split('.');
+        return R.reduce((subExtension, subsequentSubExtension) => subExtension + '.' + subsequentSubExtension) (R.tail(splitFilename));
     }
 }
 
