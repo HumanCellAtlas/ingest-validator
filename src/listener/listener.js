@@ -18,10 +18,12 @@ class Listener {
         }).then(ch => {
             ch.assertExchange(this.exchange, this.exchangeType).then(() => {
                 ch.assertQueue(this.queue, {durable: false}).then(() => {
-                    ch.prefetch(1).then(() => {
-                        ch.consume(this.queue, (msg) => {
-                            this.handle(msg);
-                        }, {noAck : true});
+                    ch.bindQueue(this.queue, this.exchange, this.queue).then(() => {
+                        ch.prefetch(1).then(() => {
+                            ch.consume(this.queue, (msg) => {
+                                this.handle(msg);
+                            }, {noAck : true});
+                        })
                     })
                 })
             })
