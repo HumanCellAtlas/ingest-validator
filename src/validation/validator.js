@@ -1,6 +1,6 @@
 let Ajv = require("ajv");
 const logger = require("../winston");
-let request = require("request")
+let request = require("request-promise");
 let IsChildTermOf = require("../custom/ischildtermof");
 let IsValidTerm = require("../custom/isvalidterm");
 const ValidationError = require("../model/validation-error");
@@ -30,19 +30,17 @@ function convertToValidationErrors(ajvErrorObjects) {
 }
 
 function loadSchemaRef(uri) {
-    let reqOptions = {
-        method: "GET",
-        url: uri,
-        json: true
-    };
     return new Promise((resolve, reject) => {
-        request(reqOptions, (err,resp) => {
-            if (resp.statusCode >= 400) {
-                reject(new Error('Loading error: ' + resp.statusCode));
-            } else {
-                loadedSchema = resp.body;
-                loadedSchema["$async"] = true;
-                resolve(loadedSchema);            }
+        request({
+            method: "GET",
+            url: uri,
+            json: true
+        }).then(resp => {
+            const loadedSchema = resp;
+            loadedSchema["$async"] = true;
+            resolve(loadedSchema);
+        }).catch(err => {
+            reject(err);
         });
     });
 }
