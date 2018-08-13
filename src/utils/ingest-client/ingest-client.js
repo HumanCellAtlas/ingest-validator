@@ -40,34 +40,16 @@ class IngestClient {
         });
     }
 
-    setDocumentState(entityUrl, validationState){
-        const patchPayload = {
-          "validationState" : validationState
-        };
-
-        return new Promise((resolve, reject) => {
-            request({
-                method: "PATCH",
-                url: entityUrl,
-                json: true,
-                body: patchPayload
-            }).then(resp => {
-                resolve(resp);
-            }).catch(err => {
-                reject(err);
-            })
-        });
-    }
-
-    transitionDocumentState(document, validationState) {
-        const validationStateTransitionUrl = document["_links"][validationState.toLowerCase()]["href"];
-
-        return request({
-            method: "PUT",
-            url: validationStateTransitionUrl,
-            body: {},
-            json: true
-        });
+    transitionDocumentState(entityUrl, validationState) {
+        return this.retrieveMetadataDocument(entityUrl)
+            .then(doc => {
+                return request({
+                    method: "PUT",
+                    url: doc["_links"][validationState.toLowerCase()]["href"],
+                    body: {},
+                    json: true
+                });
+            });
     }
 
     findFileByValidationId(validationId) {
@@ -91,12 +73,19 @@ class IngestClient {
                 method: "PATCH",
                 url: entityUrl,
                 json: true,
-                body: patchPayload
+                body: JSON.stringify(patchPayload)
             }).then(resp => {
                 resolve(resp);
             }).catch(err =>{
                 reject(err);
             });
+        });
+    }
+
+    postValidationReport(entityUrl, validationReport) {
+        return this.transitionDocumentState(entityUrl, validationReport.validationState)
+            .then(() => {
+            return this.postValidationReport(entityUrl, validationReport.validationErrors)
         });
     }
 
@@ -115,6 +104,31 @@ class IngestClient {
     selfLinkForResource(resource) {
         return resource["_links"]["self"]["href"];
     }
+
+    envelopesLinkForResource(resource) {
+        return resource["_links"]["submissionEnvelopes"]["href"];
+    }
+
+    /**
+     * gets envelopes associated with this metadata document
+     * @param metadataDocument
+     */
+    envelopesForMetadataDocument(metadataDocument) {
+        return new Promise((resolve, reject) => {
+            request({
+                method: "GET",
+                url: this.envelopesLinkForResource(metadataDocument),
+                json: true,
+            }).then(resp => {
+                // envelopes are embedded entities
+                resolve(resp['_embedded']['submissionEnvelopes']);
+            }).catch(err => {
+                reject(err);
+            });
+        });
+
+    }
+
 }
 
 module.exports = IngestClient;
