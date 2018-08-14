@@ -3,7 +3,10 @@ const request = require("request-promise");
 const logger = require("../winston");
 const CustomAjvError = require("../model/custom-ajv-error");
 const curies = require ("../utils/curie_expansion");
+const config = require('config');
 
+const olsConnectionConfig = config.get("OLS_API.connection");
+const olsSearchUrl = olsConnectionConfig["scheme"] + "://" + olsConnectionConfig["host"] + ":" + olsConnectionConfig["port"] + "/api/search?q="
 const cachedOlsResponses = {};
 
 async function callCurieExpansion(terms){
@@ -30,8 +33,6 @@ module.exports = function graph_restriction(ajv) {
       let errors = [];
 
       if(parentTerms && ontologyIds) {
-          const olsSearchUrl = "http://ontology.dev.data.humancellatlas.org/api/search?q=";
-
           callCurieExpansion(parentTerms).then((iris) => {
 
               const parentTerm = iris.join(",");
