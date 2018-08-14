@@ -1,9 +1,10 @@
 let Ajv = require("ajv");
-const request = require("request");
+const request = require("request-promise");
 const logger = require("../winston");
 const CustomAjvError = require("../model/custom-ajv-error");
 const curies = require ("../utils/curie_expansion");
 
+const cachedOlsResponses = {};
 
 async function callCurieExpansion(terms){
     let expanded = terms.map(async(t) => {
@@ -42,8 +43,20 @@ module.exports = function graph_restriction(ajv) {
                   + "&ontology=" + ontologyId + "&queryFields=obo_id";
 
               logger.log("debug", `Evaluating graph_restriction, query url: [${url}]`);
-              request(url, (error, response, body) => {
-                  let jsonBody = JSON.parse(body);
+
+              let olsResponsePromise = null;
+              if(cachedOlsResponses[url]) {
+                  olsResponsePromise = Promise.resolve(cachedOlsResponses[url]);
+              } else {
+                  olsResponsePromise = request({
+                      method: "GET",
+                      url: url,
+                      json: true
+                  });
+              }
+              olsResponsePromise.then(resp => {
+                  cachedOlsResponses[url] = resp;
+                  let jsonBody = resp;
 
                   if (jsonBody.response.numFound === 1) {
                       logger.log("debug", "It's a child term!");
