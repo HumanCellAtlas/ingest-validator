@@ -29,20 +29,27 @@ function convertToValidationErrors(ajvErrorObjects) {
   return localErrors;
 }
 
+const cachedSchemas = {};
+
 function loadSchemaRef(uri) {
-    return new Promise((resolve, reject) => {
-        request({
-            method: "GET",
-            url: uri,
-            json: true
-        }).then(resp => {
-            const loadedSchema = resp;
-            loadedSchema["$async"] = true;
-            resolve(loadedSchema);
-        }).catch(err => {
-            reject(err);
+    if(cachedSchemas[uri]) {
+        return Promise.resolve(cachedSchemas[uri]);
+    } else {
+        return new Promise((resolve, reject) => {
+            request({
+                method: "GET",
+                url: uri,
+                json: true
+            }).then(resp => {
+                const loadedSchema = resp;
+                loadedSchema["$async"] = true;
+                cachedSchemas[uri] = loadedSchema;
+                resolve(loadedSchema);
+            }).catch(err => {
+                reject(err);
+            });
         });
-    });
+    }
 }
 
 module.exports = {
@@ -76,37 +83,6 @@ module.exports = {
                 console.log(err.stack);
                 reject(err);
             });
-        });
-    },
-    validateMultiSchema: function(schemas, entity, rootSchemaId) {
-        logger.log("silly", "Running validation...");
-
-        return new Promise((resolve, reject) => {
-          for (var s of schemas){
-              if (!ajv.getSchema(s.$id)){
-                  // if (!ajv.getSchema(s.id)){
-                  ajv.addSchema(s);
-              }
-          }
-          var validate = ajv.getSchema(rootSchemaId);
-          Promise.resolve(validate(entity))
-              .then((data) => {
-                      if (validate.errors) {
-                          logger.log("debug", ajv.errorsText(validate.errors, {dataVar: entity.alias}));
-                          resolve(convertToValidationErrors(validate.errors));
-                      } else {
-                          resolve([]);
-                      }
-                  }
-              ).catch((err, errors) => {
-              if (!(err instanceof Ajv.ValidationError)) {
-                  logger.log("error", "An error ocurred while running the validation.");
-                  reject(new AppError("An error ocurred while running the validation."));
-              } else {
-                  logger.log("debug", ajv.errorsText(err.errors, {dataVar: entity.alias}));
-                  resolve(convertToValidationErrors(err.errors));
-              }
-          });
         });
     }
 };
