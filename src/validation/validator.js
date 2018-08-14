@@ -53,13 +53,25 @@ function loadSchemaRef(uri) {
 }
 
 module.exports = {
+    validatorCache: {
+
+    },
     validateSingleSchema: function(inputSchema, inputObject) {
         inputSchema["$async"] = true;
+        const schemaId = inputSchema['$id'];
         logger.log("silly", "Running validation...");
         return new Promise((resolve, reject) => {
-            const compiledSchemaPromise = ajv.compileAsync(inputSchema);
+
+            let compiledSchemaPromise = null;
+            if(this.validatorCache[schemaId]) {
+                compiledSchemaPromise = Promise.resolve(this.validatorCache[schemaId]);
+                console.info()
+            } else {
+                compiledSchemaPromise = ajv.compileAsync(inputSchema);
+            }
 
             compiledSchemaPromise.then((validate) => {
+                this.validatorCache[schemaId] = validate;
                 Promise.resolve(validate(inputObject))
                     .then((data) => {
                             if (validate.errors) {
