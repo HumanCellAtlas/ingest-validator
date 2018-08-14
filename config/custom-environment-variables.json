@@ -5,7 +5,12 @@
         "host" : "RABBIT_HOST",
         "port" : "RABBIT_PORT"
       }
-    }
+    },
+    "fileValidationResults" : {
+      "connection" : {
+        "host" : "RABBIT_HOST",
+        "port" : "RABBIT_PORT"
+      }
   },
   "INGEST_API" : {
     "connection" : {
