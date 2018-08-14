@@ -1,6 +1,10 @@
-let request = require("request")
+let request = require("request-promise");
 const logger = require("../winston");
+const config = require('config');
 
+const olsConnectionConfig = config.get("OLS_API.connection");
+const olsSearchUrl = olsConnectionConfig["scheme"] + "://" + olsConnectionConfig["host"] + ":" + olsConnectionConfig["port"] + "/api/search?q="
+const cachedOlsCurieResponses = {};
 
 module.exports = {
 
@@ -13,29 +17,37 @@ module.exports = {
     },
 
     expandCurie: function(term){
-
-        const olsSearchUrl = "http://ontology.dev.data.humancellatlas.org/api/search?q=";
-
         const termUri = encodeURIComponent(term);
         const url = olsSearchUrl + termUri
             + "&exact=true&groupField=true&queryFields=obo_id";
 
         return new Promise((resolve, reject) => {
-            request(url, (error, response, body) => {
-                if (!error && response.statusCode == 200) {
-                    let jsonBody = JSON.parse(body);
+            let curieExpandResponsePromise = null;
+
+            if(cachedOlsCurieResponses[url]) {
+                curieExpandResponsePromise = Promise.resolve(cachedOlsCurieResponses[url]);
+            } else {
+                curieExpandResponsePromise = request({
+                    method: "GET",
+                    url: url,
+                    json: true
+                })
+            }
+
+            curieExpandResponsePromise
+                .then(resp => {
+                    cachedOlsCurieResponses[url] = resp;
+                    let jsonBody = resp;
                     if (jsonBody.response.numFound === 1) {
                         logger.log("debug", "Term found");
                         resolve(jsonBody.response.docs[0].iri);
                     }
                     else {
-                       reject("Could not retrieve IRI for " + term);
+                        reject("Could not retrieve IRI for " + term);
                     }
-                }
-                else {
-                    reject(error)
-                }
-            });
+                }).catch(err => {
+                    reject(err)
+                });
         });
 
     }
