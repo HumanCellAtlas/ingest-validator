@@ -42,6 +42,13 @@
     },
     "apiKey" : "redacted"
   },
+  "OLS_API" : {
+    "connection" : {
+      "scheme": "http",
+      "host" : "ontology.dev.data.humancellatlas.org",
+      "port" : 80
+    }
+  },
   "FILE_VALIDATION_IMAGES" : {
     "fastq" : "quay.io/humancellatlas/fastq_utils:master",
     "fastq.gz" : "quay.io/humancellatlas/fastq_utils:master",

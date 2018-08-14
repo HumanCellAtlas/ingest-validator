@@ -26,6 +26,12 @@
     },
     "apiKey" : "UPLOAD_API_KEY"
   },
+  "OLS_API" : {
+    "connection" : {
+      "host" : "OLS_HOST",
+      "port" : "OLS_PORT"
+    }
+  },
   "FILE_VALIDATION_IMAGES" : {
     "fastq" : "FASTQ_VALIDATION_IMAGE",
     "fastq.gz" : "FASTQ_VALIDATION_IMAGE",
