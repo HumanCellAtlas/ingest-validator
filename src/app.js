@@ -1,6 +1,13 @@
 /**
  * Created by rolando on 02/08/2018.
  */
+const request = require('request-defaults');
+request.globalDefaults({
+    family: 4,
+    pool: {
+        maxSockets: 10
+    }
+});
 const config = require('config');
 const R = require('rambda');
 
