@@ -11,6 +11,7 @@
         "host" : "RABBIT_HOST",
         "port" : "RABBIT_PORT"
       }
+    }
   },
   "INGEST_API" : {
     "connection" : {
