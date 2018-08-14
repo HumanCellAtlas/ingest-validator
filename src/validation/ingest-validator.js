@@ -110,8 +110,16 @@ class IngestValidator {
      * @param fileName
      */
     fileFormatFromFileName(fileName) {
+        const appendExtensions = (subExtension, subsequentSubExtension) => {
+            if(subExtension === "") {
+                return subsequentSubExtension;
+            } else {
+                return subExtension + '.' + subsequentSubExtension;
+            }
+        };
+
         const splitFilename = fileName.split('.');
-        return R.reduce((subExtension, subsequentSubExtension) => subExtension + '.' + subsequentSubExtension) (R.tail(splitFilename));
+        return R.reduce(appendExtensions, "", R.tail(splitFilename));
     }
 }
 

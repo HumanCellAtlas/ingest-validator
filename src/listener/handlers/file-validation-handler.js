@@ -14,8 +14,10 @@ class FileValidationHandler {
         const msgContent =JSON.parse(msg.content);
 
         const validationJobId = msgContent['validation_id'];
-        const validationState = msgContent['validation_state'];
-        const validationErrors = msgContent['validation_errors'];
+        const validationOutput = JSON.parse(msgContent['stdout']);
+
+        const validationState = validationOutput['validation_state'];
+        const validationErrors = validationOutput['validation_errors'];
 
         const validationReport = new ValidationReport(validationState, validationErrors);
 

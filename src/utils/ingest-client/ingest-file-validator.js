@@ -16,36 +16,39 @@ class IngestFileValidator {
     }
 
     requestFileValidationJob(fileDocument, fileFormat, fileName) {
-        const uploadAreaId = this.uploadAreaForFile(fileDocument);
-        const imageUrl = this.imageFor(fileFormat).imageUrl;
-        const validateFileUrl = this.fileValidationUrl + "/v1/area/" + uploadAreaId + encodeURIComponent(fileName) + "/validate";
-
-        if(! imageUrl) { // no validation image for files with this format
-            return Promise.reject(new NoFileValidationJob());
-        } else {
-            return new Promise((resolve, reject) => {
-                request({
-                    method: "PUT",
-                    url: validateFileUrl,
-                    json: true,
-                    headers: {
-                        "Api-key" : this.fileValidationServiceApiKey
-                    },
-                    body: {
-                        "validator_image": imageUrl
-                    }
-                }).then(resp => {
-                    resolve(resp['validation_id']);
-                }).catch(err => {
-                    console.error("ERROR: Failed to request a validation job for file at " + this.ingestClient.selfLinkForResource(fileDocument));
-                    reject(err);
+        return new Promise((resolve, reject) => {
+            this.uploadAreaForFile(fileDocument)
+                .then(uploadAreaId => {
+                    const validationImage = this.imageFor(fileFormat);
+                    if(! validationImage) {
+                        reject(new NoFileValidationJob());
+                    } else {
+                        const imageUrl = this.imageFor(fileFormat).imageUrl;
+                        const validateFileUrl = this.fileValidationUrl + "/v1/area/" + uploadAreaId + "/" + encodeURIComponent(fileName) + "/validate";
+                        request({
+                            method: "PUT",
+                            url: validateFileUrl,
+                            json: true,
+                            headers: {
+                                "Api-key" : this.fileValidationServiceApiKey
+                            },
+                            body: {
+                                "validator_image": imageUrl
+                            }
+                        }).then(resp => {
+                            resolve(resp['validation_id']);
+                        }).catch(err => {
+                            console.error("ERROR: Failed to request a validation job for file at " + this.ingestClient.selfLinkForResource(fileDocument));
+                            reject(err);
+                        });
+                        }
                 });
-            });
-        }
+
+        });
     }
 
     imageFor(fileFormat) {
-        return R.find(R.propEq({'fileFormat': fileFormat}))(this.fileValidationImages);
+        return R.find(R.propEq('fileFormat', fileFormat),this.fileValidationImages);
     }
 
     uploadAreaForFile(fileDocument) {
@@ -53,7 +56,7 @@ class IngestFileValidator {
             this.ingestClient.envelopesForMetadataDocument(fileDocument)
                 .then(envelopes => {
                     const envelope = envelopes[0]; // assuming there is at least 1 envelope
-                    const uploadAreaId = envelope["stagingDetails"]["stagingAreaUuid"];
+                    const uploadAreaId = envelope["stagingDetails"]["stagingAreaUuid"]["uuid"];
                     resolve(uploadAreaId);
                 })
                 .catch(err => {
