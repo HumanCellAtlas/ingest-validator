@@ -1,13 +1,24 @@
 /**
  * Created by rolando on 02/08/2018.
  */
+
+/** Pre-setup: Configuring HTTP agents and DNS caching **/
 const request = require('request-defaults');
+
 request.globalDefaults({
     family: 4,
     pool: {
         maxSockets: 10
     }
 });
+
+const dnscache = require('dnscache')({
+    "enable" : true,
+    "ttl" : 300,
+    "cachesize" : 1000
+});
+
+/** ------------------------------- **/
 const config = require('config');
 const R = require('rambda');
 
