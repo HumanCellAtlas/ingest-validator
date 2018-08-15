@@ -15,7 +15,7 @@ class ErrorReport {
     }
 
     constructUserFriendlyMessage() {
-        if(!this.absoluteDataPath) {
+        if(this.absoluteDataPath === null) {
             throw new Error("Can't construct a user friendly message: absoluteDataPath of error not set");
         } else if(!this.message) {
             throw new Error("Can't construct a user friendly message: error message not set");

@@ -11,8 +11,13 @@ class FileValidationHandler {
     }
 
     async handle(msg) {
-        const msgContent =JSON.parse(msg.content);
-
+        let msgContent = null;
+        try {
+            msgContent = JSON.parse(msg.content);
+        } catch (err) {
+            console.error("Failed to parse message content (ignoring): " + msg.content);
+            return;
+        }
         const validationJobId = msgContent['validation_id'];
         const validationOutput = JSON.parse(msgContent['stdout']);
 
