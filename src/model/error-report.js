@@ -20,6 +20,9 @@ class ErrorReport {
         } else if(!this.message) {
             throw new Error("Can't construct a user friendly message: error message not set");
         } else {
+            if(this.absoluteDataPath === "") {
+                this.absoluteDataPath = "root of document";
+            }
             this.userFriendlyMessage = this.message + " at " + this.absoluteDataPath;
         }
     }
