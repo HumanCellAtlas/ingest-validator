@@ -76,7 +76,7 @@ module.exports = {
                     .then((data) => {
                             if (validate.errors) {
                                 logger.log("debug", ajv.errorsText(validate.errors, {dataVar: inputObject.alias}));
-                                resolve(convertToValidationErrors(validate.errors));
+                                resolve(validate.errors);
                             } else {
                                 resolve([]);
                             }
