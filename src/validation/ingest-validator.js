@@ -40,7 +40,9 @@ class IngestValidator {
     }
 
     insertSchemaId(schema) {
-        schema["$id"] = schema["id"]
+        if(schema["id"]) {
+            schema["$id"] = schema["id"];
+        }
         return Promise.resolve(schema);
     }
 
