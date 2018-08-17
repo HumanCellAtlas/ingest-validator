@@ -20,7 +20,8 @@ class IngestValidator {
     constructor(schemaValidator, fileValidator, ingestClient) {
         this.schemaValidator = schemaValidator;
         this.fileValidator = fileValidator;
-        this.ingestClient = ingestClient
+        this.ingestClient = ingestClient;
+        this.schemaCache = {};
     }
 
     validate(document, documentType) {
@@ -30,12 +31,29 @@ class IngestValidator {
         } else {
             let schemaUri = documentContent["describedBy"];
 
-            return this.ingestClient.fetchSchema(schemaUri)
+            return this.getSchema(schemaUri)
                 .then(schema => {return this.insertSchemaId(schema)})
                 .then(schema => {return this.schemaValidator.validateSingleSchema(schema, documentContent)})
                 .then(valErrors => {return this.parseValidationErrors(valErrors)})
                 .then(parsedErrors => {return this.generateValidationReport(parsedErrors)})
                 .then(report => {return this.attemptFileValidation(report, document, documentType)})
+        }
+    }
+
+    getSchema(schemaUri) {
+        if(! this.schemaCache[schemaUri]) {
+            return new Promise((resolve, reject) => {
+                this.ingestClient.fetchSchema(schemaUri)
+                    .then(schema => {
+                        this.schemaCache[schemaUri] = schema;
+                        resolve(schema);
+                    })
+                    .catch(err => {
+                        reject(err);
+                    })
+            });
+        } else {
+            return Promise.resolve(this.schemaCache[schemaUri]);
         }
     }
 
