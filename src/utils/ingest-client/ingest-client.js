@@ -195,13 +195,15 @@ class IngestClient {
             return Promise.reject(prevErr);
         } else {
             const boundFunc = func.bind(this);
-            return boundFunc.apply(null, args)
-                .then(allGood => {return Promise.resolve(allGood)})
-                .catch(err => {
-                    const incAttempts = attemptsSoFar + 1;
-                    console.info(retryMessage + " :: Attempt # " + incAttempts + " out of " + maxRetries);
-                    return this._retry(attemptsSoFar + 1, maxRetries, err, func, args, retryMessage);
-                });
+            return Promise.delay(50).then(() => {
+                return boundFunc.apply(null, args)
+                    .then(allGood => {return Promise.resolve(allGood)})
+                    .catch(err => {
+                        const incAttempts = attemptsSoFar + 1;
+                        console.info(retryMessage + " :: Attempt # " + incAttempts + " out of " + maxRetries);
+                        return this._retry(attemptsSoFar + 1, maxRetries, err, func, args, retryMessage);
+                    });
+            });
         }
     }
 }
