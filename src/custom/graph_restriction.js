@@ -33,8 +33,9 @@ module.exports = function graph_restriction(ajv) {
         let errors = [];
 
         if(parentTerms && ontologyIds) {
-            if(schema.include_self == True && parentTerms.includes(data)){
-                logger.log("debug", "It's a child term!");
+            if(schema.include_self == true && parentTerms.includes(data)){
+                logger.log("debug", "Acceptable parent term");
+                resolve(data);
             }
             else {
 

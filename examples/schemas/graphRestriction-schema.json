@@ -28,10 +28,10 @@
       "type": "string",
       "graph_restriction":  {
         "ontologies" : ["obo:mondo", "obo:efo"],
-        "classes": ["http://purl.obolibrary.org/obo/MONDO_0000001","http://purl.obolibrary.org/obo/PATO_0000461"],
+        "classes": ["MONDO:0000001","PATO:0000461"],
         "relations": ["rdfs:subClassOf"],
         "direct": false,
-        "include_self": false
+        "include_self": true
       }
     },
     "ontology_label": {
