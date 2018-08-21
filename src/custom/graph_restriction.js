@@ -28,60 +28,67 @@ module.exports = function graph_restriction(ajv) {
 
   function findChildTerm(schema, data) {
     return new Promise((resolve, reject) => {
-      let parentTerms = schema.classes;
-      const ontologyIds = schema.ontologies;
-      let errors = [];
+        let parentTerms = schema.classes;
+        const ontologyIds = schema.ontologies;
+        let errors = [];
 
-      if(parentTerms && ontologyIds) {
-          callCurieExpansion(parentTerms).then((iris) => {
+        if(parentTerms && ontologyIds) {
+            if(schema.include_self == True && parentTerms.includes(data)){
+                logger.log("debug", "It's a child term!");
+            }
+            else {
 
-              const parentTerm = iris.join(",");
-              const ontologyId = ontologyIds.join(",").replace(/obo:/g, "");
+                callCurieExpansion(parentTerms).then((iris) => {
 
-              const termUri = encodeURIComponent(data);
-              const url = olsSearchUrl + termUri
-                  + "&exact=true&groupField=true&allChildrenOf=" + encodeURIComponent(parentTerm)
-                  + "&ontology=" + ontologyId + "&queryFields=obo_id";
+                  const parentTerm = iris.join(",");
+                  const ontologyId = ontologyIds.join(",").replace(/obo:/g, "");
 
-              logger.log("debug", `Evaluating graph_restriction, query url: [${url}]`);
+                  const termUri = encodeURIComponent(data);
+                  const url = olsSearchUrl + termUri
+                      + "&exact=true&groupField=true&allChildrenOf=" + encodeURIComponent(parentTerm)
+                      + "&ontology=" + ontologyId + "&queryFields=obo_id";
 
-              let olsResponsePromise = null;
-              if(cachedOlsResponses[url]) {
-                  olsResponsePromise = Promise.resolve(cachedOlsResponses[url]);
-              } else {
-                  olsResponsePromise = request({
-                      method: "GET",
-                      url: url,
-                      json: true
-                  });
-              }
-              olsResponsePromise.then(resp => {
-                  cachedOlsResponses[url] = resp;
-                  let jsonBody = resp;
+                  logger.log("debug", `Evaluating graph_restriction, query url: [${url}]`);
 
-                  if (jsonBody.response.numFound === 1) {
-                      logger.log("debug", "It's a child term!");
-                  } else if (jsonBody.response.numFound === 0) {
-                      logger.log("debug", `Provided term is not child of [${parentTerm}]`);
-                      errors.push({
-                          keyword: "graph_restriction",
-                          message: `Provided term is not child of [${parentTerm}]`
-                      });
-                  } else {
-                      errors.push({
-                          keyword: "graph_restriction",
-                          message: "Something went wrong while validating term, try again."
+                  let olsResponsePromise = null;
+                  if(cachedOlsResponses[url]) {
+                      olsResponsePromise = Promise.resolve(cachedOlsResponses[url]);
+                  }
+                  else {
+                      olsResponsePromise = request({
+                          method: "GET",
+                          url: url,
+                          json: true
                       });
                   }
+                  olsResponsePromise.then(resp => {
+                      cachedOlsResponses[url] = resp;
+                      let jsonBody = resp;
+
+                      if (jsonBody.response.numFound === 1) {
+                          logger.log("debug", "It's a child term!");
+                      } else if (jsonBody.response.numFound === 0) {
+                          logger.log("debug", `Provided term is not child of [${parentTerm}]`);
+                          errors.push({
+                              keyword: "graph_restriction",
+                              message: `Provided term is not child of [${parentTerm}]`
+                          });
+                      } else {
+                          errors.push({
+                              keyword: "graph_restriction",
+                              message: "Something went wrong while validating term, try again."
+                          });
+                      }
+                      reject(new Ajv.ValidationError(errors));
+                  });
+                }).catch(err => {
+                  errors.push({
+                      keyword: "graph_restriction",
+                      message: err
+                  });
                   reject(new Ajv.ValidationError(errors));
               });
-          }).catch(err => {
-              errors.push({
-                  keyword: "graph_restriction",
-                  message: err
-              });
-              reject(new Ajv.ValidationError(errors));
-          });
+            }
       }
         else {
           errors.push({
@@ -90,7 +97,7 @@ module.exports = function graph_restriction(ajv) {
           });
           reject(new Ajv.ValidationError(errors));
         }
-      });
+    });
   }
 
   graph_restriction.definition = {
