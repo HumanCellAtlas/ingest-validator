@@ -23,7 +23,21 @@ class ErrorReport {
             if(this.absoluteDataPath === "") {
                 this.absoluteDataPath = "root of document";
             }
-            this.userFriendlyMessage = this.message + " at " + this.absoluteDataPath;
+            // depending on the schema keyword that caused the validation error, may need to parse the AJV error obj differently
+            if(this.ajvError) {
+                const keyword = this.ajvError["keyword"];
+                if(keyword === "additionalProperties") {
+                    const additionalProperty = this.ajvError["params"]["additionalProperty"];
+                    this.userFriendlyMessage = "Found disallowed additional property " + additionalProperty + " at " + this.absoluteDataPath;
+                } else if(keyword === "enum") {
+                    const allowedValues = this.ajvError["params"]["allowedValues"];
+                    this.userFriendlyMessage = this.absoluteDataPath + " " + this.message + ": " + "[" + allowedValues + "]";
+                } else {
+                    this.userFriendlyMessage = this.message + " at " + this.absoluteDataPath;
+                }
+            } else {
+                this.userFriendlyMessage = this.message + " at " + this.absoluteDataPath;
+            }
         }
     }
 
