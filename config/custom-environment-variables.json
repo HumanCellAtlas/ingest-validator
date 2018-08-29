@@ -21,6 +21,7 @@
   },
   "UPLOAD_API" : {
     "connection" : {
+      "scheme": "UPLOAD_SCHEME",
       "host" : "UPLOAD_HOST",
       "port" : "UPLOAD_PORT"
     },
