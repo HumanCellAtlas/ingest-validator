@@ -1,2 +1,0 @@
-class MissingSchemaUrlException(Exception):
-    pass

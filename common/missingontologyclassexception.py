@@ -1,2 +1,0 @@
-class MissingOntologyClassException(Exception):
-    pass
