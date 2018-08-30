@@ -19,7 +19,14 @@ class FileValidationHandler {
             return;
         }
         const validationJobId = msgContent['validation_id'];
-        const validationOutput = JSON.parse(msgContent['stdout']);
+
+        let validationOutput = null;
+        try {
+            validationOutput = JSON.parse(msgContent['stdout']);
+        } catch (err) {
+            console.error("Failed to JSON parse stdout in validation message (ignoring): " + msg.content);
+            return;
+        }
 
         const validationState = validationOutput['validation_state'];
         const validationErrors = validationOutput['validation_errors'];
