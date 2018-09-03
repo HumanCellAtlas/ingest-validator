@@ -57,14 +57,16 @@ class IngestClient {
                     if(doc['validationState'].toUpperCase() === validationState.toUpperCase()) {
                         resolve(doc);
                     } else {
+                        let url = doc["_links"][validationState.toLowerCase()]["href"];
                         request({
                             method: "PUT",
-                            url: doc["_links"][validationState.toLowerCase()]["href"],
+                            url: url,
                             body: {},
                             json: true
                         }).then(resp => {
                             resolve(resp);
                         }).catch(err => {
+                            console.log(url)
                             reject(err);
                         });
                     }
