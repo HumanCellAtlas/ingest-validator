@@ -50,8 +50,8 @@
     }
   },
   "FILE_VALIDATION_IMAGES" : {
-    "fastq" : "quay.io/humancellatlas/fastq_utils:master",
-    "fastq.gz" : "quay.io/humancellatlas/fastq_utils:master",
-    "fastq.tar.gz" : "quay.io/humancellatlas/fastq_utils:master"
+    "fastq" : "quay.io/humancellatlas/fastq_utils:v0.1.0.rc",
+    "fastq.gz" : "quay.io/humancellatlas/fastq_utils:v0.1.0.rc",
+    "fastq.tar.gz" : "quay.io/humancellatlas/fastq_utils:v0.1.0.rc"
   }
 }
