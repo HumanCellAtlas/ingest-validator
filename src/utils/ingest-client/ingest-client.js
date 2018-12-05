@@ -1,10 +1,19 @@
 /**
  * Created by rolando on 01/08/2018.
  */
-const request = require('request-promise');
+const request = require('request-promise').defaults({
+    family: 4,
+    pool: {
+        maxSockets: 10
+    }
+});
+
 const Promise = require('bluebird');
 const exceptions = require('./ingest-client-exceptions');
 const NoUuidError = exceptions.NoUuidError;
+const RetryableError = exceptions.RetryableError;
+const NotRetryableError = exceptions.NotRetryableError;
+
 
 class IngestClient {
     constructor(connectionConfig) {
@@ -55,7 +64,7 @@ class IngestClient {
         return new Promise((resolve, reject) => {
             this.retrieveMetadataDocument(entityUrl).then(doc => {
                     if(doc['validationState'].toUpperCase() === validationState.toUpperCase()) {
-                        resolve(doc);
+                        reject(new NotRetryableError("Failed to transition document; document was already in the target state"));
                     } else {
                         request({
                             method: "PUT",
@@ -132,7 +141,7 @@ class IngestClient {
             }).catch(err => {
                 console.info("here now");
                 reject(err);
-            });
+            }).catch();
         });
     }
 
@@ -198,6 +207,9 @@ class IngestClient {
             return Promise.delay(50).then(() => {
                 return boundFunc.apply(null, args)
                     .then(allGood => {return Promise.resolve(allGood)})
+                    .catch(NotRetryableError, err => {
+                        return Promise.reject(err);
+                    })
                     .catch(err => {
                         const incAttempts = attemptsSoFar + 1;
                         console.info(retryMessage + " :: Attempt # " + incAttempts + " out of " + maxRetries);
