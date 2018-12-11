@@ -32,7 +32,8 @@
       "scheme": "http",
       "host" : "localhost",
       "port" : 8080
-    }
+    },
+    "maxConnections": 20
   },
   "UPLOAD_API" : {
     "connection" : {

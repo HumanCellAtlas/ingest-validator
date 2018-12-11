@@ -1,10 +1,12 @@
 /**
  * Created by rolando on 01/08/2018.
  */
+const config = require('config');
+
 const request = require('request-promise').defaults({
     family: 4,
     pool: {
-        maxSockets: 10
+        maxSockets: config.get("INGEST_API.maxConnections")
     }
 });
 

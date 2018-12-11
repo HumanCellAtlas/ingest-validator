@@ -17,7 +17,8 @@
     "connection" : {
       "host" : "INGEST_HOST",
       "port" : "INGEST_PORT"
-    }
+    },
+    "maxConnections": "INGEST_MAX_CONNECTIONS"
   },
   "UPLOAD_API" : {
     "connection" : {
