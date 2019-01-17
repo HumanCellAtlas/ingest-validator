@@ -1,21 +1,25 @@
 /**
  * Created by rolando on 02/08/2018.
  */
-const Promise = require('bluebird');
-const NoUuidError = require('../../utils/ingest-client/ingest-client-exceptions').NoUuidError;
-const ValidationReport = require('../../model/validation-report');
+import IngestValidator from "../../validation/ingest-validator";
+import IngestClient from "../../utils/ingest-client/ingest-client";
+import IHandler from "./handler";
+import Promise from "bluebird";
+import {NoCloudUrl, NotEligibleForValidation} from "../../validation/ingest-validation-exceptions";
+import {NoUuidError} from "../../utils/ingest-client/ingest-client-exceptions";
+import ValidationReport from "../../model/validation-report";
 
-class NoCloudUrl extends Error {}
-class NotEligibleForValidation extends Error {}
+class DocumentUpdateHandler implements IHandler {
+    validator: IngestValidator;
+    ingestClient: IngestClient;
 
-class DocumentUpdateHandler {
-    constructor(validator, ingestClient) {
+    constructor(validator: IngestValidator, ingestClient: IngestClient) {
         this.validator = validator;
         this.ingestClient = ingestClient;
     }
 
-    handle(msg) {
-        const msgJson = JSON.parse(msg.content);
+    handle(msg: string) {
+        const msgJson = JSON.parse(msg);
 
         const callbackLink = msgJson['callbackLink'];
         const documentUrl = this.ingestClient.urlForCallbackLink(callbackLink);
@@ -23,8 +27,8 @@ class DocumentUpdateHandler {
 
         return new Promise((resolve, reject) => {
             this.ingestClient.getMetadataDocument(documentUrl)
-                .then(doc => {return this.checkElegibleForValidation(doc)})
-                .then(doc => {return this.checkForCloudUrl(doc, documentType)})
+                .then(doc => {return DocumentUpdateHandler.checkElegibleForValidation(doc)})
+                .then(doc => {return this.checkEligibleForFileValidation(doc, documentType)})
                 .then(doc => {return this.signalValidationStarted(doc)})
                 .then(doc => {return this.validator.validate(doc, documentType)})
                 .then(validationReport => {return this.ingestClient.postValidationReport(documentUrl, validationReport)})
@@ -44,9 +48,9 @@ class DocumentUpdateHandler {
      * @param document
      * @param documentType
      */
-    checkForCloudUrl(document, documentType) {
+    checkEligibleForFileValidation(document: any, documentType: string) : Promise<any> {
         return new Promise((resolve, reject) => {
-            if(documentType === 'FILE' && !document['cloudUrl']) {
+            if(documentType === 'FILE' && !document['cloudUrl'] && !document['content']) {
                 reject(new NoCloudUrl());
             } else {
                 resolve(document);
@@ -61,7 +65,7 @@ class DocumentUpdateHandler {
      * @param document
      * @param documentType
      */
-    checkElegibleForValidation(document) {
+    static checkElegibleForValidation(document: any) : Promise<any>{
         if(document['validationState'].toUpperCase() === 'DRAFT') {
             return Promise.resolve(document);
         } else {
@@ -69,10 +73,10 @@ class DocumentUpdateHandler {
         }
     }
 
-    signalValidationStarted(document) {
+    signalValidationStarted(document: any) : Promise<any> {
         const documentUrl = this.ingestClient.selfLinkForResource(document);
         return this.ingestClient.postValidationReport(documentUrl, ValidationReport.validatingReport());
     }
 }
 
-module.exports = DocumentUpdateHandler;
+export default DocumentUpdateHandler;

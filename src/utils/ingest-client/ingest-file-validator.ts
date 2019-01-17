@@ -1,29 +1,38 @@
 /**
  * Created by rolando on 12/08/2018.
  */
-const R = require('rambda');
-const Promise = require('bluebird');
-const request = require('request-promise');
+import Promise from "bluebird";
+import {FileValidationImage, UploadApiConnectionProperties} from "../../common/types";
+import IngestClient from "./ingest-client";
+import request from "request-promise";
+import R from "ramda";
+import {NoFileValidationJob} from "../../validation/ingest-validation-exceptions";
 
-const NoFileValidationJob = require('../../validation/ingest-validation-exceptions').NoFileValidationJob;
 
 class IngestFileValidator {
-    constructor(connectionConfig, apiKey, fileValidationImages, ingestClient) {
+    uploadApiConnectionProperties: UploadApiConnectionProperties;
+    fileValidationUrl: string;
+    fileValidationServiceApiKey: string;
+    fileValidationImages: FileValidationImage[];
+    ingestClient: IngestClient;
+
+    constructor(connectionConfig: UploadApiConnectionProperties, apiKey: string, fileValidationImages: FileValidationImage[], ingestClient: IngestClient) {
+        this.uploadApiConnectionProperties = connectionConfig;
         this.fileValidationUrl = connectionConfig["scheme"] + "://" + connectionConfig["host"] + ":" + connectionConfig["port"];
         this.fileValidationServiceApiKey = apiKey;
         this.fileValidationImages = fileValidationImages;
         this.ingestClient = ingestClient;
     }
 
-    requestFileValidationJob(fileDocument, fileFormat, fileName) {
+    requestFileValidationJob(fileDocument: any, fileFormat: string, fileName: string) : Promise<string> {
         return new Promise((resolve, reject) => {
             this.uploadAreaForFile(fileDocument)
-                .then(uploadAreaId => {
+                .then((uploadAreaId: string) => {
                     const validationImage = this.imageFor(fileFormat);
                     if(! validationImage) {
                         reject(new NoFileValidationJob());
                     } else {
-                        const imageUrl = this.imageFor(fileFormat).imageUrl;
+                        const imageUrl = validationImage.imageUrl;
                         const validateFileUrl = this.fileValidationUrl + "/v1/area/" + uploadAreaId + "/" + encodeURIComponent(fileName) + "/validate";
                         request({
                             method: "PUT",
@@ -35,9 +44,9 @@ class IngestFileValidator {
                             body: {
                                 "validator_image": imageUrl
                             }
-                        }).then(resp => {
+                        }).then((resp: any) => {
                             resolve(resp['validation_id']);
-                        }).catch(err => {
+                        }).catch((err: Error) => {
                             console.error("ERROR: Failed to request a validation job for file at " + this.ingestClient.selfLinkForResource(fileDocument));
                             reject(err);
                         });
@@ -47,14 +56,14 @@ class IngestFileValidator {
         });
     }
 
-    imageFor(fileFormat) {
-        return R.find(R.propEq('fileFormat', fileFormat),this.fileValidationImages);
+    imageFor(fileFormat: string) : FileValidationImage|undefined {
+        return R.find(R.propEq('fileFormat', fileFormat), this.fileValidationImages);
     }
 
-    uploadAreaForFile(fileDocument) {
+    uploadAreaForFile(fileDocument: string) : Promise<string> {
         return new Promise((resolve, reject) => {
             this.ingestClient.envelopesForMetadataDocument(fileDocument)
-                .then(envelopes => {
+                .then((envelopes: any[]) => {
                     const envelope = envelopes[0]; // assuming there is at least 1 envelope
                     const uploadAreaId = envelope["stagingDetails"]["stagingAreaUuid"]["uuid"];
                     resolve(uploadAreaId);
@@ -65,17 +74,7 @@ class IngestFileValidator {
                 });
         });
     }
-
-    static FileValidationImage(fileFormat, imageUrl) {
-        return new _FileValidationImage(fileFormat, imageUrl);
-    }
 }
 
-class _FileValidationImage {
-    constructor(fileFormat, imageUrl) {
-        this.fileFormat = fileFormat;
-        this.imageUrl = imageUrl;
-    }
-}
 
-module.exports = IngestFileValidator;
+export default IngestFileValidator;

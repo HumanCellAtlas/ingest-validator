@@ -2,13 +2,13 @@
  * Created by rolando on 06/08/2018.
  */
 
-class NoUuidError extends Error {}
-class RetryableError extends Error {}
-class NotRetryableError extends Error {}
-class AlreadyInStateError extends NotRetryableError {}
+namespace ingestClientExceptions {
+    export class NoUuidError extends Error {}
+    export class RetryableError extends Error {}
+    export class NotRetryableError extends Error {}
+    export class AlreadyInStateError extends NotRetryableError {}
 
-module.exports = {
-    "NoUuidError" : NoUuidError,
-    "RetryableError": RetryableError,
-    "NotRetryableError": NotRetryableError
-};
+
+}
+
+export = ingestClientExceptions;

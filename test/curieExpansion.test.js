@@ -1,4 +1,4 @@
-const curieExpansion = require("../src/utils/curie_expansion");
+const curieExpansion = require("../src/utils/curie-expansion");
 
 test("Curie expansion with no errors", () => {
     const curie = "EFO:0000399"

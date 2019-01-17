@@ -7,6 +7,8 @@ WORKDIR /app
 ADD src ./src
 ADD config ./config
 COPY package*.json ./
+COPY tsconfig.json ./
 
 RUN npm install
-CMD ["node", "./src/app.js"]
+RUN npm run build-ts
+CMD ["node", "./dist/app.js"]

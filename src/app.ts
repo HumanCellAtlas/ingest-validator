@@ -1,16 +1,24 @@
 /**
  * Created by rolando on 02/08/2018.
  */
-
+import config from "config";
+import IngestClient from "./utils/ingest-client/ingest-client";
+import DocumentUpdateListener from "./listener/document-update-listener";
+import FileValidationHandler from "./listener/handlers/file-validation-handler";
+import FileValidationListener from "./listener/file-validation-listener";
+import IngestFileValidator from "./utils/ingest-client/ingest-file-validator";
+import {
+    FileValidationImage,
+    IngestConnectionProperties,
+    RabbitConnectionProperties,
+    UploadApiConnectionProperties
+} from "./common/types";
+import R from "ramda";
+import IngestValidator from "./validation/ingest-validator";
+import DocumentUpdateHandler from "./listener/handlers/document-update-handler";
+import SchemaValidator from "./validation/schema-validator";
+import GraphRestriction from "./custom/graph-restriction";
 /** Pre-setup: Configuring HTTP agents and DNS caching **/
-const request = require('request-defaults');
-
-request.globalDefaults({
-    family: 4,
-    pool: {
-        maxSockets: 10
-    }
-});
 
 const dnscache = require('dnscache')({
     "enable" : true,
@@ -19,33 +27,22 @@ const dnscache = require('dnscache')({
 });
 
 /** ------------------------------- **/
-const config = require('config');
-const R = require('rambda');
 
-const DocumentUpdateListener = require('./listener/document-update-listener');
-const DocumentUpdateHandler = require('./listener/handlers/document-update-handler');
-
-const FileValidationListener = require('./listener/file-validation-listener');
-const FileValidationHandler = require('./listener/handlers/file-validation-handler');
-
-const IngestClient = require('./utils/ingest-client/ingest-client');
-const IngestValidator = require('./validation/ingest-validator');
-const IngestFileValidator = require('./utils/ingest-client/ingest-file-validator');
-
-const schemaValidator = require('./validation/validator');
-
+const schemaValidator = (() => {
+    const ontologyValidatorKeyword = new GraphRestriction("graph_restriction");
+    return new SchemaValidator([ontologyValidatorKeyword]);
+})();
 
 const ingestClient = (() => {
-    const ingestConnectionConfig = config.get("INGEST_API.connection");
+    const ingestConnectionConfig = config.get("INGEST_API.connection") as IngestConnectionProperties;
     return new IngestClient(ingestConnectionConfig);
 })();
 
 const ingestFileValidator = (() => {
-    const fileValidationConnectionConfig = config.get("UPLOAD_API.connection");
-    const apiKey = config.get("UPLOAD_API.apiKey");
+    const fileValidationConnectionConfig = config.get("UPLOAD_API.connection") as UploadApiConnectionProperties;
+    const apiKey = config.get("UPLOAD_API.apiKey") as string;
     const validationImageConfigs = Object.entries(config.get("FILE_VALIDATION_IMAGES"));
-    const validationImages = R.map(configEntry => IngestFileValidator.FileValidationImage(configEntry[0], configEntry[1])) (validationImageConfigs);
-
+    const validationImages: FileValidationImage[] = R.map((configEntry: any[]) => { return {fileFormat: configEntry[0], imageUrl: configEntry[1]}}, validationImageConfigs);
     return new IngestFileValidator(fileValidationConnectionConfig, apiKey, validationImages, ingestClient);
 })();
 
@@ -56,12 +53,12 @@ const ingestValidator = (() => {
 const documentUpdateListener = (() => {
     const handler = new DocumentUpdateHandler(ingestValidator, ingestClient);
 
-    const rabbitConnectionConfig = config.get("AMQP.metadataValidation.connection");
-    const rabbitMessagingConfig = config.get("AMQP.metadataValidation.messaging");
+    const rabbitConnectionConfig = config.get("AMQP.metadataValidation.connection") as RabbitConnectionProperties;
+    const rabbitMessagingConfig = config.get("AMQP.metadataValidation.messaging") as any;
 
-    const exchange = rabbitMessagingConfig["exchange"];
-    const queue = rabbitMessagingConfig["queueName"];
-    const exchangeType = rabbitMessagingConfig["exchangeType"];
+    const exchange: string = rabbitMessagingConfig["exchange"];
+    const queue: string = rabbitMessagingConfig["queueName"];
+    const exchangeType: string = rabbitMessagingConfig["exchangeType"];
 
     return new DocumentUpdateListener(rabbitConnectionConfig, exchange, queue, handler, exchangeType);
 })();
@@ -70,13 +67,13 @@ const documentUpdateListener = (() => {
 const fileValidationListener = (() => {
     const handler = new FileValidationHandler(ingestClient);
 
-    const rabbitConnectionConfig = config.get("AMQP.fileValidationResults.connection");
-    const rabbitMessagingConfig = config.get("AMQP.fileValidationResults.messaging");
+    const rabbitConnectionConfig = config.get("AMQP.fileValidationResults.connection") as RabbitConnectionProperties;
+    const rabbitMessagingConfig = config.get("AMQP.fileValidationResults.messaging") as any;
 
 
-    const exchange = rabbitMessagingConfig["exchange"];
-    const queue = rabbitMessagingConfig["queueName"];
-    const exchangeType = rabbitMessagingConfig["exchangeType"];
+    const exchange: string = rabbitMessagingConfig["exchange"];
+    const queue: string = rabbitMessagingConfig["queueName"];
+    const exchangeType: string = rabbitMessagingConfig["exchangeType"];
 
     return new FileValidationListener(rabbitConnectionConfig, exchange, queue, handler, exchangeType);
 })();

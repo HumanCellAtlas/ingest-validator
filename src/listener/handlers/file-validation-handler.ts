@@ -1,21 +1,23 @@
 /**
  * Created by rolando on 06/08/2018.
  */
+import IHandler from "./handler";
+import IngestClient from "../../utils/ingest-client/ingest-client";
+import ValidationReport from "../../model/validation-report";
 
-const Promise = require('bluebird');
-const ValidationReport = require('../../model/validation-report');
+class FileValidationHandler implements IHandler{
+    ingestClient: IngestClient;
 
-class FileValidationHandler {
-    constructor(ingestClient) {
+    constructor(ingestClient: IngestClient) {
         this.ingestClient = ingestClient;
     }
 
-    async handle(msg) {
+    async handle(msg: string) {
         let msgContent = null;
         try {
-            msgContent = JSON.parse(msg.content);
+            msgContent = JSON.parse(msg);
         } catch (err) {
-            console.error("Failed to parse message content (ignoring): " + msg.content);
+            console.error("Failed to parse message content (ignoring): " + msg);
             return;
         }
         const validationJobId = msgContent['validation_id'];
@@ -24,7 +26,7 @@ class FileValidationHandler {
         try {
             validationOutput = JSON.parse(msgContent['stdout']);
         } catch (err) {
-            console.error("Failed to JSON parse stdout in validation message (ignoring): " + msg.content);
+            console.error("Failed to JSON parse stdout in validation message (ignoring): " + msg);
             return;
         }
 
@@ -45,4 +47,4 @@ class FileValidationHandler {
     }
 }
 
-module.exports = FileValidationHandler;
+export default FileValidationHandler;

@@ -1,20 +1,23 @@
 /**
  * Created by rolando on 07/08/2018.
  */
+import {AdditionalPropertiesParams, EnumParams, ErrorObject} from "ajv";
 
 class ErrorReport {
-    constructor(ajvError=null) {
+    ajvError? : ErrorObject;
+    message?: string;
+    absoluteDataPath?: string;
+    userFriendlyMessage?: string;
+
+    constructor(ajvError: ErrorObject) {
         this.ajvError = ajvError;
-        this.message = null;
-        this.absoluteDataPath = null;
-        this.userFriendlyMessage = null;
 
         if(ajvError) {
             this.constructWithAjvError(this.ajvError);
         }
     }
 
-    constructUserFriendlyMessage() {
+    constructUserFriendlyMessage() : void {
         if(this.absoluteDataPath === null) {
             throw new Error("Can't construct a user friendly message: absoluteDataPath of error not set");
         } else if(!this.message) {
@@ -27,10 +30,13 @@ class ErrorReport {
             if(this.ajvError) {
                 const keyword = this.ajvError["keyword"];
                 if(keyword === "additionalProperties") {
-                    const additionalProperty = this.ajvError["params"]["additionalProperty"];
+                    const additionalPropertyParams = this.ajvError.params as AdditionalPropertiesParams;
+                    const additionalProperty = additionalPropertyParams.additionalProperty;
+
                     this.userFriendlyMessage = "Found disallowed additional property " + additionalProperty + " at " + this.absoluteDataPath;
                 } else if(keyword === "enum") {
-                    const allowedValues = this.ajvError["params"]["allowedValues"];
+                    const allowedValuesParams = this.ajvError.params as EnumParams;
+                    const allowedValues = allowedValuesParams.allowedValues;
                     this.userFriendlyMessage = this.absoluteDataPath + " " + this.message + ": " + "[" + allowedValues + "]";
                 } else {
                     this.userFriendlyMessage = this.message + " at " + this.absoluteDataPath;
@@ -41,7 +47,7 @@ class ErrorReport {
         }
     }
 
-    constructWithAjvError(ajvError) {
+    constructWithAjvError(ajvError: ErrorObject) : void {
         this.absoluteDataPath = ajvError.dataPath;
         this.message = ajvError.message;
 
@@ -49,4 +55,4 @@ class ErrorReport {
     }
 }
 
-module.exports = ErrorReport;
+export default ErrorReport;

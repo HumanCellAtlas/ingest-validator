@@ -1,28 +1,30 @@
 /**
  * Created by rolando on 01/08/2018.
  */
-const config = require('config');
+import config from "config";
+import request from "request-promise";
 
-const request = require('request-promise').defaults({
+request.defaults({
     family: 4,
     pool: {
         maxSockets: config.get("INGEST_API.maxConnections")
     }
 });
 
-const Promise = require('bluebird');
-const exceptions = require('./ingest-client-exceptions');
-const NoUuidError = exceptions.NoUuidError;
-const RetryableError = exceptions.RetryableError;
-const NotRetryableError = exceptions.NotRetryableError;
+import Promise from "bluebird";
 
+
+import {NoUuidError, NotRetryableError, RetryableError} from "./ingest-client-exceptions";
+import {IngestConnectionProperties} from "../../common/types";
+import ValidationReport from "../../model/validation-report";
 
 class IngestClient {
-    constructor(connectionConfig) {
-        this.ingestUrl = connectionConfig["scheme"] + "://" + connectionConfig["host"] + ":" + connectionConfig["port"];
+    ingestUrl: string;
+    constructor(connectionConfig: IngestConnectionProperties) {
+        this.ingestUrl = `${connectionConfig.scheme}://${connectionConfig.host}:${connectionConfig.port}`;
     }
 
-    retrieveMetadataDocument(entityUrl) {
+    retrieveMetadataDocument(entityUrl: string) : Promise<any>{
         return new Promise((resolve, reject) => {
             request({
                 method: "GET",
@@ -44,9 +46,9 @@ class IngestClient {
      * @param entityUrl
      * @returns {Promise} resolving to the metadata document JSON
      */
-    getMetadataDocument(entityUrl) {
+    getMetadataDocument(entityUrl: string) {
         return new Promise((resolve, reject) => {
-            this.retrieveMetadataDocument(entityUrl).then(doc => {
+            this.retrieveMetadataDocument(entityUrl).then((doc: any) => {
                 if(doc["uuid"] && doc["uuid"]["uuid"]) {
                     resolve(doc);
                 } else {
@@ -58,13 +60,13 @@ class IngestClient {
         });
     }
 
-    transitionDocumentState(...args) {
+    transitionDocumentState(...args: any[]) : Promise<any> {
         return this.retry(5, this._transitionDocumentState.bind(this), args, "Retrying transitionDocumentState()")
     }
 
-    _transitionDocumentState(entityUrl, validationState) {
+    _transitionDocumentState(entityUrl: string, validationState: string) : Promise<any> {
         return new Promise((resolve, reject) => {
-            this.retrieveMetadataDocument(entityUrl).then(doc => {
+            this.retrieveMetadataDocument(entityUrl).then((doc: any) => {
                     if(doc['validationState'].toUpperCase() === validationState.toUpperCase()) {
                         reject(new NotRetryableError("Failed to transition document; document was already in the target state"));
                     } else {
@@ -85,11 +87,11 @@ class IngestClient {
         });
     }
 
-    setValidationErrors(...args) {
+    setValidationErrors(...args: any[]) {
         return this.retry(5, this._setValidationErrors.bind(this), args, "Retrying setValidationErrors()")
     }
 
-    _setValidationErrors(entityUrl, validationErrors) {
+    _setValidationErrors(entityUrl: string, validationErrors: any[]) {
         const patchPayload = {
             "validationErrors" : validationErrors
         };
@@ -108,7 +110,7 @@ class IngestClient {
         });
     }
 
-    findFileByValidationId(validationId) {
+    findFileByValidationId(validationId: string) {
         // TODO: determine search endpoint by following rels; cache the result
         const findByValidationUrl = this.ingestUrl + "/files/search/findByValidationId?validationId=" + validationId;
 
@@ -119,7 +121,7 @@ class IngestClient {
         });
     }
 
-    postValidationReport(entityUrl, validationReport) {
+    postValidationReport(entityUrl: string, validationReport: ValidationReport) : Promise<any>{
         if(! validationReport || ! validationReport.validationState) {
             console.info("Broken validation report");
         }
@@ -128,9 +130,9 @@ class IngestClient {
             console.info("posting a valid report")
         }
 
-        return new Promise((resolve, reject) => {
+        return new Promise<any>((resolve, reject) => {
             this.transitionDocumentState(entityUrl, validationReport.validationState).then(() => {
-                this.setValidationErrors(entityUrl, validationReport.validationErrors).then((resp) => {
+                this.setValidationErrors(entityUrl, validationReport.validationErrors).then((resp: any) => {
                     if(validationReport.validationJobId) {
                         resolve(this.reportValidationJobId(entityUrl, validationReport.validationJobId));
                     } else {
@@ -143,27 +145,31 @@ class IngestClient {
             }).catch(err => {
                 console.info("here now");
                 reject(err);
-            }).catch();
+            });
         });
     }
 
-    fetchSchema(schemaUrl) {
-        return request({
-            method: "GET",
-            url: schemaUrl,
-            json: true,
+    fetchSchema(schemaUrl: string) : Promise<any> {
+        return new Promise<any>((resolve, reject) => {
+            request({
+                method: "GET",
+                url: schemaUrl,
+                json: true,
+            })
+                .then(resp => resolve(resp))
+                .catch(err => reject(err));
         });
     }
 
-    urlForCallbackLink(entityCallback) {
+    urlForCallbackLink(entityCallback: string) {
         return this.ingestUrl + entityCallback;
     }
 
-    selfLinkForResource(resource) {
+    selfLinkForResource(resource: any) {
         return resource["_links"]["self"]["href"];
     }
 
-    envelopesLinkForResource(resource) {
+    envelopesLinkForResource(resource: any) {
         return resource["_links"]["submissionEnvelopes"]["href"];
     }
 
@@ -171,7 +177,7 @@ class IngestClient {
      * gets envelopes associated with this metadata document
      * @param metadataDocument
      */
-    envelopesForMetadataDocument(metadataDocument) {
+    envelopesForMetadataDocument(metadataDocument: any) : Promise<any[]> {
         return new Promise((resolve, reject) => {
             request({
                 method: "GET",
@@ -186,7 +192,7 @@ class IngestClient {
         });
     }
 
-    reportValidationJobId(fileDocumentUrl, validationJobId) {
+    reportValidationJobId(fileDocumentUrl: string, validationJobId: string) {
         return request({
             method: "PATCH",
             url: fileDocumentUrl,
@@ -197,22 +203,22 @@ class IngestClient {
         });
     }
 
-    retry(maxRetries, func, args, retryMessage) {
+    retry(maxRetries: number, func: Function, args: any[], retryMessage: string) {
         return this._retry(0, maxRetries, null, func, args, retryMessage);
     }
 
-    _retry(attemptsSoFar, maxRetries, prevErr, func, args, retryMessage) {
+    _retry(attemptsSoFar: number, maxRetries: number, prevErr: Error|null, func: Function, args: any[], retryMessage: string) {
         if(attemptsSoFar === maxRetries) {
             return Promise.reject(prevErr);
         } else {
             const boundFunc = func.bind(this);
             return Promise.delay(50).then(() => {
                 return boundFunc.apply(null, args)
-                    .then(allGood => {return Promise.resolve(allGood)})
-                    .catch(NotRetryableError, err => {
+                    .then( (allGood: any) => {return Promise.resolve(allGood)})
+                    .catch(NotRetryableError, (err: NotRetryableError) => {
                         return Promise.reject(err);
                     })
-                    .catch(err => {
+                    .catch( (err: Error) => {
                         const incAttempts = attemptsSoFar + 1;
                         console.info(retryMessage + " :: Attempt # " + incAttempts + " out of " + maxRetries);
                         return this._retry(attemptsSoFar + 1, maxRetries, err, func, args, retryMessage);
@@ -222,4 +228,4 @@ class IngestClient {
     }
 }
 
-module.exports = IngestClient;
+export default IngestClient;

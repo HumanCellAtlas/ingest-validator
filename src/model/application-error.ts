@@ -1,7 +1,9 @@
 class AppError {
-  constructor(errorString) {
+  errors: string;
+
+  constructor(errorString: string) {
     this.errors = errorString;
   }
 }
 
-module.exports = AppError;
+export default AppError;

@@ -1,17 +1,24 @@
+import {EnumParams, ErrorObject, RequiredParams} from "ajv";
+
 class ValidationError {
-  constructor(errorObject) {
-    if(errorObject.params.missingProperty) {
-      this.dataPath = errorObject.dataPath + "." + errorObject.params.missingProperty;
+  dataPath: string;
+  errors: string[];
+
+  constructor(errorObject: ErrorObject) {
+    if(errorObject.params.hasOwnProperty("missingProperty")) {
+      const errorObjectParams = errorObject.params as RequiredParams;
+      this.dataPath = errorObject.dataPath + "." + errorObjectParams.missingProperty;
     } else {
       this.dataPath = errorObject.dataPath;
     }
 
-    if(errorObject.params.allowedValues) { // enum case
-      this.errors = [errorObject.message + ": " + JSON.stringify(errorObject.params.allowedValues)];
+    if(errorObject.params.hasOwnProperty("allowedValues")) { // enum case
+        const errorObjectParams = errorObject.params as EnumParams;
+        this.errors = [errorObject.message + ": " + JSON.stringify(errorObjectParams.allowedValues)];
     } else {
-      this.errors = [errorObject.message];
+      this.errors = [errorObject.message!];
     }
   }
 }
 
-module.exports = ValidationError;
+export default ValidationError;

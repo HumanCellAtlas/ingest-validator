@@ -1,9 +1,13 @@
 class CustomAjvError {
-  constructor(keyword, message, paramsObj) {
+  keyword: string;
+  message: string;
+  params: any;
+
+  constructor(keyword: string, message: string, paramsObj: any) {
     this.keyword = keyword;
     this.message = message;
     this.params = paramsObj;
   }
 }
 
-module.exports = CustomAjvError;
+export default CustomAjvError;

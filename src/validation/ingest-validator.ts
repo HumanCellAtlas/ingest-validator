@@ -1,15 +1,16 @@
 /**
  * Created by rolando on 08/08/2018.
  */
-const Promise = require('bluebird');
-const R = require('rambda');
+import ValidationReport from "../model/validation-report";
 
-const NoDescribedBy = require('./ingest-validation-exceptions').NoDescribedBy;
-const NoFileValidationJob = require('./ingest-validation-exceptions').NoFileValidationJob;
-
-const ErrorReport = require('../model/error-report');
-const ValidationReport = require('../model/validation-report');
-
+import Promise from "bluebird";
+import IngestFileValidator from "../utils/ingest-client/ingest-file-validator";
+import IngestClient from "../utils/ingest-client/ingest-client";
+import {ErrorObject} from "ajv";
+import SchemaValidator from "./schema-validator";
+import ErrorReport from "../model/error-report";
+import {NoDescribedBy, NoFileValidationJob} from "./ingest-validation-exceptions";
+import R from "ramda";
 /**
  *
  * Wraps the generic validator, outputs errors in custom format.
@@ -17,14 +18,19 @@ const ValidationReport = require('../model/validation-report');
  *
  */
 class IngestValidator {
-    constructor(schemaValidator, fileValidator, ingestClient) {
+    schemaValidator: SchemaValidator; // TODO: good typing for the schema validator
+    fileValidator: IngestFileValidator;
+    ingestClient: IngestClient;
+    schemaCache: any;
+
+    constructor(schemaValidator: SchemaValidator, fileValidator: IngestFileValidator, ingestClient: IngestClient) {
         this.schemaValidator = schemaValidator;
         this.fileValidator = fileValidator;
         this.ingestClient = ingestClient;
         this.schemaCache = {};
     }
 
-    validate(document, documentType) {
+    validate(document: any, documentType: string) : Promise<ValidationReport> {
         const documentContent = document["content"];
         if(! documentContent["describedBy"]) {
             return Promise.reject(new NoDescribedBy("describedBy is a required field"));
@@ -32,15 +38,15 @@ class IngestValidator {
             let schemaUri = documentContent["describedBy"];
 
             return this.getSchema(schemaUri)
-                .then(schema => {return this.insertSchemaId(schema)})
+                .then(schema => {return IngestValidator.insertSchemaId(schema)})
                 .then(schema => {return this.schemaValidator.validateSingleSchema(schema, documentContent)})
-                .then(valErrors => {return this.parseValidationErrors(valErrors)})
-                .then(parsedErrors => {return this.generateValidationReport(parsedErrors)})
+                .then(valErrors => {return IngestValidator.parseValidationErrors(valErrors)})
+                .then(parsedErrors => {return IngestValidator.generateValidationReport(parsedErrors)})
                 .then(report => {return this.attemptFileValidation(report, document, documentType)})
         }
     }
 
-    getSchema(schemaUri) {
+    getSchema(schemaUri: string): Promise<string> {
         if(! this.schemaCache[schemaUri]) {
             return new Promise((resolve, reject) => {
                 this.ingestClient.fetchSchema(schemaUri)
@@ -57,7 +63,7 @@ class IngestValidator {
         }
     }
 
-    insertSchemaId(schema) {
+    static insertSchemaId(schema: any) : Promise<any> {
         if(schema["id"]) {
             schema["$id"] = schema["id"];
         }
@@ -68,11 +74,11 @@ class IngestValidator {
      * Ingest error reports from ajvError objects
      * @param errors
      */
-    parseValidationErrors(errors){
-        return Promise.resolve(R.map(ajvErr => new ErrorReport(ajvErr), errors));
+    static parseValidationErrors(errors: ErrorObject[]) : Promise<ErrorReport[]> {
+        return Promise.resolve(R.map((ajvErr: ErrorObject) => new ErrorReport(ajvErr), errors));
     }
 
-    generateValidationReport(errors) {
+    static generateValidationReport(errors: ErrorReport[]) : Promise<ValidationReport> {
         let report = null;
 
         if(errors.length > 0) {
@@ -96,10 +102,10 @@ class IngestValidator {
      *
      * @returns {Promise.<ValidationReport>}
      */
-    attemptFileValidation(report, fileDocument, documentType) {
+    attemptFileValidation(report: ValidationReport, fileDocument: any, documentType: string) : Promise<ValidationReport> {
         if(documentType === 'FILE' && report.validationState === 'VALID') {
             const fileName = fileDocument['fileName'];
-            const fileFormat = this.fileFormatFromFileName(fileName);
+            const fileFormat = IngestValidator.fileFormatFromFileName(fileName);
 
             return new Promise((resolve, reject) => {
                 this.fileValidator.requestFileValidationJob(fileDocument, fileFormat, fileName)
@@ -129,8 +135,8 @@ class IngestValidator {
      *
      * @param fileName
      */
-    fileFormatFromFileName(fileName) {
-        const appendExtensions = (subExtension, subsequentSubExtension) => {
+    static fileFormatFromFileName(fileName: string): string {
+        const appendExtensions = (subExtension: string, subsequentSubExtension: string) => {
             if(subExtension === "") {
                 return subsequentSubExtension;
             } else {
@@ -138,9 +144,10 @@ class IngestValidator {
             }
         };
 
-        const splitFilename = fileName.split('.');
-        return R.reduce(appendExtensions, "", R.tail(splitFilename));
+        const splitFilename: string[] = fileName.split('.');
+        const accum: string = "";
+        return R.reduce(appendExtensions, accum, R.tail(splitFilename));
     }
 }
 
-module.exports = IngestValidator;
+export default IngestValidator;
