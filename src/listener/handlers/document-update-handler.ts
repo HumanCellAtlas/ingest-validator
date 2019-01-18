@@ -35,6 +35,7 @@ class DocumentUpdateHandler implements IHandler {
                 .then(resp => resolve(resp))
                 .catch(NotEligibleForValidation, err => console.info("Document at " + documentUrl + " not eligible for validation, ignoring.."))
                 .catch(NoCloudUrl, err => console.info("File document at " + documentUrl + " has no cloudUrl, ignoring.."))
+                .catch(NoFileMetadata, err => console.info("File document at " + documentUrl + " has no metadata, ignoring.."))
                 .catch(NoUuidError, err => console.info("Document at " + documentUrl + " has no uuid, ignoring..."))
                 .catch(err => reject(err));
         });
