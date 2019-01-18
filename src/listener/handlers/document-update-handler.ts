@@ -5,7 +5,7 @@ import IngestValidator from "../../validation/ingest-validator";
 import IngestClient from "../../utils/ingest-client/ingest-client";
 import IHandler from "./handler";
 import Promise from "bluebird";
-import {NoCloudUrl, NotEligibleForValidation} from "../../validation/ingest-validation-exceptions";
+import {NoCloudUrl, NoFileMetadata, NotEligibleForValidation} from "../../validation/ingest-validation-exceptions";
 import {NoUuidError} from "../../utils/ingest-client/ingest-client-exceptions";
 import ValidationReport from "../../model/validation-report";
 
@@ -50,8 +50,14 @@ class DocumentUpdateHandler implements IHandler {
      */
     checkEligibleForFileValidation(document: any, documentType: string) : Promise<any> {
         return new Promise((resolve, reject) => {
-            if(documentType === 'FILE' && !document['cloudUrl'] && !document['content']) {
-                reject(new NoCloudUrl());
+            if(documentType === 'FILE'){
+               if(!document['cloudUrl']) {
+                   reject(new NoCloudUrl());
+               } else if(!document['content']) {
+                   reject (new NoFileMetadata())
+               } else {
+                   resolve(document);
+               }
             } else {
                 resolve(document);
             }
