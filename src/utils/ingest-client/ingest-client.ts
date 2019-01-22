@@ -3,6 +3,7 @@
  */
 import config from "config";
 import request from "request-promise";
+import R from "ramda";
 
 request.defaults({
     family: 4,
@@ -14,7 +15,7 @@ request.defaults({
 import Promise from "bluebird";
 
 
-import {NoUuidError, NotRetryableError, RetryableError} from "./ingest-client-exceptions";
+import {NoUuidError, NotRetryableError, RetryableError, LinkNotFoundOnResource} from "./ingest-client-exceptions";
 import {IngestConnectionProperties} from "../../common/types";
 import ValidationReport from "../../model/validation-report";
 
@@ -24,7 +25,8 @@ class IngestClient {
         this.ingestUrl = `${connectionConfig.scheme}://${connectionConfig.host}:${connectionConfig.port}`;
     }
 
-    retrieveMetadataDocument(entityUrl: string) : Promise<any>{
+
+    retrieve(entityUrl: string) : Promise<any>{
         return new Promise((resolve, reject) => {
             request({
                 method: "GET",
@@ -36,7 +38,26 @@ class IngestClient {
                 reject(err);
             });
         });
+    }
 
+    retrieveEmbeddedEntities(entityUrl: string, entityLink: string, entityType: string) : Promise<any[]> {
+        return new Promise<any[]>((resolve, reject) => {
+            this.retrieve(entityUrl)
+                .then(doc => {
+                    if(! IngestClient.pathExistsInDoc(["_links", entityLink], doc)) {
+                        throw new LinkNotFoundOnResource(`Error: Resource at ${entityUrl} has no link "${entityLink}"`);
+                    } else {
+                        this.retrieve(doc["_links"][entityLink]["href"]).then(embeddedEntites => {
+                            resolve(embeddedEntites["_embedded"][entityType]);
+                        });
+                    }
+                })
+        });
+    }
+
+
+    retrieveMetadataDocument(entityUrl: string) : Promise<any>{
+        return this.retrieve(entityUrl);
     }
 
     /**
@@ -225,6 +246,10 @@ class IngestClient {
                     });
             });
         }
+    }
+
+    static pathExistsInDoc(path: string[], doc: any) : boolean {
+        return !!R.path(path, doc);
     }
 }
 

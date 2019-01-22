@@ -18,7 +18,7 @@ import R from "ramda";
  *
  */
 class IngestValidator {
-    schemaValidator: SchemaValidator; // TODO: good typing for the schema validator
+    schemaValidator: SchemaValidator;
     fileValidator: IngestFileValidator;
     ingestClient: IngestClient;
     schemaCache: any;
