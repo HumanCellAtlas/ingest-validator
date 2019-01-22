@@ -236,13 +236,14 @@ class IngestClient {
             return Promise.delay(50).then(() => {
                 return boundFunc.apply(null, args)
                     .then( (allGood: any) => {return Promise.resolve(allGood)})
-                    .catch(NotRetryableError, (err: NotRetryableError) => {
-                        return Promise.reject(err);
-                    })
                     .catch( (err: Error) => {
-                        const incAttempts = attemptsSoFar + 1;
-                        console.info(retryMessage + " :: Attempt # " + incAttempts + " out of " + maxRetries);
-                        return this._retry(attemptsSoFar + 1, maxRetries, err, func, args, retryMessage);
+                        if(err instanceof NotRetryableError) {
+                            return Promise.reject(err);
+                        } else {
+                            const incAttempts = attemptsSoFar + 1;
+                            console.info(retryMessage + " :: Attempt # " + incAttempts + " out of " + maxRetries);
+                            return this._retry(attemptsSoFar + 1, maxRetries, err, func, args, retryMessage);
+                        }
                     });
             });
         }

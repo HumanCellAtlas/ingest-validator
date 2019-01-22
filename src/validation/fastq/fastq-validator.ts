@@ -61,8 +61,8 @@ class FastqValidator {
      *
      * @param fileResource
      */
-    static * _determineValidationContext(fileResource: FileResource): FastqValidationContext {
-
+    static determineValidationContext(fileResource: FileResource): FastqValidationContext|undefined {
+        return undefined;
     }
 
     static _isResourceEligible(resource: any, resourceType: string): boolean {
