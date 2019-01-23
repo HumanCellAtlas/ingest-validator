@@ -18,6 +18,7 @@ import IngestValidator from "./validation/ingest-validator";
 import DocumentUpdateHandler from "./listener/handlers/document-update-handler";
 import SchemaValidator from "./validation/schema-validator";
 import GraphRestriction from "./custom/graph-restriction";
+import UploadClient from "./utils/upload-client/upload-client";
 /** Pre-setup: Configuring HTTP agents and DNS caching **/
 
 const dnscache = require('dnscache')({
@@ -38,12 +39,16 @@ const ingestClient = (() => {
     return new IngestClient(ingestConnectionConfig);
 })();
 
-const ingestFileValidator = (() => {
-    const fileValidationConnectionConfig = config.get("UPLOAD_API.connection") as UploadApiConnectionProperties;
+const uploadClient = (() => {
+    const uploadApiConnectionProperties = config.get("UPLOAD_API.connection") as UploadApiConnectionProperties;
     const apiKey = config.get("UPLOAD_API.apiKey") as string;
+    return new UploadClient(uploadApiConnectionProperties, apiKey);
+})();
+
+const ingestFileValidator = (() => {
     const validationImageConfigs = Object.entries(config.get("FILE_VALIDATION_IMAGES"));
     const validationImages: FileValidationImage[] = R.map((configEntry: any[]) => { return {fileFormat: configEntry[0], imageUrl: configEntry[1]}}, validationImageConfigs);
-    return new IngestFileValidator(fileValidationConnectionConfig, apiKey, validationImages, ingestClient);
+    return new IngestFileValidator(uploadClient, validationImages, ingestClient);
 })();
 
 const ingestValidator = (() => {

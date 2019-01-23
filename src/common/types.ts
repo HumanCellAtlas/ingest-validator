@@ -18,6 +18,12 @@ namespace ts {
         fileFormat: string;
         imageUrl: string;
     }
+
+    export type FileValidationRequest = {
+        fileName: string,
+        uploadAreaUuid: string,
+        validationImageUrl: string
+    }
 }
 
 export = ts;

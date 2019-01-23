@@ -2,62 +2,58 @@
  * Created by rolando on 12/08/2018.
  */
 import Promise from "bluebird";
-import {FileValidationImage, UploadApiConnectionProperties} from "../../common/types";
+import {FileValidationImage, FileValidationRequest, UploadApiConnectionProperties} from "../../common/types";
 import IngestClient from "./ingest-client";
 import request from "request-promise";
 import R from "ramda";
 import {NoFileValidationJob} from "../../validation/ingest-validation-exceptions";
-
+import UploadClient from "../upload-client/upload-client";
 
 class IngestFileValidator {
-    uploadApiConnectionProperties: UploadApiConnectionProperties;
-    fileValidationUrl: string;
-    fileValidationServiceApiKey: string;
     fileValidationImages: FileValidationImage[];
     ingestClient: IngestClient;
+    uploadClient: UploadClient;
 
-    constructor(connectionConfig: UploadApiConnectionProperties, apiKey: string, fileValidationImages: FileValidationImage[], ingestClient: IngestClient) {
-        this.uploadApiConnectionProperties = connectionConfig;
-        this.fileValidationUrl = connectionConfig["scheme"] + "://" + connectionConfig["host"] + ":" + connectionConfig["port"];
-        this.fileValidationServiceApiKey = apiKey;
+    constructor(uploadClient: UploadClient, fileValidationImages: FileValidationImage[], ingestClient: IngestClient) {
         this.fileValidationImages = fileValidationImages;
         this.ingestClient = ingestClient;
+        this.uploadClient = uploadClient
     }
 
-    requestFileValidationJob(fileDocument: any, fileFormat: string, fileName: string) : Promise<string> {
-        return new Promise((resolve, reject) => {
-            this.uploadAreaForFile(fileDocument)
-                .then((uploadAreaId: string) => {
-                    const validationImage = this.imageFor(fileFormat);
-                    if(! validationImage) {
-                        reject(new NoFileValidationJob());
-                    } else {
-                        const imageUrl = validationImage.imageUrl;
-                        const validateFileUrl = this.fileValidationUrl + "/v1/area/" + uploadAreaId + "/" + encodeURIComponent(fileName) + "/validate";
-                        request({
-                            method: "PUT",
-                            url: validateFileUrl,
-                            json: true,
-                            headers: {
-                                "Api-key" : this.fileValidationServiceApiKey
-                            },
-                            body: {
-                                "validator_image": imageUrl
-                            }
-                        }).then((resp: any) => {
-                            resolve(resp['validation_id']);
-                        }).catch((err: Error) => {
-                            console.error("ERROR: Failed to request a validation job for file at " + this.ingestClient.selfLinkForResource(fileDocument));
-                            reject(err);
-                        });
-                        }
-                });
+    /**
+     *
+     * Validates a data file in File resource. Throws an exception if the File resource already has a validation job
+     * associated with its current checksums
+     *
+     * @param fileResource
+     * @param fileFormat
+     * @param fileName
+     */
+    validateFile(fileResource: any, fileFormat: string, fileName: string) : Promise<string> {
+        return this
+            .uploadAreaForFile(fileResource)
+            .then(uploadAreaUuid => {
+                const imageUrl = this.imageFor(fileFormat)!.imageUrl;
+                return IngestFileValidator._validateFile(fileName, uploadAreaUuid, imageUrl, this.uploadClient)
+            });
+    }
 
-        });
+    static _validateFile(fileName: string, uploadAreaUuid: string, imageUrl: string, uploadClient: UploadClient) : Promise<string> {
+        const fileValidationRequest: FileValidationRequest = {
+            fileName: fileName,
+            uploadAreaUuid: uploadAreaUuid,
+            validationImageUrl: imageUrl
+        };
+
+        return uploadClient.requestFileValidationJob(fileValidationRequest);
     }
 
     imageFor(fileFormat: string) : FileValidationImage|undefined {
-        return R.find(R.propEq('fileFormat', fileFormat), this.fileValidationImages);
+        return IngestFileValidator._imageFor(fileFormat, this.fileValidationImages);
+    }
+
+    static _imageFor(fileFormat: string, fileValidationImages: FileValidationImage[]) : FileValidationImage|undefined {
+        return R.find(R.propEq('fileFormat', fileFormat), fileValidationImages);
     }
 
     uploadAreaForFile(fileDocument: string) : Promise<string> {

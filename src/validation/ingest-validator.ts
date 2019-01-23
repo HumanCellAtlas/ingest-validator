@@ -108,7 +108,7 @@ class IngestValidator {
             const fileFormat = IngestValidator.fileFormatFromFileName(fileName);
 
             return new Promise((resolve, reject) => {
-                this.fileValidator.requestFileValidationJob(fileDocument, fileFormat, fileName)
+                this.fileValidator.validateFile(fileDocument, fileFormat, fileName)
                     .then(validationJobId => {
                         const fileValidatingReport = ValidationReport.validatingReport();
                         fileValidatingReport.validationJobId = validationJobId;
