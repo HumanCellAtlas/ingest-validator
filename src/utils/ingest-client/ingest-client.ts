@@ -16,7 +16,7 @@ import Promise from "bluebird";
 
 
 import {NoUuidError, NotRetryableError, RetryableError, LinkNotFoundOnResource} from "./ingest-client-exceptions";
-import {IngestConnectionProperties} from "../../common/types";
+import {FileChecksums, IngestConnectionProperties, ValidationJob} from "../../common/types";
 import ValidationReport from "../../model/validation-report";
 
 class IngestClient {
@@ -186,7 +186,7 @@ class IngestClient {
         return this.ingestUrl + entityCallback;
     }
 
-    selfLinkForResource(resource: any) {
+    selfLinkForResource(resource: any): string {
         return resource["_links"]["self"]["href"];
     }
 
@@ -222,6 +222,18 @@ class IngestClient {
             },
             json: true
         });
+    }
+
+    getFileChecksums(fileDocumentUrl: string) : Promise<FileChecksums> {
+        return this
+            .retrieveMetadataDocument(fileDocumentUrl)
+            .then(fileResource => {return Promise.resolve(fileResource["checksums"] as FileChecksums)});
+    }
+
+    getValidationJob(fileDocumentUrl: string) : Promise<ValidationJob> {
+        return this
+            .retrieveMetadataDocument(fileDocumentUrl)
+            .then(fileResource => {return Promise.resolve(fileResource["validationJob"] as ValidationJob)});
     }
 
     retry(maxRetries: number, func: Function, args: any[], retryMessage: string) {

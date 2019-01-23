@@ -24,6 +24,18 @@ namespace ts {
         uploadAreaUuid: string,
         validationImageUrl: string
     }
+
+    export type FileChecksums = {
+        sha1: string,
+        sha256: string,
+        crc32c: string,
+        s3_etag: string
+    }
+
+    export type ValidationJob = {
+        validationId: string,
+        checksums: FileChecksums
+    }
 }
 
 export = ts;
