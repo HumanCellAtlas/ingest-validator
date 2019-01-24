@@ -2,11 +2,9 @@
  * Created by rolando on 12/08/2018.
  */
 import Promise from "bluebird";
-import {FileValidationImage, FileValidationRequest, UploadApiConnectionProperties} from "../../common/types";
+import {FileChecksums, FileValidationImage, FileValidationRequest, ValidationJob} from "../../common/types";
 import IngestClient from "./ingest-client";
-import request from "request-promise";
 import R from "ramda";
-import {NoFileValidationJob} from "../../validation/ingest-validation-exceptions";
 import UploadClient from "../upload-client/upload-client";
 import {FileAlreadyValidatedError} from "./ingest-client-exceptions";
 
@@ -21,6 +19,8 @@ class IngestFileValidator {
         this.uploadClient = uploadClient
     }
 
+
+
     /**
      *
      * Validates a data file in File resource. Throws an exception if the File resource already has a validation job
@@ -30,14 +30,18 @@ class IngestFileValidator {
      * @param fileFormat
      * @param fileName
      */
-    validateFile(fileResource: any, fileFormat: string, fileName: string) : Promise<string> {
-        return this
-            .assertNotAlreadyValidated(fileResource)
-            .then(fileResource => {return this.uploadAreaForFile(fileResource)})
-            .then(uploadAreaUuid => {
+    validateFile(fileResource: any, fileFormat: string, fileName: string) : Promise<ValidationJob> {
+        return this.assertNotAlreadyValidated(fileResource).then(fileChecksums => {
+            return this.uploadAreaForFile(fileResource).then(uploadAreaUuid => {
                 const imageUrl = this.imageFor(fileFormat)!.imageUrl;
-                return IngestFileValidator._validateFile(fileName, uploadAreaUuid, imageUrl, this.uploadClient)
+                return IngestFileValidator._validateFile(fileName, uploadAreaUuid, imageUrl, this.uploadClient).then(validationJobId => {
+                    return {
+                        validationId: validationJobId,
+                        checksums: fileChecksums
+                    };
+                });
             });
+        });
     }
 
     static _validateFile(fileName: string, uploadAreaUuid: string, imageUrl: string, uploadClient: UploadClient) : Promise<string> {
@@ -50,25 +54,24 @@ class IngestFileValidator {
         return uploadClient.requestFileValidationJob(fileValidationRequest);
     }
 
-    assertNotAlreadyValidated(fileResource: any) : Promise<any> {
-        return new Promise<any>((resolve, reject) => {
-            const fileDocumentUrl = this.ingestClient.selfLinkForResource(fileResource);
 
-            this.ingestClient.getValidationJob(fileDocumentUrl).then(validationJob => {
-                if(! validationJob) {
-                    resolve(fileResource);
-                } else {
-                    this.ingestClient.getFileChecksums(fileDocumentUrl).then(fileChecksums => {
-                        const fileSha1 = fileChecksums.sha1;
-                        const validatedSha1 = validationJob.checksums.sha1;
-                        if(fileSha1 == validatedSha1) {
-                            reject(new FileAlreadyValidatedError());
-                        } else {
-                            resolve(fileResource);
-                        }
-                    });
-                }
-            });
+    assertNotAlreadyValidated(fileResource: any) : Promise<FileChecksums> {
+        const fileDocumentUrl = this.ingestClient.selfLinkForResource(fileResource);
+
+        return this.ingestClient.getValidationJob(fileDocumentUrl).then(validationJob => {
+            if(! validationJob) {
+                return Promise.resolve(fileResource);
+            } else {
+                this.ingestClient.getFileChecksums(fileDocumentUrl).then(fileChecksums => {
+                    const fileSha1 = fileChecksums.sha1;
+                    const validatedSha1 = validationJob.checksums.sha1;
+                    if(fileSha1 == validatedSha1) {
+                        return Promise.reject(new FileAlreadyValidatedError(validationJob));
+                    } else {
+                        return Promise.resolve(fileChecksums);
+                    }
+                });
+            }
         });
     }
 

@@ -110,9 +110,9 @@ class IngestValidator {
 
             return new Promise((resolve, reject) => {
                 this.fileValidator.validateFile(fileDocument, fileFormat, fileName)
-                    .then(validationJobId => {
+                    .then(validationJob => {
                         const fileValidatingReport = ValidationReport.validatingReport();
-                        fileValidatingReport.validationJobId = validationJobId;
+                        fileValidatingReport.validationJob = validationJob;
                         resolve(fileValidatingReport);
                     })
                     .catch(FileAlreadyValidatedError, err => {
