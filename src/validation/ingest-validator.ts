@@ -11,6 +11,7 @@ import SchemaValidator from "./schema-validator";
 import ErrorReport from "../model/error-report";
 import {NoDescribedBy, NoFileValidationJob} from "./ingest-validation-exceptions";
 import R from "ramda";
+import {FileAlreadyValidatedError} from "../utils/ingest-client/ingest-client-exceptions";
 /**
  *
  * Wraps the generic validator, outputs errors in custom format.
@@ -113,6 +114,9 @@ class IngestValidator {
                         const fileValidatingReport = ValidationReport.validatingReport();
                         fileValidatingReport.validationJobId = validationJobId;
                         resolve(fileValidatingReport);
+                    })
+                    .catch(FileAlreadyValidatedError, err => {
+                        console.info(`Request to validate File with name ${fileName} but it was already validated`);
                     })
                     .catch(NoFileValidationJob, err => {
                         console.info("No matching validation image for file with file name " + fileName);

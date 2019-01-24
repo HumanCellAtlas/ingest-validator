@@ -8,6 +8,7 @@ import request from "request-promise";
 import R from "ramda";
 import {NoFileValidationJob} from "../../validation/ingest-validation-exceptions";
 import UploadClient from "../upload-client/upload-client";
+import {FileAlreadyValidatedError} from "./ingest-client-exceptions";
 
 class IngestFileValidator {
     fileValidationImages: FileValidationImage[];
@@ -31,7 +32,8 @@ class IngestFileValidator {
      */
     validateFile(fileResource: any, fileFormat: string, fileName: string) : Promise<string> {
         return this
-            .uploadAreaForFile(fileResource)
+            .assertNotAlreadyValidated(fileResource)
+            .then(fileResource => {return this.uploadAreaForFile(fileResource)})
             .then(uploadAreaUuid => {
                 const imageUrl = this.imageFor(fileFormat)!.imageUrl;
                 return IngestFileValidator._validateFile(fileName, uploadAreaUuid, imageUrl, this.uploadClient)
@@ -46,6 +48,28 @@ class IngestFileValidator {
         };
 
         return uploadClient.requestFileValidationJob(fileValidationRequest);
+    }
+
+    assertNotAlreadyValidated(fileResource: any) : Promise<any> {
+        return new Promise<any>((resolve, reject) => {
+            const fileDocumentUrl = this.ingestClient.selfLinkForResource(fileResource);
+
+            this.ingestClient.getValidationJob(fileDocumentUrl).then(validationJob => {
+                if(! validationJob) {
+                    resolve(fileResource);
+                } else {
+                    this.ingestClient.getFileChecksums(fileDocumentUrl).then(fileChecksums => {
+                        const fileSha1 = fileChecksums.sha1;
+                        const validatedSha1 = validationJob.checksums.sha1;
+                        if(fileSha1 == validatedSha1) {
+                            reject(new FileAlreadyValidatedError());
+                        } else {
+                            resolve(fileResource);
+                        }
+                    });
+                }
+            });
+        });
     }
 
     imageFor(fileFormat: string) : FileValidationImage|undefined {
@@ -71,6 +95,5 @@ class IngestFileValidator {
         });
     }
 }
-
 
 export default IngestFileValidator;

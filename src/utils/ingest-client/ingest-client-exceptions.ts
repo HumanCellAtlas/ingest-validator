@@ -8,7 +8,7 @@ namespace ingestClientExceptions {
     export class NotRetryableError extends Error {}
     export class AlreadyInStateError extends NotRetryableError {}
     export class LinkNotFoundOnResource extends Error {}
-
+    export class FileAlreadyValidatedError extends Error {}
 }
 
 export = ingestClientExceptions;
