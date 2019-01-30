@@ -9,14 +9,14 @@ class ValidationReport {
     validationErrors: ErrorReport[];
     validationJob?: ValidationJob;
 
-    constructor(validationState: string, validationErrors: ErrorReport[], validationJobId?: ValidationJob) {
+    constructor(validationState: string, validationErrors: ErrorReport[], validationJob?: ValidationJob) {
         this.validationState = validationState;
         this.validationErrors = validationErrors;
-        this.validationJob = validationJobId;
+        this.validationJob = validationJob;
     }
 
     static okReport(): ValidationReport {
-        return new ValidationReport("VALID", [],);
+        return new ValidationReport("VALID", []);
     }
 
     static validatingReport(): ValidationReport {

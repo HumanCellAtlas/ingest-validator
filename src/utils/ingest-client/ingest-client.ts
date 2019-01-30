@@ -154,8 +154,8 @@ class IngestClient {
         return new Promise<any>((resolve, reject) => {
             this.transitionDocumentState(entityUrl, validationReport.validationState).then(() => {
                 this.setValidationErrors(entityUrl, validationReport.validationErrors).then((resp: any) => {
-                    if(validationReport.validationJobId) {
-                        resolve(this.reportValidationJobId(entityUrl, validationReport.validationJobId));
+                    if(validationReport.validationJob) {
+                        resolve(this.reportValidationJob(entityUrl, validationReport.validationJob));
                     } else {
                         resolve(resp);
                     }
@@ -213,12 +213,12 @@ class IngestClient {
         });
     }
 
-    reportValidationJobId(fileDocumentUrl: string, validationJobId: string) {
+    reportValidationJob(fileDocumentUrl: string, validationJob: ValidationJob) {
         return request({
             method: "PATCH",
             url: fileDocumentUrl,
             body: {
-                "validationId": validationJobId
+                "validationJob": validationJob
             },
             json: true
         });

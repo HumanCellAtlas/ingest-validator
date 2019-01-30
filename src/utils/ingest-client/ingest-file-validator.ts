@@ -62,7 +62,7 @@ class IngestFileValidator {
             if(! validationJob) {
                 return Promise.resolve(fileResource);
             } else {
-                this.ingestClient.getFileChecksums(fileDocumentUrl).then(fileChecksums => {
+                return this.ingestClient.getFileChecksums(fileDocumentUrl).then(fileChecksums => {
                     const fileSha1 = fileChecksums.sha1;
                     const validatedSha1 = validationJob.checksums.sha1;
                     if(fileSha1 == validatedSha1) {
