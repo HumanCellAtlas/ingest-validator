@@ -104,7 +104,7 @@ class IngestValidator {
      * @returns {Promise.<ValidationReport>}
      */
     attemptFileValidation(report: ValidationReport, fileDocument: any, documentType: string) : Promise<ValidationReport> {
-        if(documentType === 'FILE' && report.validationState === 'VALID') {
+        if(documentType.toUpperCase() === 'FILE') {
             const fileName = fileDocument['fileName'];
             const fileFormat = IngestValidator.fileFormatFromFileName(fileName);
 

@@ -89,7 +89,8 @@ class IngestClient {
         return new Promise((resolve, reject) => {
             this.retrieveMetadataDocument(entityUrl).then((doc: any) => {
                     if(doc['validationState'].toUpperCase() === validationState.toUpperCase()) {
-                        reject(new NotRetryableError("Failed to transition document; document was already in the target state"));
+                        resolve(doc);
+                        // reject(new NotRetryableError("Failed to transition document; document was already in the target state"));
                     } else {
                         request({
                             method: "PUT",
@@ -160,11 +161,9 @@ class IngestClient {
                         resolve(resp);
                     }
                 }).catch(err => {
-                    console.info("here now");
                     reject(err);
                 });
             }).catch(err => {
-                console.info("here now");
                 reject(err);
             });
         });

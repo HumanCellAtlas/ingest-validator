@@ -44,21 +44,14 @@ class SchemaValidator {
     }
 
 
-
-
     validateSingleSchema(inputSchema: any, inputObject: any) : Promise<ErrorObject[]> {
         inputSchema["$async"] = true;
         const schemaId: string = inputSchema['$id'];
 
         return new Promise((resolve, reject) => {
-            let compiledSchemaPromise: Promise<ValidateFunction>|null = null;
-            if(this.validatorCache[schemaId]) {
-                compiledSchemaPromise = Promise.resolve(this.validatorCache[schemaId]);
-            } else {
-                compiledSchemaPromise = Promise.resolve(this.ajvInstance.compileAsync(inputSchema));
-            }
+            const compiledSchemaPromise = this.getValidationFunction(inputSchema);
 
-            compiledSchemaPromise!.then((validate: ValidateFunction) => {
+            compiledSchemaPromise.then((validate: ValidateFunction) => {
                 this.validatorCache[schemaId] = validate;
                 Promise.resolve(validate(inputObject))
                     .then((data) => {
@@ -83,6 +76,24 @@ class SchemaValidator {
                 reject(err);
             });
         });
+    }
+
+    getValidationFunction(inputSchema: any): Promise<ValidateFunction> {
+        return SchemaValidator._getValidationFunction(inputSchema, this.validatorCache, this.ajvInstance);
+    }
+
+    static _getValidationFunction(inputSchema: any, validatorCache: {[key: string]: ValidateFunction}, ajv: Ajv):  Promise<ValidateFunction> {
+        const schemaId: string = inputSchema['$id'];
+
+        if(validatorCache[schemaId]) {
+            return Promise.resolve(validatorCache[schemaId]);
+        } else {
+            return new Promise<ValidateFunction>((resolve) => {
+                ajv.compileAsync(inputSchema).then(validateFn => {
+                    resolve(validateFn);
+                });
+            });
+        }
     }
 }
 
