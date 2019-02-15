@@ -34,7 +34,8 @@ namespace ts {
 
     export type ValidationJob = {
         validationId: string,
-        checksums: FileChecksums
+        checksums: FileChecksums,
+        jobCompleted: boolean
     }
 }
 

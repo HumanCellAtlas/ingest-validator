@@ -4,7 +4,6 @@ import Promise from "bluebird";
 import ajv from "ajv";
 import request from "request-promise";
 import AppError from "../model/application-error";
-
 class SchemaValidator {
     validatorCache: {[key: string]: ValidateFunction};
     customKeywordValidators: CustomAjvKeyword[];
@@ -13,7 +12,8 @@ class SchemaValidator {
     constructor(customKeywordValidators: CustomAjvKeyword[]){
         this.validatorCache = {};
         this.customKeywordValidators = customKeywordValidators;
-        this.ajvInstance = new ajv({allErrors: true, schemaId: 'auto', loadSchema: this.generateLoadSchemaRefFn()});
+        this.ajvInstance = new ajv({allErrors: true, schemaId: 'id', loadSchema: this.generateLoadSchemaRefFn()});
+        this.ajvInstance.addMetaSchema(require('ajv/lib/refs/json-schema-draft-04.json'));
     }
 
     generateLoadSchemaRefFn() {
@@ -88,11 +88,7 @@ class SchemaValidator {
         if(validatorCache[schemaId]) {
             return Promise.resolve(validatorCache[schemaId]);
         } else {
-            return new Promise<ValidateFunction>((resolve) => {
-                ajv.compileAsync(inputSchema).then(validateFn => {
-                    resolve(validateFn);
-                });
-            });
+            return Promise.resolve(ajv.compileAsync(inputSchema));
         }
     }
 }

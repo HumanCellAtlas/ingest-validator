@@ -6,7 +6,7 @@ import {FileChecksums, FileValidationImage, FileValidationRequest, ValidationJob
 import IngestClient from "./ingest-client";
 import R from "ramda";
 import UploadClient from "../upload-client/upload-client";
-import {FileAlreadyValidatedError} from "./ingest-client-exceptions";
+import {FileAlreadyValidatedError, FileCurrentlyValidatingError} from "./ingest-client-exceptions";
 
 class IngestFileValidator {
     fileValidationImages: FileValidationImage[];
@@ -37,7 +37,8 @@ class IngestFileValidator {
                 return IngestFileValidator._validateFile(fileName, uploadAreaUuid, imageUrl, this.uploadClient).then(validationJobId => {
                     return {
                         validationId: validationJobId,
-                        checksums: fileChecksums
+                        checksums: fileChecksums,
+                        jobCompleted: false
                     };
                 });
             });
@@ -60,13 +61,15 @@ class IngestFileValidator {
 
         return this.ingestClient.getValidationJob(fileDocumentUrl).then(validationJob => {
             if(! validationJob) {
-                return Promise.resolve(fileResource);
+                return Promise.resolve(fileResource["checksums"]);
+            } else if(!validationJob.jobCompleted) {
+                return Promise.reject(new FileCurrentlyValidatingError())
             } else {
                 return this.ingestClient.getFileChecksums(fileDocumentUrl).then(fileChecksums => {
                     const fileSha1 = fileChecksums.sha1;
                     const validatedSha1 = validationJob.checksums.sha1;
                     if(fileSha1 == validatedSha1) {
-                        return Promise.reject(new FileAlreadyValidatedError(validationJob));
+                        return Promise.reject(new FileAlreadyValidatedError());
                     } else {
                         return Promise.resolve(fileChecksums);
                     }

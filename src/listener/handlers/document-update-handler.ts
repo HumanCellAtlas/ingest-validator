@@ -18,7 +18,7 @@ class DocumentUpdateHandler implements IHandler {
         this.ingestClient = ingestClient;
     }
 
-    handle(msg: string) {
+    handle(msg: string) : Promise<boolean>{
         const msgJson = JSON.parse(msg);
 
         const callbackLink = msgJson['callbackLink'];
@@ -26,7 +26,7 @@ class DocumentUpdateHandler implements IHandler {
         const documentType = msgJson['documentType'].toUpperCase();
 
         return new Promise((resolve, reject) => {
-            this.ingestClient.getMetadataDocument(documentUrl)
+            const handlePromise: Promise<void> = this.ingestClient.getMetadataDocument(documentUrl)
                 .then(doc => {return DocumentUpdateHandler.checkElegibleForValidation(doc)})
                 .then(doc => {return this.checkEligibleForFileValidation(doc, documentType)})
                 .then(doc => {return this.signalValidationStarted(doc)})
@@ -38,7 +38,9 @@ class DocumentUpdateHandler implements IHandler {
                 .catch(NoFileMetadata, err => console.info("File document at " + documentUrl + " has no metadata, ignoring.."))
                 .catch(NoUuidError, err => console.info("Document at " + documentUrl + " has no uuid, ignoring..."))
                 .catch(err => reject(err));
-        });
+
+            handlePromise.then(() => resolve(true)).catch(() => resolve(false));
+        })
 
     }
 

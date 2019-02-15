@@ -33,8 +33,14 @@ class Listener {
                     ch.bindQueue(this.queue, this.exchange, this.queue).then(() => {
                         ch.prefetch(1).then(() => {
                             ch.consume(this.queue, (msg: Message|null) => {
-                                this.handle(msg);
-                            }, {noAck : true});
+                                this.handle(msg).then(success => {
+                                    if(success) {
+                                        ch.ack(msg!);
+                                    } else {
+                                        ch.nack(msg!);
+                                    }
+                                });
+                            }, {noAck : false});
                         })
                     })
                 })
@@ -47,8 +53,8 @@ class Listener {
         this.handler = handler;
     }
 
-    handle(msg: Message | null){
-        this.handler!.handle(msg!.content.toString());
+    handle(msg: Message | null) : PromiseLike<boolean>{
+        return this.handler!.handle(msg!.content.toString());
     }
 
 }

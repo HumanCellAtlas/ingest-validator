@@ -90,18 +90,22 @@ class IngestClient {
             this.retrieveMetadataDocument(entityUrl).then((doc: any) => {
                     if(doc['validationState'].toUpperCase() === validationState.toUpperCase()) {
                         resolve(doc);
-                        // reject(new NotRetryableError("Failed to transition document; document was already in the target state"));
+                        reject(new NotRetryableError("Failed to transition document; document was already in the target state"));
                     } else {
-                        request({
-                            method: "PUT",
-                            url: doc["_links"][validationState.toLowerCase()]["href"],
-                            body: {},
-                            json: true
-                        }).then(resp => {
-                            resolve(resp);
-                        }).catch(err => {
-                            reject(err);
-                        });
+                        if(doc["_links"][validationState.toLowerCase()]) {
+                            request({
+                                method: "PUT",
+                                url: doc["_links"][validationState.toLowerCase()]["href"],
+                                body: {},
+                                json: true
+                            }).then(resp => {
+                                resolve(resp);
+                            }).catch(err => {
+                                reject(err);
+                            });
+                        } else {
+                            reject(new NotRetryableError(`Failed to transition document; document in state ${doc['validationState']} cannot enter state ${validationState}`));
+                        }
                     }
                 }).catch(err => {
                     reject(err);
@@ -134,7 +138,7 @@ class IngestClient {
 
     findFileByValidationId(validationId: string) {
         // TODO: determine search endpoint by following rels; cache the result
-        const findByValidationUrl = this.ingestUrl + "/files/search/findByValidationId?validationId=" + validationId;
+        const findByValidationUrl = `${this.ingestUrl}/files/search/findByValidationJobValidationId?validationId=${validationId}`;
 
         return request({
                 method: "GET",
