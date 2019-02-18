@@ -12,40 +12,7 @@ import {
 import IngestClient from "../../utils/ingest-client/ingest-client";
 import Promise from "bluebird";
 import traverson from "traverson";
-
-type FileSpecificResource = {
-    content: {
-        fileCore : {
-            fileFormat: string
-        }
-    }
-    cloudUrl: string;
-}
-
-type MetadataResource = {
-    content: any;
-    _links: {
-        self: {
-            href: string
-        }
-    }
-}
-
-type FileResource = FileSpecificResource & MetadataResource;
-
-
-type FastqValidationContext = {
-    numFastqs: number,
-    fastqUris: string[],
-    pairedness: boolean
-}
-
-type FastqValidationPlan = {
-    doValidation: boolean,
-    fastqValidationContext: FastqValidationContext;
-}
-
-type Traverson = typeof traverson;
+import {FastqValidationContext, FileResource, MetadataResource} from "../../common/types";
 
 class FastqValidator {
     ingestClient: IngestClient;

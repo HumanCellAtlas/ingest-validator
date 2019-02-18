@@ -37,6 +37,37 @@ namespace ts {
         checksums: FileChecksums,
         jobCompleted: boolean
     }
+
+    export type FileSpecificResource = {
+        content: {
+            fileCore : {
+                fileFormat: string
+            }
+        }
+        cloudUrl: string;
+    }
+
+    export type MetadataResource = {
+        content: any;
+        _links: {
+            self: {
+                href: string
+            }
+        }
+    }
+
+    export type FileResource = FileSpecificResource & MetadataResource;
+
+    export type FastqValidationContext = {
+        numFastqs: number,
+        fastqUris: string[],
+        pairedness: boolean
+    }
+
+    export type FastqValidationPlan = {
+        doValidation: boolean,
+        fastqValidationContext: FastqValidationContext;
+    }
 }
 
 export = ts;
