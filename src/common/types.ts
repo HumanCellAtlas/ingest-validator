@@ -40,8 +40,8 @@ namespace ts {
 
     export type FileSpecificResource = {
         content: {
-            fileCore : {
-                fileFormat: string
+            file_core : {
+                file_format: string
             }
         }
         cloudUrl: string;
