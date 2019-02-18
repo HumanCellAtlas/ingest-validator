@@ -148,3 +148,5 @@ class FastqValidator {
         return resourceType == "FILE";
     }
 }
+
+export default FastqValidator;
