@@ -21,7 +21,6 @@ class FastqValidator {
         this.ingestClient = ingestClient;
     }
 
-
     /**
      *
      * how do we validate this fastq or should we validate
@@ -30,6 +29,39 @@ class FastqValidator {
      */
     static determineValidationContext(fileResource: FileResource): FastqValidationContext|undefined {
         return undefined;
+    }
+
+    isPairedEnd(fileResource: FileResource) : Promise<boolean> {
+        return new Promise<boolean>((resolve, reject) => {
+            const fileUrl = fileResource._links.self.href;
+            this.getDerivedProcessesForFile(fileUrl).then(derivedProcesses => {
+                const numDerivedProcesses = derivedProcesses.length;
+                if(numDerivedProcesses != 1) {
+                    throw new SingleProcessAssertionError(`Error: expected to find 1 derivedProcess for file at ${fileUrl} but found ${numDerivedProcesses}`);
+                } else {
+                    const derivedProcess = FastqValidator._parseMetadataResource(derivedProcesses[0]);
+                    this.getProtocolsForProcess(derivedProcess._links.self.href).then(protocolResources => {
+                        resolve(R.any( (protocolResource) => protocolResource.content["paired_end"] == true, protocolResources))
+                    });
+                }
+            })
+        });
+    }
+
+    getDerivedProcessesForFile(fileUrl: string) : Promise<MetadataResource[]> {
+        return new Promise<MetadataResource[]>((resolve, reject) => {
+            this.ingestClient.retrieveEmbeddedEntities(fileUrl, "derivedProcesses", "processes").then(derivedProcesses => {
+                    resolve(R.map(derivedProcess => FastqValidator._parseMetadataResource(derivedProcess), derivedProcesses));
+            });
+        });
+    }
+
+    getProtocolsForProcess(processUrl: string) : Promise<MetadataResource[]> {
+        return new Promise<MetadataResource[]>((resolve, reject) => {
+            this.ingestClient.retrieveEmbeddedEntities(processUrl, "protocols", "protocols").then(protocols => {
+                resolve(R.map(derivedProcess => FastqValidator._parseMetadataResource(derivedProcess), protocols));
+            });
+        });
     }
 
     static _isResourceEligible(resource: any, resourceType: string): boolean {
@@ -52,7 +84,7 @@ class FastqValidator {
     static _parseFileResource(resource: any) : FileResource {
         const metadataResource = FastqValidator._parseMetadataResource(resource);
         const fileResource = metadataResource as FileResource;
-        if(R.path(["content", "fileCore", "fileFormat"], fileResource) && R.path(["cloudUrl"], fileResource)) {
+        if(R.path(["content", "file_core", "file_format"], fileResource) && R.path(["cloudUrl"], fileResource)) {
             return fileResource;
         } else {
             throw new FileResourceParseError();
@@ -68,47 +100,8 @@ class FastqValidator {
         }
     }
 
-
-    static _isPairedEnd(fileResource: FileResource, ingestClient: IngestClient) : Promise<boolean> {
-        return new Promise<boolean>((resolve, reject) => {
-            const fileUrl = fileResource._links.self.href;
-            FastqValidator._getDerivedProcessesForFile(fileUrl, ingestClient).then(derivedProcesses => {
-                const numDerivedProcesses = derivedProcesses.length;
-                if(numDerivedProcesses != 1) {
-                    throw new SingleProcessAssertionError(`Error: expected to find 1 derivedProcess for file at ${fileUrl} but found ${numDerivedProcesses}`);
-                } else {
-                    const derivedProcess = FastqValidator._parseMetadataResource(derivedProcesses[0]);
-                    ingestClient.retrieveEmbeddedEntities(derivedProcess._links.self.href, "protocols", "protocols").then(protocols => {
-                        const protocolResources: MetadataResource[] = R.map(protocol => FastqValidator._parseMetadataResource(protocol), protocols);
-                        resolve(R.any( (protocolResource) => protocolResource.content["paired_end"] == true, protocolResources))
-                    });
-                }
-            })
-        });
-    }
-
-    // static _isSmartSeq2(fileResource: FileResource, ingestClient: IngestClient) : Promise<boolean> {
-    //
-    // }
-
-    static _getDerivedProcessesForFile(fileUrl: string, ingestClient: IngestClient) : Promise<MetadataResource[]> {
-        return new Promise<MetadataResource[]>((resolve, reject) => {
-            ingestClient.retrieveEmbeddedEntities(fileUrl, "derivedProcesses", "processes").then(derivedProcesses => {
-                    resolve(R.map(derivedProcess => FastqValidator._parseMetadataResource(derivedProcess), derivedProcesses));
-            });
-        });
-    }
-
-    static _getProtocolsForProcess(processUrl: string, ingestClient: IngestClient) : Promise<MetadataResource[]> {
-        return new Promise<MetadataResource[]>((resolve, reject) => {
-            ingestClient.retrieveEmbeddedEntities(processUrl, "protocols", "protocols").then(protocols => {
-                resolve(R.map(derivedProcess => FastqValidator._parseMetadataResource(derivedProcess), protocols));
-            });
-        });
-    }
-
     static _isFastq(fileResource: FileResource): boolean {
-        return fileResource.content.fileCore.fileFormat.indexOf("fastq") != -1;
+        return fileResource.content.file_core.file_format.indexOf("fastq") != -1;
     }
 
     static _isFile(resourceType: string): boolean {
