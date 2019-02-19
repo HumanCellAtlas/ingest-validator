@@ -4,7 +4,7 @@
 import ValidationReport from "../model/validation-report";
 
 import Promise from "bluebird";
-import IngestFileValidator from "../utils/ingest-client/ingest-file-validator";
+import IngestFileValidator from "./ingest-file-validator";
 import IngestClient from "../utils/ingest-client/ingest-client";
 import {ErrorObject} from "ajv";
 import SchemaValidator from "./schema-validator";

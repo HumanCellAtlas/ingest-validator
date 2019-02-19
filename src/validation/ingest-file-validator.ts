@@ -2,11 +2,11 @@
  * Created by rolando on 12/08/2018.
  */
 import Promise from "bluebird";
-import {FileChecksums, FileValidationImage, FileValidationRequest, ValidationJob} from "../../common/types";
-import IngestClient from "./ingest-client";
+import {FileChecksums, FileValidationImage, FileValidationRequest, ValidationJob} from "../common/types";
+import IngestClient from "../utils/ingest-client/ingest-client";
 import R from "ramda";
-import UploadClient from "../upload-client/upload-client";
-import {FileAlreadyValidatedError, FileCurrentlyValidatingError} from "./ingest-client-exceptions";
+import UploadClient from "../utils/upload-client/upload-client";
+import {FileAlreadyValidatedError, FileCurrentlyValidatingError} from "../utils/ingest-client/ingest-client-exceptions";
 
 class IngestFileValidator {
     fileValidationImages: FileValidationImage[];

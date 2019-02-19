@@ -6,7 +6,7 @@ import IngestClient from "./utils/ingest-client/ingest-client";
 import DocumentUpdateListener from "./listener/document-update-listener";
 import FileValidationHandler from "./listener/handlers/file-validation-handler";
 import FileValidationListener from "./listener/file-validation-listener";
-import IngestFileValidator from "./utils/ingest-client/ingest-file-validator";
+import IngestFileValidator from "./validation/ingest-file-validator";
 import {
     FileValidationImage,
     IngestConnectionProperties,

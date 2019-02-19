@@ -27,11 +27,7 @@ class FastqValidator {
      *
      * @param fileResource
      */
-    determineValidationContext(fileResource: FileResource): FastqValidationContext|undefined {
-        if(this.isPairedEnd(fileResource)){
-            return undefined;
-        }
-    }
+
 
     isPairedEnd(fileResource: FileResource) : Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => {
