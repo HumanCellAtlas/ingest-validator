@@ -36,20 +36,6 @@ describe("Fastq validator tests", () => {
     });
 
     test("it should identify fastqs from the file-format file of File resources", () => {
-        const mockFileResource: FileResource = {
-            content: {
-                file_core: {
-                    file_format: "fastq.gz"
-                }
-            },
-            cloudUrl: "s3://mock-cloud-url",
-            _links : {
-                self: {
-                    href: "http://mock-file-resource-uri"
-                }
-            }
-        };
-
         expect(FastqValidator._isFastq(mockFileResource)).toBeTruthy();
 
         mockFileResource.content.file_core.file_format = "fastq";
@@ -83,5 +69,33 @@ describe("Fastq validator tests", () => {
         };
 
         expect(FastqValidator._isResourceEligible(mockNonFileResource, "FILE")).toBeFalsy();
+    });
+
+    test("it should correctly identify paired end protocols", () => {
+        let mockProtocolContent : any;
+        mockProtocolContent = {
+            paired_end: true
+        };
+
+        const mockPairedEndProtocol = {
+            content: mockProtocolContent,
+            _links : {
+                self: {
+                    href: "http://mock-file-resource-uri"
+                }
+            }
+        };
+
+        expect(FastqValidator._isProtocolPairedEnd([mockPairedEndProtocol])).toBeTruthy();
+
+        mockPairedEndProtocol.content.paired_end = false;
+        expect(FastqValidator._isProtocolPairedEnd([mockPairedEndProtocol])).toBeFalsy();
+        mockPairedEndProtocol.content.paired_end = undefined;
+        expect(FastqValidator._isProtocolPairedEnd([mockPairedEndProtocol])).toBeFalsy();
+        mockPairedEndProtocol.content.paired_end = null;
+        expect(FastqValidator._isProtocolPairedEnd([mockPairedEndProtocol])).toBeFalsy();
+        mockPairedEndProtocol.content.paired_end = "";
+        expect(FastqValidator._isProtocolPairedEnd([mockPairedEndProtocol])).toBeFalsy();
+        mockPairedEndProtocol.content.paired_end = '';
     });
 });

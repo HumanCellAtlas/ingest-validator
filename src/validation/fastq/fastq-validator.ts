@@ -27,8 +27,10 @@ class FastqValidator {
      *
      * @param fileResource
      */
-    static determineValidationContext(fileResource: FileResource): FastqValidationContext|undefined {
-        return undefined;
+    determineValidationContext(fileResource: FileResource): FastqValidationContext|undefined {
+        if(this.isPairedEnd(fileResource)){
+            return undefined;
+        }
     }
 
     isPairedEnd(fileResource: FileResource) : Promise<boolean> {
@@ -41,12 +43,13 @@ class FastqValidator {
                 } else {
                     const derivedProcess = FastqValidator._parseMetadataResource(derivedProcesses[0]);
                     this.getProtocolsForProcess(derivedProcess._links.self.href).then(protocolResources => {
-                        resolve(R.any( (protocolResource) => protocolResource.content["paired_end"] == true, protocolResources))
+                        resolve(FastqValidator._isProtocolPairedEnd(protocolResources))
                     });
                 }
             })
         });
     }
+
 
     getDerivedProcessesForFile(fileUrl: string) : Promise<MetadataResource[]> {
         return new Promise<MetadataResource[]>((resolve, reject) => {
@@ -106,6 +109,10 @@ class FastqValidator {
 
     static _isFile(resourceType: string): boolean {
         return resourceType == "FILE";
+    }
+
+    static _isProtocolPairedEnd(sequencingProtocols: MetadataResource[]) : boolean {
+        return R.any( (protocolResource) => protocolResource.content["paired_end"] == true, sequencingProtocols);
     }
 }
 
