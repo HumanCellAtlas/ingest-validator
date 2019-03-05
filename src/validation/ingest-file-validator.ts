@@ -7,6 +7,8 @@ import IngestClient from "../utils/ingest-client/ingest-client";
 import R from "ramda";
 import UploadClient from "../utils/upload-client/upload-client";
 import {FileAlreadyValidatedError, FileCurrentlyValidatingError} from "../utils/ingest-client/ingest-client-exceptions";
+import ValidationReport from "../model/validation-report";
+
 
 class IngestFileValidator {
     fileValidationImages: FileValidationImage[];
@@ -20,6 +22,22 @@ class IngestFileValidator {
     }
 
 
+    handleFile(fileResource: any, fileName: string, currentValidationReport: ValidationReport) : Promise<ValidationReport> {
+        return new Promise<ValidationReport>((resolve, reject) => {
+            this.assertNotAlreadyValidated(fileResource)
+                .then(fileChecksums => {
+
+                })
+                .catch(FileCurrentlyValidatingError, err => {
+                    console.info(`Request to validate File with name ${fileName} but it's currently validating`);
+                    resolve(ValidationReport.validatingReport());
+                })
+                .catch(FileAlreadyValidatedError, err => {
+                    console.info(`Request to validate File with name ${fileName} but it was already validated`);
+                    resolve(currentValidationReport);
+                });
+        });
+    }
 
     /**
      *

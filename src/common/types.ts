@@ -49,6 +49,9 @@ namespace ts {
 
     export type MetadataResource = {
         content: any;
+        uuid: {
+            uuid: string
+        }
         _links: {
             self: {
                 href: string
@@ -57,6 +60,11 @@ namespace ts {
     }
 
     export type FileResource = FileSpecificResource & MetadataResource;
+
+    export type ValidationPlan = {
+        validationImage: FileValidationImage,
+        fileCloudUrls: string[]
+    }
 
     export type FastqValidationContext = {
         numFastqs: number,

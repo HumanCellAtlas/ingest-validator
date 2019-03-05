@@ -4,21 +4,27 @@
  *
  */
 import R from "ramda";
+import Promise from "bluebird";
 import {
     FileResourceParseError,
-    MetadataResourceParseError,
+    MetadataResourceParseError, SinglePairedEndSiblingAssertionError,
     SingleProcessAssertionError
 } from "./fastq-validation-exceptions";
 import IngestClient from "../../utils/ingest-client/ingest-client";
-import Promise from "bluebird";
-import traverson from "traverson";
-import {FastqValidationContext, FileResource, MetadataResource} from "../../common/types";
+import {
+    FileResource, FileValidationImage,
+    MetadataResource,
+    ValidationPlan
+} from "../../common/types";
+import IFileValidationModule from "../file-validation-module";
 
-class FastqValidator {
+class FastqValidator implements IFileValidationModule{
     ingestClient: IngestClient;
+    fastqValidationImage: FileValidationImage;
 
-    constructor(ingestClient: IngestClient) {
+    constructor(ingestClient: IngestClient, fastqValidationImage: FileValidationImage) {
         this.ingestClient = ingestClient;
+        this.fastqValidationImage = fastqValidationImage;
     }
 
     /**
@@ -28,6 +34,26 @@ class FastqValidator {
      * @param fileResource
      */
 
+    isEligible(fileResource: FileResource): Promise<boolean> {
+        return Promise.resolve(FastqValidator._isResourceEligible(fileResource, "FILE"));
+    }
+
+    run(fileResource: FileResource): Promise<ValidationPlan[]> {
+        return new Promise<ValidationPlan[]>((resolve, reject) => {
+            if(this.isPairedEnd(fileResource)) {
+                const fileUrl = fileResource._links.self.href;
+                this.getPairedEndSiblingFile(fileUrl).then(siblingFile => {
+                    const fileUuids = R.map(fileResource => fileResource.uuid.uuid, [fileResource, siblingFile]);
+
+                });
+            } else {
+                const fileUuid = fileResource.uuid.uuid;
+                const validationLabel = "fastq-validation:sequence-data";
+                const validationImage = this.fastqValidationImage;
+
+            }
+        });
+    }
 
     isPairedEnd(fileResource: FileResource) : Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => {
@@ -46,6 +72,38 @@ class FastqValidator {
         });
     }
 
+    getPairedEndSiblingFile(fileUrl: string): Promise<FileResource> {
+        return new Promise<FileResource>((resolve, reject) => {
+            this.getDerivedProcessesForFile(fileUrl)
+                .then((derivedProcesses: MetadataResource[])  => {
+                    const numDerivedProcesses = derivedProcesses.length;
+                    if(derivedProcesses.length != 1) {
+                        return reject(new SingleProcessAssertionError(`Error: expected to find 1 derivedProcess for file at ${fileUrl} but found ${numDerivedProcesses}`))
+                    } else {
+                        const derivedProcess = derivedProcesses[0];
+                        const derivedProcessUrl = derivedProcess._links.self.href;
+                        this.getOutputFilesForProcess(derivedProcessUrl).then(outputFiles => {
+                            const siblingFiles = R.filter(outputFile => outputFile._links.self.href != fileUrl, outputFiles);
+                            const numSiblingFiles = siblingFiles.length;
+                            if(numSiblingFiles != 1) {
+                                reject(new SinglePairedEndSiblingAssertionError(`Error: expected to find 1 paired end sibling for file at ${fileUrl} but found ${numSiblingFiless}`))
+                            } else {
+                                const siblingFile = siblingFiles[0];
+                                resolve(siblingFile);
+                            }
+                        });
+                    }
+                })
+        });
+    }
+
+    getOutputFilesForProcess(processUrl: string): Promise<FileResource[]> {
+        return new Promise<FileResource[]>((resolve, reject) => {
+            this.ingestClient.retrieveEmbeddedEntities(processUrl, "derivedFiles", "files").then(outputFiles => {
+                resolve(R.map(outputFile => FastqValidator._parseFileResource(outputFile), outputFiles));
+            });
+        });
+    }
 
     getDerivedProcessesForFile(fileUrl: string) : Promise<MetadataResource[]> {
         return new Promise<MetadataResource[]>((resolve, reject) => {
