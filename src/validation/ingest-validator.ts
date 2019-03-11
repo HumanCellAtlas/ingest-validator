@@ -9,7 +9,7 @@ import IngestClient from "../utils/ingest-client/ingest-client";
 import {ErrorObject} from "ajv";
 import SchemaValidator from "./schema-validator";
 import ErrorReport from "../model/error-report";
-import {NoDescribedBy, NoFileValidationJob} from "./ingest-validation-exceptions";
+import {NoDescribedBy, NoFileValidationImage} from "./ingest-validation-exceptions";
 import R from "ramda";
 import {FileAlreadyValidatedError, FileCurrentlyValidatingError} from "../utils/ingest-client/ingest-client-exceptions";
 /**
@@ -123,7 +123,7 @@ class IngestValidator {
                         console.info(`Request to validate File with name ${fileName} but it's currently validating`);
                         resolve(ValidationReport.validatingReport());
                     })
-                    .catch(NoFileValidationJob, err => {
+                    .catch(NoFileValidationImage, err => {
                         console.info("No matching validation image for file with file name " + fileName);
                         resolve(report);
                     }).catch(err => {

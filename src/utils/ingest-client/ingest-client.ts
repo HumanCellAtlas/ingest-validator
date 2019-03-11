@@ -153,7 +153,7 @@ class IngestClient {
         }
 
         if(validationReport.validationState.toUpperCase() === 'VALID') {
-            console.info("posting a valid report")
+            console.info(`Posting a valid report for document ${entityUrl}`);
         }
 
         return new Promise<any>((resolve, reject) => {

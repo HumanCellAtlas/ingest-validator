@@ -31,7 +31,7 @@ class Listener {
             ch.assertExchange(this.exchange, this.exchangeType).then(() => {
                 ch.assertQueue(this.queue, {durable: false}).then(() => {
                     ch.bindQueue(this.queue, this.exchange, this.queue).then(() => {
-                        ch.prefetch(1).then(() => {
+                        ch.prefetch(100).then(() => {
                             ch.consume(this.queue, (msg: Message|null) => {
                                 this.handle(msg).then(success => {
                                     if(success) {

@@ -3,7 +3,7 @@
  */
 namespace ingestValidatorExceptions {
     export class NoDescribedBy extends Error {}
-    export class NoFileValidationJob extends Error {}
+    export class NoFileValidationImage extends Error {}
     export class NoCloudUrl extends Error {}
     export class NoFileMetadata extends Error {}
     export class NotEligibleForValidation extends Error {}

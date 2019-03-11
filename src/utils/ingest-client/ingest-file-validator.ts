@@ -7,6 +7,7 @@ import IngestClient from "./ingest-client";
 import R from "ramda";
 import UploadClient from "../upload-client/upload-client";
 import {FileAlreadyValidatedError, FileCurrentlyValidatingError} from "./ingest-client-exceptions";
+import {NoFileValidationImage} from "../../validation/ingest-validation-exceptions";
 
 class IngestFileValidator {
     fileValidationImages: FileValidationImage[];
@@ -18,8 +19,6 @@ class IngestFileValidator {
         this.ingestClient = ingestClient;
         this.uploadClient = uploadClient
     }
-
-
 
     /**
      *
@@ -33,14 +32,19 @@ class IngestFileValidator {
     validateFile(fileResource: any, fileFormat: string, fileName: string) : Promise<ValidationJob> {
         return this.assertNotAlreadyValidated(fileResource).then(fileChecksums => {
             return this.uploadAreaForFile(fileResource).then(uploadAreaUuid => {
-                const imageUrl = this.imageFor(fileFormat)!.imageUrl;
-                return IngestFileValidator._validateFile(fileName, uploadAreaUuid, imageUrl, this.uploadClient).then(validationJobId => {
-                    return {
-                        validationId: validationJobId,
-                        checksums: fileChecksums,
-                        jobCompleted: false
-                    };
-                });
+                const validationImage = this.imageFor(fileFormat);
+                if(! validationImage) {
+                    return Promise.reject(new NoFileValidationImage());
+                } else {
+                    const imageUrl = this.imageFor(fileFormat)!.imageUrl;
+                    return IngestFileValidator._validateFile(fileName, uploadAreaUuid, imageUrl, this.uploadClient).then(validationJobId => {
+                        return Promise.resolve({
+                            validationId: validationJobId,
+                            checksums: fileChecksums,
+                            jobCompleted: false
+                        });
+                    });
+                }
             });
         });
     }
@@ -54,7 +58,6 @@ class IngestFileValidator {
 
         return uploadClient.requestFileValidationJob(fileValidationRequest);
     }
-
 
     assertNotAlreadyValidated(fileResource: any) : Promise<FileChecksums> {
         const fileDocumentUrl = this.ingestClient.selfLinkForResource(fileResource);
