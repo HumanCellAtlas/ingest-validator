@@ -6,6 +6,8 @@ import IngestClient from "../../utils/ingest-client/ingest-client";
 import ValidationReport from "../../model/validation-report";
 import {ValidationJob} from "../../common/types";
 import Promise from "bluebird";
+import {RejectMessageException} from "../messging-exceptions";
+import {StatusCodeError} from "request-promise/errors";
 
 class FileValidationHandler implements IHandler{
     ingestClient: IngestClient;
@@ -16,7 +18,7 @@ class FileValidationHandler implements IHandler{
 
     handle(msg: string): Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => {
-            let msgContent = null;
+            let msgContent: any = null;
             try {
                 msgContent = JSON.parse(msg);
             } catch (err) {
@@ -51,6 +53,13 @@ class FileValidationHandler implements IHandler{
                     console.error(error);
                     resolve(false);
                 });
+            }).catch(StatusCodeError, err => {
+                if(err.statusCode >= 400 && err.statusCode < 500) {
+                    console.error(err);
+                    console.error(`Rejecting message: ${JSON.stringify(msgContent)}`);
+                    reject(new RejectMessageException());
+                }
+                resolve(false);
             });
         });
     }

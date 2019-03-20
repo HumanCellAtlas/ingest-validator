@@ -4,7 +4,9 @@
 import {RabbitConnectionProperties} from "../common/types";
 import amqp, {Message} from "amqplib";
 import IHandler from "./handlers/handler";
+import Promise from "bluebird";
 import * as url from "url";
+import {RejectMessageException} from "./messging-exceptions";
 
 
 class Listener {
@@ -37,8 +39,12 @@ class Listener {
                                     if(success) {
                                         ch.ack(msg!);
                                     } else {
-                                        ch.nack(msg!);
+                                        console.info(`Failed to process message: \n ${msg!.content}`);
+                                        ch.reject(msg!, false);
                                     }
+                                }).catch(RejectMessageException, err => {
+                                    console.info(`Logging unretryable error: \n ${err.stack} \n ..for message: ${msg!.content}`);
+                                    ch.reject(msg!, false);
                                 });
                             }, {noAck : false});
                         })
@@ -53,7 +59,7 @@ class Listener {
         this.handler = handler;
     }
 
-    handle(msg: Message | null) : PromiseLike<boolean>{
+    handle(msg: Message | null) : Promise<boolean>{
         return this.handler!.handle(msg!.content.toString());
     }
 

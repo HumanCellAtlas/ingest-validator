@@ -1,5 +1,7 @@
+import Promise from "bluebird";
+
 interface IHandler {
-    handle(msg: string): PromiseLike<boolean>;
+    handle(msg: string): Promise<boolean>;
 }
 
 export default IHandler;
