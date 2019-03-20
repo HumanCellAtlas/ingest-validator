@@ -29,7 +29,7 @@
   },
   "INGEST_API" : {
     "connection" : {
-      "scheme": "http",
+      "scheme": "https",
       "host" : "localhost",
       "port" : 8080
     },

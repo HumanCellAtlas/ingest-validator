@@ -15,6 +15,7 @@
   },
   "INGEST_API" : {
     "connection" : {
+      "scheme": "INGEST_SCHEME",
       "host" : "INGEST_HOST",
       "port" : "INGEST_PORT"
     },
