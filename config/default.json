@@ -39,7 +39,7 @@
     "connection" : {
       "scheme": "https",
       "host" : "upload.dev.data.humancellatlas.org",
-      "port" : 80
+      "port" : 443
     },
     "apiKey" : "redacted"
   },
