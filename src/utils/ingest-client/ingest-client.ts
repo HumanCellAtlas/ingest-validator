@@ -4,6 +4,12 @@
 import config from "config";
 import request from "request-promise";
 import R from "ramda";
+import Promise from "bluebird";
+import {NoUuidError, NotRetryableError, RetryableError, LinkNotFoundOnResource} from "./ingest-client-exceptions";
+import {FileChecksums, IngestConnectionProperties, ValidationJob} from "../../common/types";
+import ValidationReport from "../../model/validation-report";
+import {StatusCodeError} from "request-promise/errors";
+import {RejectMessageException} from "../../listener/messging-exceptions";
 
 request.defaults({
     family: 4,
@@ -12,14 +18,6 @@ request.defaults({
     }
 });
 
-import Promise from "bluebird";
-
-
-import {NoUuidError, NotRetryableError, RetryableError, LinkNotFoundOnResource} from "./ingest-client-exceptions";
-import {FileChecksums, IngestConnectionProperties, ValidationJob} from "../../common/types";
-import ValidationReport from "../../model/validation-report";
-import {StatusCodeError} from "../../../node_modules/@types/request-promise/errors";
-import {RejectMessageException} from "../../listener/messging-exceptions";
 
 class IngestClient {
     ingestUrl: string;
