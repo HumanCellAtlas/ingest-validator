@@ -28,20 +28,33 @@ class DocumentUpdateHandler implements IHandler {
         const documentUrl = this.ingestClient.urlForCallbackLink(callbackLink);
         const documentType = msgJson['documentType'].toUpperCase();
 
-        return new Promise<any>((resolve, reject) => {
-            this.ingestClient.getMetadataDocument(documentUrl)
-                .then(doc => {return DocumentUpdateHandler.checkElegibleForValidation(doc)})
-                .then(doc => {return this.checkEligibleForFileValidation(doc, documentType)})
-                .then(doc => {return this.signalValidationStarted(doc)})
-                .then(doc => {return this.validator.validate(doc, documentType)})
-                .then(validationReport => {return this.ingestClient.postValidationReport(documentUrl, validationReport)})
-                .then(resp => resolve(resp))
-                .catch(NotEligibleForValidation, err => console.info("Document at " + documentUrl + " not eligible for validation, ignoring.."))
-                .catch(NoCloudUrl, err => console.info("File document at " + documentUrl + " has no cloudUrl, ignoring.."))
-                .catch(NoFileMetadata, err => console.info("File document at " + documentUrl + " has no metadata, ignoring.."))
-                .catch(NoUuidError, err => console.info("Document at " + documentUrl + " has no uuid, ignoring..."))
-                .catch(err => reject(err));
-        });
+        return this.ingestClient.getMetadataDocument(documentUrl)
+            .then(doc => {return DocumentUpdateHandler.checkElegibleForValidation(doc)})
+            .then(doc => {return this.checkEligibleForFileValidation(doc, documentType)})
+            .then(doc => {return this.signalValidationStarted(doc)})
+            .then(doc => {return this.validator.validate(doc, documentType)})
+            .then(validationReport => {return this.ingestClient.postValidationReport(documentUrl, validationReport)})
+            .then(resp => {return Promise.resolve(resp)})
+            .catch(NotEligibleForValidation, err => {
+                console.info("Document at " + documentUrl + " not eligible for validation, ignoring..");
+                return Promise.resolve();
+            })
+            .catch(NoCloudUrl, err => {
+                console.info("File document at " + documentUrl + " has no cloudUrl, ignoring..");
+                return Promise.resolve();
+            })
+            .catch(NoFileMetadata, err => {
+                console.info("File document at " + documentUrl + " has no metadata, ignoring..");
+                return Promise.resolve();
+
+            })
+            .catch(NoUuidError, err => {
+                console.info("Document at " + documentUrl + " has no uuid, ignoring...");
+                return Promise.resolve();
+            })
+            .catch(err => {
+                return Promise.reject(err);
+            });
     }
 
     /**
