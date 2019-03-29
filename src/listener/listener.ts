@@ -40,11 +40,11 @@ class Listener {
                                         ch.ack(msg!);
                                     } else {
                                         console.info(`Failed to process message: \n ${msg!.content}`);
-                                        ch.reject(msg!, false);
+                                        ch.nack(msg!, false, false);
                                     }
                                 }).catch(RejectMessageException, err => {
                                     console.info(`Logging unretryable error: \n ${err.stack} \n ..for message: ${msg!.content}`);
-                                    ch.reject(msg!, false);
+                                    ch.nack(msg!, false, false);
                                 });
                             }, {noAck : false});
                         })
