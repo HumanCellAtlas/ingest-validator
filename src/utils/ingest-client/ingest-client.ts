@@ -18,6 +18,8 @@ import Promise from "bluebird";
 import {NoUuidError, NotRetryableError, RetryableError, LinkNotFoundOnResource} from "./ingest-client-exceptions";
 import {FileChecksums, IngestConnectionProperties, ValidationJob} from "../../common/types";
 import ValidationReport from "../../model/validation-report";
+import {StatusCodeError} from "../../../node_modules/@types/request-promise/errors";
+import {RejectMessageException} from "../../listener/messging-exceptions";
 
 class IngestClient {
     ingestUrl: string;
@@ -217,6 +219,10 @@ class IngestClient {
     }
 
     reportValidationJob(fileDocumentUrl: string, validationJob: ValidationJob) {
+        this.retry(5, this._reportValidationJob.bind(this), [fileDocumentUrl, validationJob], "Retrying reportValidationJob()")
+    }
+
+    _reportValidationJob(fileDocumentUrl: string, validationJob: ValidationJob) {
         return request({
             method: "PATCH",
             url: fileDocumentUrl,
@@ -224,6 +230,12 @@ class IngestClient {
                 "validationJob": validationJob
             },
             json: true
+        }).catch(StatusCodeError, error => {
+            if(error.statusCode == 409) {
+                return Promise.reject(new RejectMessageException())
+            } else {
+                return Promise.reject(error);
+            }
         });
     }
 
