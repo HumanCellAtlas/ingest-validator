@@ -32,9 +32,8 @@
     "ramda": "^0.26.1",
     "request": "^2.85.0",
     "request-defaults": "^1.2.0",
-    "request-promise": "^4.2.2",
-    "update": "^0.7.4",
-    "winston": "^3.0.0",
+    "request-promise": "^4.2.4",
+    "winston": "^3.2.1",
     "winston-daily-rotate-file": "^3.2.1",
     "yargs": "^12.0.2"
   },
