@@ -1,0 +1,42 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.13.4
+# ignores vulnerabilities until expiry date; change duration by modifying expiry date
+ignore:
+  'npm:braces:20180219':
+    - update > base-runtimes > micromatch > braces:
+        reason: Low sev
+        expires: '2019-05-09T09:52:46.605Z'
+    - update > base-config-process > micromatch > braces:
+        reason: Low sev
+        expires: '2019-05-09T09:52:46.605Z'
+    - update > base-cli-process > base-config-process > micromatch > braces:
+        reason: Low sev
+        expires: '2019-05-09T09:52:46.605Z'
+    - update > common-config > composer > micromatch > braces:
+        reason: Low sev
+        expires: '2019-05-09T09:52:46.605Z'
+    - update > assemble-core > templates > match-file > micromatch > braces:
+        reason: Low sev
+        expires: '2019-05-09T09:52:46.605Z'
+    - update > assemble-core > base-task > composer > micromatch > braces:
+        reason: Low sev
+        expires: '2019-05-09T09:52:46.605Z'
+    - update > assemble-core > assemble-streams > match-file > micromatch > braces:
+        reason: Low sev
+        expires: '2019-05-09T09:52:46.605Z'
+    - update > base-generators > base-task > composer > micromatch > braces:
+        reason: Low sev
+        expires: '2019-05-09T09:52:46.605Z'
+    - update > base-questions > question-store > common-config > composer > micromatch > braces:
+        reason: Low sev
+        expires: '2019-05-09T09:52:46.605Z'
+    - update > assemble-core > templates > get-view > match-file > micromatch > braces:
+        reason: Low sev
+        expires: '2019-05-09T09:52:46.605Z'
+    - update > assemble-core > assemble-fs > vinyl-fs > glob-stream > micromatch > braces:
+        reason: Low sev
+        expires: '2019-05-09T09:52:46.605Z'
+    - update > assemble-core > templates > layouts > get-view > match-file > micromatch > braces:
+        reason: Low sev
+        expires: '2019-05-09T09:52:46.605Z'
+patch: {}
