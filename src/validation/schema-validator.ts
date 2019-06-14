@@ -11,8 +11,8 @@ class SchemaValidator {
 
     constructor(customKeywordValidators: CustomAjvKeyword[]){
         this.validatorCache = {};
+        this.ajvInstance = SchemaValidator._constructAjv(customKeywordValidators);
         this.customKeywordValidators = customKeywordValidators;
-        this.ajvInstance = SchemaValidator._constructAjv(customKeywordValidators)
     }
 
     validateSingleSchema(inputSchema: any, inputObject: any) : Promise<ErrorObject[]> {
@@ -71,7 +71,7 @@ class SchemaValidator {
         return ajvInstance
     }
 
-    static _addCustomKeywordValidators(ajvInstance: Ajv, customKeywordValidators: CustomAjvKeyword[]) {
+    static _addCustomKeywordValidators(ajvInstance: Ajv, customKeywordValidators: CustomAjvKeyword[]) : Ajv {
         customKeywordValidators.forEach(customKeywordValidator => {
             ajvInstance = customKeywordValidator.configure(ajvInstance);
         });
