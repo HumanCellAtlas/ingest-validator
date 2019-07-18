@@ -36,7 +36,7 @@ class IngestFileValidator {
                 if(! validationImage) {
                     return Promise.reject(new NoFileValidationImage());
                 } else {
-                    const imageUrl = this.imageFor(fileFormat)!.imageUrl;
+                    const imageUrl = validationImage.imageUrl;
                     return IngestFileValidator._validateFile(fileName, uploadAreaUuid, imageUrl, this.uploadClient).then(validationJobId => {
                         return Promise.resolve({
                             validationId: validationJobId,

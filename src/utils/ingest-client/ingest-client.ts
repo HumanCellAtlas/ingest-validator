@@ -5,11 +5,12 @@ import config from "config";
 import request from "request-promise";
 import R from "ramda";
 import Promise from "bluebird";
-import {NoUuidError, NotRetryableError, RetryableError, LinkNotFoundOnResource} from "./ingest-client-exceptions";
+import {NoUuidError, NotRetryableError, LinkNotFoundOnResource, AlreadyInStateError} from "./ingest-client-exceptions";
 import {FileChecksums, IngestConnectionProperties, ValidationJob} from "../../common/types";
 import ValidationReport from "../../model/validation-report";
 import {StatusCodeError} from "request-promise/errors";
 import {RejectMessageException} from "../../listener/messging-exceptions";
+
 
 request.defaults({
     family: 4,
@@ -89,8 +90,7 @@ class IngestClient {
         return new Promise((resolve, reject) => {
             this.retrieveMetadataDocument(entityUrl).then((doc: any) => {
                     if(doc['validationState'].toUpperCase() === validationState.toUpperCase()) {
-                        resolve(doc);
-                        reject(new NotRetryableError("Failed to transition document; document was already in the target state"));
+                        reject(new AlreadyInStateError("Failed to transition document; document was already in the target state"));
                     } else {
                         if(doc["_links"][validationState.toLowerCase()]) {
                             request({
@@ -156,20 +156,18 @@ class IngestClient {
             console.info(`Posting a valid report for document ${entityUrl}`);
         }
 
-        return new Promise<any>((resolve, reject) => {
-            this.transitionDocumentState(entityUrl, validationReport.validationState).then(() => {
-                this.setValidationErrors(entityUrl, validationReport.validationErrors).then((resp: any) => {
-                    if(validationReport.validationJob) {
-                        resolve(this.reportValidationJob(entityUrl, validationReport.validationJob));
-                    } else {
-                        resolve(resp);
-                    }
-                }).catch(err => {
-                    reject(err);
-                });
-            }).catch(err => {
-                reject(err);
-            });
+        return  this.transitionDocumentState(entityUrl, validationReport.validationState)
+                    .then(() => { return this.setValidationErrorsAndJob(entityUrl, validationReport)})
+                    .catch(AlreadyInStateError, err => { return this.setValidationErrorsAndJob(entityUrl, validationReport)});
+    }
+
+    setValidationErrorsAndJob(entityUrl: string, validationReport: ValidationReport) : Promise<any> {
+        return this.setValidationErrors(entityUrl, validationReport.validationErrors).then((resp: any) => {
+            if(validationReport.validationJob) {
+                return Promise.resolve(this.reportValidationJob(entityUrl, validationReport.validationJob));
+            } else {
+                return Promise.resolve(resp);
+            }
         });
     }
 
