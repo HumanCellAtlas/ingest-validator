@@ -5,7 +5,7 @@ import IngestValidator from "../../validation/ingest-validator";
 import IngestClient from "../../utils/ingest-client/ingest-client";
 import IHandler from "./handler";
 import Promise from "bluebird";
-import {NoCloudUrl, NoFileMetadata, NotEligibleForValidation} from "../../validation/ingest-validation-exceptions";
+import {NoCloudUrl, NoFileMetadata, NotEligibleForValidation, AlreadyValidatingError} from "../../validation/ingest-validation-exceptions";
 import {NoUuidError} from "../../utils/ingest-client/ingest-client-exceptions";
 import ValidationReport from "../../model/validation-report";
 
@@ -46,10 +46,13 @@ class DocumentUpdateHandler implements IHandler {
             .catch(NoFileMetadata, err => {
                 console.info("File document at " + documentUrl + " has no metadata, ignoring..");
                 return Promise.resolve();
-
             })
             .catch(NoUuidError, err => {
                 console.info("Document at " + documentUrl + " has no uuid, ignoring...");
+                return Promise.resolve();
+            })
+            .catch(AlreadyValidatingError, err => {
+                console.info("File document at " + documentUrl + " is already validating, ignoring...");
                 return Promise.resolve();
             })
             .catch(err => {

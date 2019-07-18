@@ -10,6 +10,7 @@ import {FileChecksums, IngestConnectionProperties, ValidationJob} from "../../co
 import ValidationReport from "../../model/validation-report";
 import {StatusCodeError} from "request-promise/errors";
 import {RejectMessageException} from "../../listener/messging-exceptions";
+import { AlreadyValidatingError } from "../../validation/ingest-validation-exceptions";
 
 request.defaults({
     family: 4,
@@ -89,8 +90,7 @@ class IngestClient {
         return new Promise((resolve, reject) => {
             this.retrieveMetadataDocument(entityUrl).then((doc: any) => {
                     if(doc['validationState'].toUpperCase() === validationState.toUpperCase()) {
-                        resolve(doc);
-                        reject(new NotRetryableError("Failed to transition document; document was already in the target state"));
+                        reject(new AlreadyValidatingError("Failed to transition document; document was already in the target state"));
                     } else {
                         if(doc["_links"][validationState.toLowerCase()]) {
                             request({
