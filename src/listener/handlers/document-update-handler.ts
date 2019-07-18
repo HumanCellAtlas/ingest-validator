@@ -6,7 +6,7 @@ import IngestClient from "../../utils/ingest-client/ingest-client";
 import IHandler from "./handler";
 import Promise from "bluebird";
 import {NoCloudUrl, NoFileMetadata, NotEligibleForValidation} from "../../validation/ingest-validation-exceptions";
-import {NoUuidError, AlreadyValidatingError} from "../../utils/ingest-client/ingest-client-exceptions";
+import {NoUuidError, AlreadyInStateError} from "../../utils/ingest-client/ingest-client-exceptions";
 import ValidationReport from "../../model/validation-report";
 
 class DocumentUpdateHandler implements IHandler {
@@ -51,7 +51,7 @@ class DocumentUpdateHandler implements IHandler {
                 console.info("Document at " + documentUrl + " has no uuid, ignoring...");
                 return Promise.resolve();
             })
-            .catch(AlreadyValidatingError, err => {
+            .catch(AlreadyInStateError, err => {
                 console.info("File document at " + documentUrl + " is already validating, ignoring...");
                 return Promise.resolve();
             })
@@ -100,7 +100,7 @@ class DocumentUpdateHandler implements IHandler {
 
     signalValidationStarted(document: any) : Promise<any> {
         const documentUrl = this.ingestClient.selfLinkForResource(document);
-        return this.ingestClient.postValidationReport(documentUrl, ValidationReport.validatingReport());
+        return this.ingestClient.transitionDocumentState(documentUrl, "VALIDATING");
     }
 }
 

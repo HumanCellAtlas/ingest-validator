@@ -10,7 +10,6 @@ namespace ingestClientExceptions {
     export class LinkNotFoundOnResource extends Error {}
     export class FileAlreadyValidatedError extends Error {}
     export class FileCurrentlyValidatingError extends Error {}
-    export class AlreadyValidatingError extends NotRetryableError {}
 }
 
 export = ingestClientExceptions;
