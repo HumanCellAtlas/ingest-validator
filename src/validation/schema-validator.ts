@@ -11,38 +11,9 @@ class SchemaValidator {
 
     constructor(customKeywordValidators: CustomAjvKeyword[]){
         this.validatorCache = {};
+        this.ajvInstance = SchemaValidator._constructAjv(customKeywordValidators);
         this.customKeywordValidators = customKeywordValidators;
-        this.ajvInstance = new ajv({allErrors: true, schemaId: 'id', loadSchema: this.generateLoadSchemaRefFn()});
-        this.ajvInstance.addMetaSchema(require('ajv/lib/refs/json-schema-draft-04.json'));
     }
-
-    generateLoadSchemaRefFn() {
-        const schemaCache: {[key: string]: any} = {};
-
-        const loadSchemaRefFn: (uri:string) => Promise<any> = (uri:string) => {
-            if(schemaCache[uri]) {
-                return Promise.resolve(schemaCache[uri]);
-            } else {
-                return new Promise((resolve, reject) => {
-                    request({
-                        method: "GET",
-                        url: uri,
-                        json: true
-                    }).then((resp: any) => {
-                        const loadedSchema = resp;
-                        loadedSchema["$async"] = true;
-                        schemaCache[uri] = loadedSchema;
-                        resolve(loadedSchema);
-                    }).catch((err: Error) => {
-                        reject(err);
-                    });
-                });
-            }
-        };
-
-        return loadSchemaRefFn;
-    }
-
 
     validateSingleSchema(inputSchema: any, inputObject: any) : Promise<ErrorObject[]> {
         inputSchema["$async"] = true;
@@ -90,6 +61,49 @@ class SchemaValidator {
         } else {
             return Promise.resolve(ajv.compileAsync(inputSchema));
         }
+    }
+
+    static _constructAjv(customKeywordValidators: CustomAjvKeyword[]) {
+        const ajvInstance = new ajv({allErrors: true, schemaId: 'id', loadSchema: SchemaValidator._generateLoadSchemaRefFn()});
+        ajvInstance.addMetaSchema(require('ajv/lib/refs/json-schema-draft-04.json'));
+        SchemaValidator._addCustomKeywordValidators(ajvInstance, customKeywordValidators);
+
+        return ajvInstance
+    }
+
+    static _addCustomKeywordValidators(ajvInstance: Ajv, customKeywordValidators: CustomAjvKeyword[]) : Ajv {
+        customKeywordValidators.forEach(customKeywordValidator => {
+            ajvInstance = customKeywordValidator.configure(ajvInstance);
+        });
+
+        return ajvInstance;
+    }
+
+    static _generateLoadSchemaRefFn() {
+        const schemaCache: {[key: string]: any} = {};
+
+        const loadSchemaRefFn: (uri:string) => Promise<any> = (uri:string) => {
+            if(schemaCache[uri]) {
+                return Promise.resolve(schemaCache[uri]);
+            } else {
+                return new Promise((resolve, reject) => {
+                    request({
+                        method: "GET",
+                        url: uri,
+                        json: true
+                    }).then((resp: any) => {
+                        const loadedSchema = resp;
+                        loadedSchema["$async"] = true;
+                        schemaCache[uri] = loadedSchema;
+                        resolve(loadedSchema);
+                    }).catch((err: Error) => {
+                        reject(err);
+                    });
+                });
+            }
+        };
+
+        return loadSchemaRefFn;
     }
 }
 

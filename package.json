@@ -41,15 +41,17 @@
     "@types/amqplib": "^0.5.9",
     "@types/bluebird": "^3.5.25",
     "@types/config": "0.0.34",
+    "@types/jest": "^24.0.14",
     "@types/ramda": "^0.25.47",
     "@types/request": "^2.48.1",
     "@types/request-promise": "^4.1.42",
     "@types/traverson": "^2.0.28",
     "cryptiles": ">=4.1.2",
-    "jest": "^22.4.3",
+    "jest": "^22.4.4",
     "merge": ">=1.2.1",
     "nodemon": "^1.17.5",
-    "typescript": "^3.2.2",
-    "snyk": "^1.148.0"
+    "snyk": "^1.148.0",
+    "ts-jest": "^24.0.2",
+    "typescript": "^3.2.2"
   }
 }

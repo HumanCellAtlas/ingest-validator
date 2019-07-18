@@ -35,17 +35,25 @@ class Listener {
                     ch.bindQueue(this.queue, this.exchange, this.queue).then(() => {
                         ch.prefetch(100).then(() => {
                             ch.consume(this.queue, (msg: Message|null) => {
-                                this.handle(msg).then(success => {
-                                    if(success) {
-                                        ch.ack(msg!);
-                                    } else {
-                                        console.info(`Failed to process message: \n ${msg!.content}`);
+                                try {
+                                    this.handle(msg).then(success => {
+                                        if(success) {
+                                            ch.ack(msg!);
+                                        } else {
+                                            console.info(`Failed to process message: \n ${msg!.content}`);
+                                            ch.nack(msg!, false, false);
+                                        }
+                                    }).catch(RejectMessageException, err => {
+                                        console.info(`Logging unretryable error: \n ${err.stack} \n ..for message: ${msg!.content}`);
                                         ch.nack(msg!, false, false);
-                                    }
-                                }).catch(RejectMessageException, err => {
-                                    console.info(`Logging unretryable error: \n ${err.stack} \n ..for message: ${msg!.content}`);
-                                    ch.nack(msg!, false, false);
-                                });
+                                    }).catch(Error, err => {
+                                        console.error(`Logging unexpected error: \n ${err.stack} \n ..for message: ${msg!.content}`);
+                                        ch.ack(msg!);
+                                    });
+                                } catch (e) {
+                                    console.error(`Logging unexpected exception: \n ${e.stack} \n ..for message: ${msg!.content}`);
+                                    ch.ack(msg!)
+                                }
                             }, {noAck : false});
                         })
                     })
