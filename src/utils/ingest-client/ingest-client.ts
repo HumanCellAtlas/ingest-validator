@@ -10,7 +10,7 @@ import {FileChecksums, IngestConnectionProperties, ValidationJob} from "../../co
 import ValidationReport from "../../model/validation-report";
 import {StatusCodeError} from "request-promise/errors";
 import {RejectMessageException} from "../../listener/messging-exceptions";
-import { AlreadyValidatingError } from "../../validation/ingest-validation-exceptions";
+import { AlreadyValidatingError } from "./ingest-client-exceptions"
 
 request.defaults({
     family: 4,

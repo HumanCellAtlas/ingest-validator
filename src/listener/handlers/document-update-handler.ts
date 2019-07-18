@@ -5,8 +5,8 @@ import IngestValidator from "../../validation/ingest-validator";
 import IngestClient from "../../utils/ingest-client/ingest-client";
 import IHandler from "./handler";
 import Promise from "bluebird";
-import {NoCloudUrl, NoFileMetadata, NotEligibleForValidation, AlreadyValidatingError} from "../../validation/ingest-validation-exceptions";
-import {NoUuidError} from "../../utils/ingest-client/ingest-client-exceptions";
+import {NoCloudUrl, NoFileMetadata, NotEligibleForValidation} from "../../validation/ingest-validation-exceptions";
+import {NoUuidError, AlreadyValidatingError} from "../../utils/ingest-client/ingest-client-exceptions";
 import ValidationReport from "../../model/validation-report";
 
 class DocumentUpdateHandler implements IHandler {
