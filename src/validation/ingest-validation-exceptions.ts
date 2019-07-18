@@ -7,7 +7,6 @@ namespace ingestValidatorExceptions {
     export class NoCloudUrl extends Error {}
     export class NoFileMetadata extends Error {}
     export class NotEligibleForValidation extends Error {}
-    export class AlreadyValidatingError extends Error {}
 
 }
 
