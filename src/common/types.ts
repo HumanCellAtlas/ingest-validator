@@ -4,6 +4,12 @@ namespace ts {
         host: string;
         port: number;
     }
+    export type RabbitMessagingProperties = {
+        exchange: string;
+        queueName: string;
+        routingKey: string;
+        exchangeType: string;
+    }
 
     export type HttpConnectionProperties = {
         scheme: string;

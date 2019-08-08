@@ -1,7 +1,7 @@
 /**
  * Created by rolando on 02/08/2018.
  */
-import {RabbitConnectionProperties} from "../common/types";
+import {RabbitConnectionProperties, RabbitMessagingProperties} from "../common/types";
 import amqp, {Message} from "amqplib";
 import IHandler from "./handlers/handler";
 import Promise from "bluebird";
@@ -10,31 +10,27 @@ import {RejectMessageException} from "./messging-exceptions";
 
 
 class Listener {
-    exchange: string;
-    exchangeType: string;
-    queue: string;
+
     rabbitConnectionProperties: RabbitConnectionProperties;
+    rabbitMessagingProperties: RabbitMessagingProperties
     rabbitUrl: URL;
     handler?: IHandler;
 
-
-    constructor(rabbitConnectionProperties: RabbitConnectionProperties, exchange: string, queue: string, exchangeType: string) {
+    constructor(rabbitConnectionProperties: RabbitConnectionProperties, rabbitMessagingProperties: RabbitMessagingProperties) {
         this.rabbitConnectionProperties = rabbitConnectionProperties;
+        this.rabbitMessagingProperties = rabbitMessagingProperties;
         this.rabbitUrl = new url.URL(`${rabbitConnectionProperties.scheme}://${rabbitConnectionProperties.host}:${rabbitConnectionProperties.port}`);
-        this.exchange = exchange;
-        this.queue = queue;
-        this.exchangeType = exchangeType;
     }
 
     start(){
         amqp.connect(String(this.rabbitUrl)).then((conn) => {
             return conn.createChannel();
         }).then(ch => {
-            ch.assertExchange(this.exchange, this.exchangeType).then(() => {
-                ch.assertQueue(this.queue, {durable: false}).then(() => {
-                    ch.bindQueue(this.queue, this.exchange, this.queue).then(() => {
+            ch.assertExchange(this.rabbitMessagingProperties.exchange, this.rabbitMessagingProperties.exchangeType).then(() => {
+                ch.assertQueue(this.rabbitMessagingProperties.queueName, {durable: false}).then(() => {
+                    ch.bindQueue(this.rabbitMessagingProperties.queueName, this.rabbitMessagingProperties.exchange, this.rabbitMessagingProperties.queueName).then(() => {
                         ch.prefetch(100).then(() => {
-                            ch.consume(this.queue, (msg: Message|null) => {
+                            ch.consume(this.rabbitMessagingProperties.queueName, (msg: Message|null) => {
                                 try {
                                     this.handle(msg).then(success => {
                                         if(success) {

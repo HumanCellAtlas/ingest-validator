@@ -11,6 +11,7 @@ import {
     FileValidationImage,
     IngestConnectionProperties,
     RabbitConnectionProperties,
+    RabbitMessagingProperties,
     UploadApiConnectionProperties
 } from "./common/types";
 import R from "ramda";
@@ -59,13 +60,9 @@ const documentUpdateListener = (() => {
     const handler = new DocumentUpdateHandler(ingestValidator, ingestClient);
 
     const rabbitConnectionConfig = config.get("AMQP.metadataValidation.connection") as RabbitConnectionProperties;
-    const rabbitMessagingConfig = config.get("AMQP.metadataValidation.messaging") as any;
+    const rabbitMessagingConfig = config.get("AMQP.metadataValidation.messaging") as RabbitMessagingProperties;
 
-    const exchange: string = rabbitMessagingConfig["exchange"];
-    const queue: string = rabbitMessagingConfig["queueName"];
-    const exchangeType: string = rabbitMessagingConfig["exchangeType"];
-
-    return new DocumentUpdateListener(rabbitConnectionConfig, exchange, queue, handler, exchangeType);
+    return new DocumentUpdateListener(rabbitConnectionConfig, rabbitMessagingConfig, handler);
 })();
 
 
@@ -73,14 +70,9 @@ const fileValidationListener = (() => {
     const handler = new FileValidationHandler(ingestClient);
 
     const rabbitConnectionConfig = config.get("AMQP.fileValidationResults.connection") as RabbitConnectionProperties;
-    const rabbitMessagingConfig = config.get("AMQP.fileValidationResults.messaging") as any;
+    const rabbitMessagingConfig = config.get("AMQP.fileValidationResults.messaging") as RabbitMessagingProperties;
 
-
-    const exchange: string = rabbitMessagingConfig["exchange"];
-    const queue: string = rabbitMessagingConfig["queueName"];
-    const exchangeType: string = rabbitMessagingConfig["exchangeType"];
-
-    return new FileValidationListener(rabbitConnectionConfig, exchange, queue, handler, exchangeType);
+    return new FileValidationListener(rabbitConnectionConfig, rabbitMessagingConfig, handler);
 })();
 
 
