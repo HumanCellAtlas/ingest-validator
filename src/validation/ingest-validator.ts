@@ -145,17 +145,8 @@ class IngestValidator {
      * @param fileName
      */
     static fileFormatFromFileName(fileName: string): string {
-        const appendExtensions = (subExtension: string, subsequentSubExtension: string) => {
-            if(subExtension === "") {
-                return subsequentSubExtension;
-            } else {
-                return subExtension + '.' + subsequentSubExtension;
-            }
-        };
-
-        const splitFilename: string[] = fileName.split('.');
-        const accum: string = "";
-        return R.reduce(appendExtensions, accum, R.tail(splitFilename));
+        const ext: string = fileName.split(/[.](.+)/)[1];
+        return ext ? ext : "";
     }
 }
 
