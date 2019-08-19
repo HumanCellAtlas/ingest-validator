@@ -43,7 +43,7 @@ class IngestValidator {
                 .then(schema => {return this.schemaValidator.validateSingleSchema(schema, documentContent)})
                 .then(valErrors => {return IngestValidator.parseValidationErrors(valErrors)})
                 .then(parsedErrors => {return IngestValidator.generateValidationReport(parsedErrors)})
-                .then(report => {return this.attemptFileValidation(report, document, documentType)})
+                .then(contentValidationReport => { return this.attemptFileValidation(contentValidationReport, document, documentType) })
         }
     }
 
@@ -103,36 +103,43 @@ class IngestValidator {
      *
      * @returns {Promise.<ValidationReport>}
      */
-    attemptFileValidation(report: ValidationReport, fileDocument: any, documentType: string) : Promise<ValidationReport> {
-        if(documentType.toUpperCase() === 'FILE' && report.validationState.toUpperCase() == "VALID") {
+    attemptFileValidation(contentValidationReport: ValidationReport, fileDocument: any, documentType: string) : Promise<ValidationReport> {
+        // proceed with data file validation if metadata doc validation passes
+        if(documentType.toUpperCase() === 'FILE' && contentValidationReport.validationState.toUpperCase() == "VALID") {
             const fileName = fileDocument['fileName'];
             const fileFormat = IngestValidator.fileFormatFromFileName(fileName);
 
+            // refresh document
+
             return new Promise((resolve, reject) => {
-                this.fileValidator.validateFile(fileDocument, fileFormat, fileName)
-                    .then(validationJob => {
-                        const fileValidatingReport = ValidationReport.validatingReport();
-                        fileValidatingReport.validationJob = validationJob;
-                        resolve(fileValidatingReport);
-                    })
-                    .catch(FileAlreadyValidatedError, err => {
-                        console.info(`Request to validate File with name ${fileName} but it was already validated`);
-                        resolve(report);
-                    })
-                    .catch(FileCurrentlyValidatingError, err => {
-                        console.info(`Request to validate File with name ${fileName} but it's currently validating`);
-                        resolve(ValidationReport.validatingReport());
-                    })
-                    .catch(NoFileValidationImage, err => {
-                        console.info("No matching validation image for file with file name " + fileName);
-                        resolve(report);
-                    }).catch(err => {
-                        console.error("ERROR: error requesting file validation job " + err);
-                        reject(err);
-                    });
+                const fileDocumentUrl = this.ingestClient.selfLinkForResource(fileDocument);
+                this.ingestClient.retrieveMetadataDocument(fileDocumentUrl).then(doc => {
+                    this.fileValidator.validateFile(fileDocument, fileFormat, fileName)
+                        .then(validationJob => {
+                            const fileValidatingReport = ValidationReport.validatingReport();
+                            fileValidatingReport.validationJob = validationJob;
+                            resolve(fileValidatingReport);
+                        })
+                        .catch(FileAlreadyValidatedError, err => {
+                            console.info(`Request to validate File with name ${fileName} but it was already validated`);
+                            resolve(contentValidationReport);
+                        })
+                        .catch(FileCurrentlyValidatingError, err => {
+                            console.info(`Request to validate File with name ${fileName} but it's currently validating`);
+                            resolve(ValidationReport.validatingReport());
+                        })
+                        .catch(NoFileValidationImage, err => {
+                            console.info("No matching validation image for file with file name " + fileName);
+                            resolve(contentValidationReport);
+                        }).catch(err => {
+                            console.error("ERROR: error requesting file validation job " + err);
+                            reject(err);
+                        });
+                })
+                    .catch( () => resolve(contentValidationReport));
             });
         } else {
-            return Promise.resolve(report); // just return original report if not eligible for file validation
+            return Promise.resolve(contentValidationReport); // just return original report if not eligible for file validation
         }
     }
 
