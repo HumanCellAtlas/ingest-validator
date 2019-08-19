@@ -8,6 +8,7 @@ import R from "ramda";
 import UploadClient from "../upload-client/upload-client";
 import {FileAlreadyValidatedError, FileCurrentlyValidatingError} from "./ingest-client-exceptions";
 import {NoFileValidationImage} from "../../validation/ingest-validation-exceptions";
+import ValidationReport from "../../model/validation-report";
 
 class IngestFileValidator {
     fileValidationImages: FileValidationImage[];
@@ -30,22 +31,39 @@ class IngestFileValidator {
      * @param fileName
      */
     validateFile(fileResource: any, fileFormat: string, fileName: string) : Promise<ValidationJob> {
-        return this.assertNotAlreadyValidated(fileResource).then(fileChecksums => {
-            return this.uploadAreaForFile(fileResource).then(uploadAreaUuid => {
-                const validationImage = this.imageFor(fileFormat);
-                if(! validationImage) {
-                    return Promise.reject(new NoFileValidationImage());
-                } else {
-                    const imageUrl = validationImage.imageUrl;
-                    return IngestFileValidator._validateFile(fileName, uploadAreaUuid, imageUrl, this.uploadClient).then(validationJobId => {
-                        return Promise.resolve({
+
+        const validationJob = fileResource["validationJob"];
+        const fileChecksums = fileResource["checksums"];
+
+        if (validationJob) {
+            const completed = validationJob.jobCompleted;
+            if (!completed) {
+                return Promise.reject(new FileCurrentlyValidatingError());
+            }
+
+            if (validationJob.validationReport) {
+                const fileSha1 = fileChecksums.sha1;
+                const validatedSha1 = validationJob.checksums.sha1;
+
+                if (validationJob.validationReport.validationState == 'VALID' && fileSha1 == validatedSha1)
+                    return  Promise.resolve(validationJob);
+            }
+        }
+        return this.uploadAreaForFile(fileResource).then(uploadAreaUuid => {
+            const validationImage = this.imageFor(fileFormat);
+            if(! validationImage) {
+                return Promise.reject(new NoFileValidationImage());
+            } else {
+                const imageUrl = validationImage.imageUrl;
+                return IngestFileValidator._validateFile(fileName, uploadAreaUuid, imageUrl, this.uploadClient).then(validationJobId => {
+                    return Promise.resolve({
                             validationId: validationJobId,
                             checksums: fileChecksums,
-                            jobCompleted: false
-                        });
+                            jobCompleted: false,
+                            validationJob: null // reset validationJob
                     });
-                }
-            });
+                });
+            }
         });
     }
 
@@ -57,28 +75,6 @@ class IngestFileValidator {
         };
 
         return uploadClient.requestFileValidationJob(fileValidationRequest);
-    }
-
-    assertNotAlreadyValidated(fileResource: any) : Promise<FileChecksums> {
-        const fileDocumentUrl = this.ingestClient.selfLinkForResource(fileResource);
-
-        return this.ingestClient.getValidationJob(fileDocumentUrl).then(validationJob => {
-            if(! validationJob) {
-                return Promise.resolve(fileResource["checksums"]);
-            } else if(!validationJob.jobCompleted) {
-                return Promise.reject(new FileCurrentlyValidatingError())
-            } else {
-                return this.ingestClient.getFileChecksums(fileDocumentUrl).then(fileChecksums => {
-                    const fileSha1 = fileChecksums.sha1;
-                    const validatedSha1 = validationJob.checksums.sha1;
-                    if(fileSha1 == validatedSha1) {
-                        return Promise.reject(new FileAlreadyValidatedError());
-                    } else {
-                        return Promise.resolve(fileChecksums);
-                    }
-                });
-            }
-        });
     }
 
     imageFor(fileFormat: string) : FileValidationImage|undefined {
