@@ -1,3 +1,6 @@
+import ErrorReport from "../model/error-report";
+import ValidationReport from "../model/validation-report";
+
 namespace ts {
     export type RabbitConnectionProperties = {
         scheme: string;
@@ -41,7 +44,8 @@ namespace ts {
     export type ValidationJob = {
         validationId: string,
         checksums: FileChecksums,
-        jobCompleted: boolean
+        jobCompleted: boolean,
+        validationReport?: ValidationReport
     }
 }
 
