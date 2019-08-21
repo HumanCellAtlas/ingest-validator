@@ -45,7 +45,7 @@ namespace ts {
         validationId: string,
         checksums: FileChecksums,
         jobCompleted: boolean,
-        validationReport?: ValidationReport
+        validationReport?: ValidationReport | null
     }
 }
 
