@@ -60,7 +60,7 @@ class IngestFileValidator {
                             validationId: validationJobId,
                             checksums: fileChecksums,
                             jobCompleted: false,
-                            validationJob: null // reset validationJob
+                            validationReport: null // reset validationReport
                     });
                 });
             }
