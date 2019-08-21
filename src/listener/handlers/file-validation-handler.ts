@@ -16,6 +16,7 @@ class FileValidationHandler implements IHandler{
         this.ingestClient = ingestClient;
     }
 
+    // msg contains fileValidationResult from Upload srv
     handle(msg: string): Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => {
             let msgContent: any = null;
@@ -45,6 +46,7 @@ class FileValidationHandler implements IHandler{
             this.ingestClient.findFileByValidationId(validationJobId).then(fileDocument => {
                 const validationJob: ValidationJob = fileDocument["validationJob"];
                 validationJob.jobCompleted = true;
+                validationJob.validationReport = validationReport;
                 validationReport.validationJob = validationJob;
                 const documentUrl = this.ingestClient.selfLinkForResource(fileDocument);
                 this.ingestClient.postValidationReport(documentUrl, validationReport).then(() => {

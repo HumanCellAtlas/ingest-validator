@@ -1,4 +1,4 @@
-import {RabbitConnectionProperties} from "../common/types";
+import {RabbitConnectionProperties, RabbitMessagingProperties} from "../common/types";
 import IHandler from "./handlers/handler";
 import Listener from "./listener";
 
@@ -8,19 +8,16 @@ import Listener from "./listener";
 
 class FileValidationListener {
     rabbitConnectionProperties: RabbitConnectionProperties;
-    exchange: string;
-    exchangeType: string;
-    queue: string;
+    rabbitMessagingProperties: RabbitMessagingProperties;
     handler: IHandler;
     listener: Listener;
 
-    constructor(rabbitConnectionProperties: RabbitConnectionProperties, exchange: string, queue: string, handler: IHandler, exchangeType: string) {
+    constructor(rabbitConnectionProperties: RabbitConnectionProperties, rabbitMessagingProperties: RabbitMessagingProperties, handler: IHandler) {
         this.rabbitConnectionProperties = rabbitConnectionProperties;
-        this.exchange = exchange;
-        this.exchangeType = exchangeType;
-        this.queue = queue;
+        this.rabbitMessagingProperties = rabbitMessagingProperties;
         this.handler = handler;
-        this.listener = new Listener(rabbitConnectionProperties, exchange, queue, exchangeType);
+
+        this.listener = new Listener(rabbitConnectionProperties, rabbitMessagingProperties);
         this.listener.setHandler(this.handler);
     }
 
