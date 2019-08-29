@@ -4,17 +4,13 @@
 import {AdditionalPropertiesParams, EnumParams, ErrorObject} from "ajv";
 
 class ErrorReport {
+    message: string;
     ajvError? : ErrorObject;
-    message?: string;
     absoluteDataPath?: string;
     userFriendlyMessage?: string;
 
-    constructor(ajvError: ErrorObject) {
-        this.ajvError = ajvError;
-
-        if(ajvError) {
-            this.constructWithAjvError(this.ajvError);
-        }
+    constructor(message: string) {
+        this.message = message;
     }
 
     constructUserFriendlyMessage() : void {
@@ -47,11 +43,16 @@ class ErrorReport {
         }
     }
 
-    constructWithAjvError(ajvError: ErrorObject) : void {
-        this.absoluteDataPath = ajvError.dataPath;
-        this.message = ajvError.message;
-
-        this.constructUserFriendlyMessage();
+    static constructWithAjvError(ajvError: ErrorObject) : ErrorReport {
+        let errorReport: ErrorReport;
+        if(ajvError.message) {
+            errorReport = new ErrorReport(ajvError.message);
+        } else {
+            errorReport = new ErrorReport("ajvError default message");
+        }
+        errorReport.absoluteDataPath = ajvError.dataPath;
+        errorReport.constructUserFriendlyMessage();
+        return errorReport;
     }
 }
 

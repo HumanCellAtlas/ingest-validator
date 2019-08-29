@@ -9,7 +9,7 @@ import IngestClient from "../utils/ingest-client/ingest-client";
 import {ErrorObject} from "ajv";
 import SchemaValidator from "./schema-validator";
 import ErrorReport from "../model/error-report";
-import {NoDescribedBy, NoFileValidationImage} from "./ingest-validation-exceptions";
+import {NoDescribedBy, NoFileValidationImage, SchemaRetrievalError} from "./ingest-validation-exceptions";
 import R from "ramda";
 import {FileAlreadyValidatedError, FileCurrentlyValidatingError} from "../utils/ingest-client/ingest-client-exceptions";
 /**
@@ -44,6 +44,10 @@ class IngestValidator {
                 .then(valErrors => {return IngestValidator.parseValidationErrors(valErrors)})
                 .then(parsedErrors => {return IngestValidator.generateValidationReport(parsedErrors)})
                 .then(contentValidationReport => { return this.attemptFileValidation(contentValidationReport, document, documentType) })
+                .catch(SchemaRetrievalError, err => {
+                    const errReport = new ErrorReport(`Failed to retrieve schema at ${schemaUri}`);
+                    return Promise.resolve(ValidationReport.invalidReport([errReport]));
+                })
         }
     }
 
@@ -76,7 +80,7 @@ class IngestValidator {
      * @param errors
      */
     static parseValidationErrors(errors: ErrorObject[]) : Promise<ErrorReport[]> {
-        return Promise.resolve(R.map((ajvErr: ErrorObject) => new ErrorReport(ajvErr), errors));
+        return Promise.resolve(R.map((ajvErr: ErrorObject) => ErrorReport.constructWithAjvError(ajvErr), errors));
     }
 
     static generateValidationReport(errors: ErrorReport[]) : Promise<ValidationReport> {

@@ -8,6 +8,7 @@ import {ValidationJob} from "../../common/types";
 import Promise from "bluebird";
 import {RejectMessageException} from "../messging-exceptions";
 import {StatusCodeError} from "request-promise/errors";
+import ErrorReport from "../../model/error-report";
 
 class FileValidationHandler implements IHandler{
     ingestClient: IngestClient;

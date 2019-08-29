@@ -22,6 +22,10 @@ class ValidationReport {
     static validatingReport(): ValidationReport {
         return new ValidationReport("VALIDATING", []);
     }
+
+    static invalidReport(validationErrors: ErrorReport[]): ValidationReport {
+        return new ValidationReport("INVALID", validationErrors);
+    }
 }
 
 export default ValidationReport;
