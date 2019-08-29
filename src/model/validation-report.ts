@@ -13,6 +13,9 @@ class ValidationReport {
         this.validationState = validationState;
         this.validationErrors = validationErrors;
         this.validationJob = validationJob;
+        if (this.validationJob) {
+            this.validationJob.validationReport = this;
+        }
     }
 
     static okReport(): ValidationReport {
