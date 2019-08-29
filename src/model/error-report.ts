@@ -9,10 +9,10 @@ class ErrorReport {
     absoluteDataPath?: string;
     userFriendlyMessage?: string;
 
-    constructor(ajvError: ErrorObject) {
+    constructor(ajvError?: ErrorObject) {
         this.ajvError = ajvError;
 
-        if(ajvError) {
+        if(this.ajvError) {
             this.constructWithAjvError(this.ajvError);
         }
     }

@@ -8,6 +8,8 @@ import {ValidationJob} from "../../common/types";
 import Promise from "bluebird";
 import {RejectMessageException} from "../messging-exceptions";
 import {StatusCodeError} from "request-promise/errors";
+import ErrorReport from "../../model/error-report";
+import {ErrorObject} from "ajv";
 
 class FileValidationHandler implements IHandler{
     ingestClient: IngestClient;
@@ -28,26 +30,27 @@ class FileValidationHandler implements IHandler{
             }
             const validationJobId = msgContent['validation_id'];
 
-            let validationOutput = null;
+            let validationReport: ValidationReport;
             try {
-                validationOutput = JSON.parse(msgContent['stdout']);
+                let validationOutput = JSON.parse(msgContent['stdout']);
+                const validationState = validationOutput['validation_state'];
+                const validationErrors = validationOutput['validation_errors'];
+
+                validationReport = new ValidationReport(validationState, validationErrors);
             } catch (err) {
                 console.error("Failed to JSON parse stdout in validation message (ignoring): " + msg);
-                resolve(true);
+                let errReport = new ErrorReport();
+                errReport.message = "Failed to JSON parse stdout from upload service";
+                validationReport = new ValidationReport("INVALID", [errReport]);
             }
-
-            const validationState = validationOutput['validation_state'];
-            const validationErrors = validationOutput['validation_errors'];
-
-            const validationReport = new ValidationReport(validationState, validationErrors);
 
             // TODO: extra GET request here could be cut out
 
             this.ingestClient.findFileByValidationId(validationJobId).then(fileDocument => {
                 const validationJob: ValidationJob = fileDocument["validationJob"];
                 validationJob.jobCompleted = true;
-                validationJob.validationReport = validationReport;
-                validationReport.validationJob = validationJob;
+                validationReport.setValidationJob(validationJob); // moved cyclic ref in class
+
                 const documentUrl = this.ingestClient.selfLinkForResource(fileDocument);
                 this.ingestClient.postValidationReport(documentUrl, validationReport).then(() => {
                     resolve(true);
