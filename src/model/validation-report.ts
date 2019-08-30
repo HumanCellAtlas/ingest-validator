@@ -9,10 +9,9 @@ class ValidationReport {
     validationErrors: ErrorReport[];
     validationJob?: ValidationJob;
 
-    constructor(validationState: string, validationErrors: ErrorReport[], validationJob?: ValidationJob) {
+    constructor(validationState: string, validationErrors: ErrorReport[]) {
         this.validationState = validationState;
         this.validationErrors = validationErrors;
-        this.validationJob = validationJob;
     }
 
     static okReport(): ValidationReport {
@@ -21,6 +20,11 @@ class ValidationReport {
 
     static validatingReport(): ValidationReport {
         return new ValidationReport("VALIDATING", []);
+    }
+
+    setValidationJob(job: ValidationJob): void {
+        this.validationJob = job;
+        this.validationJob.validationReport = this;
     }
 }
 
