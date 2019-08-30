@@ -60,7 +60,7 @@ class IngestValidator {
                         resolve(schema);
                     })
                     .catch(err => {
-                        reject(err);
+                        reject(new SchemaRetrievalError(err));
                     })
             });
         } else {
@@ -101,7 +101,7 @@ class IngestValidator {
      * Only do file validation if schema validation passes for the resource and if
      * the resource is a file
      *
-     * @param report
+     * @param contentValidationReport
      * @param fileDocument
      * @param documentType
      *
