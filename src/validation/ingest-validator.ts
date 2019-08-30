@@ -122,8 +122,9 @@ class IngestValidator {
                             resolve(fileValidatingReport);
                         })
                         .catch(FileValidationRequestFailed, err => {
-                            const error = "[{\"user_friendly_message\":\"File validation request failed\"}]";
-                            const rep = new ValidationReport("INVALID", JSON.parse(error));
+                            const errReport = new ErrorReport();
+                            errReport.message = "File validation request failed";
+                            const rep = new ValidationReport("INVALID", [errReport]);
                             resolve(rep);
                         })
                         .catch(FileAlreadyValidatedError, err => {
