@@ -9,6 +9,7 @@ import UploadClient from "../upload-client/upload-client";
 import {FileAlreadyValidatedError, FileCurrentlyValidatingError} from "./ingest-client-exceptions";
 import {NoFileValidationImage} from "../../validation/ingest-validation-exceptions";
 import ValidationReport from "../../model/validation-report";
+import {FileValidationRequestFailed} from "../upload-client/upload-client-exceptions";
 
 class IngestFileValidator {
     fileValidationImages: FileValidationImage[];
@@ -55,14 +56,17 @@ class IngestFileValidator {
                 return Promise.reject(new NoFileValidationImage());
             } else {
                 const imageUrl = validationImage.imageUrl;
-                return IngestFileValidator._validateFile(fileName, uploadAreaUuid, imageUrl, this.uploadClient).then(validationJobId => {
-                    return Promise.resolve({
-                            validationId: validationJobId,
-                            checksums: fileChecksums,
-                            jobCompleted: false,
-                            validationReport: null // reset validationReport
+                return IngestFileValidator._validateFile(fileName, uploadAreaUuid, imageUrl, this.uploadClient)
+                    .then(validationJobId => {
+                        return Promise.resolve({
+                                validationId: validationJobId,
+                                checksums: fileChecksums,
+                                jobCompleted: false,
+                                validationReport: null // reset validationReport
+                        });
+                    }).catch(err => {
+                        return Promise.reject(new FileValidationRequestFailed());
                     });
-                });
             }
         });
     }

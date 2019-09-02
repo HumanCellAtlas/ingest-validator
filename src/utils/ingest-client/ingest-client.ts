@@ -10,6 +10,7 @@ import {FileChecksums, IngestConnectionProperties, ValidationJob} from "../../co
 import ValidationReport from "../../model/validation-report";
 import {StatusCodeError} from "request-promise/errors";
 import {RejectMessageException} from "../../listener/messging-exceptions";
+import {Client} from "../client";
 
 
 request.defaults({
@@ -20,12 +21,12 @@ request.defaults({
 });
 
 
-class IngestClient {
-    ingestUrl: string;
-    constructor(connectionConfig: IngestConnectionProperties) {
-        this.ingestUrl = `${connectionConfig.scheme}://${connectionConfig.host}:${connectionConfig.port}`;
-    }
+class IngestClient extends Client {
 
+    constructor(connectionConfig: IngestConnectionProperties) {
+        const ingestUrl = `${connectionConfig.scheme}://${connectionConfig.host}:${connectionConfig.port}`;
+        super(ingestUrl);
+    }
 
     retrieve(entityUrl: string) : Promise<any>{
         return new Promise((resolve, reject) => {
@@ -138,7 +139,7 @@ class IngestClient {
 
     findFileByValidationId(validationId: string) {
         // TODO: determine search endpoint by following rels; cache the result
-        const findByValidationUrl = `${this.ingestUrl}/files/search/findByValidationJobValidationId?validationId=${validationId}`;
+        const findByValidationUrl = `${this.clientBaseUrl}/files/search/findByValidationJobValidationId?validationId=${validationId}`;
 
         return request({
                 method: "GET",
@@ -184,7 +185,7 @@ class IngestClient {
     }
 
     urlForCallbackLink(entityCallback: string) {
-        return this.ingestUrl + entityCallback;
+        return this.clientBaseUrl + entityCallback;
     }
 
     selfLinkForResource(resource: any): string {
@@ -245,31 +246,6 @@ class IngestClient {
         return this
             .retrieveMetadataDocument(fileDocumentUrl)
             .then(fileResource => {return Promise.resolve(fileResource["validationJob"] as ValidationJob)});
-    }
-
-    retry(maxRetries: number, func: Function, args: any[], retryMessage: string) {
-        return this._retry(0, maxRetries, null, func, args, retryMessage);
-    }
-
-    _retry(attemptsSoFar: number, maxRetries: number, prevErr: Error|null, func: Function, args: any[], retryMessage: string) {
-        if(attemptsSoFar === maxRetries) {
-            return Promise.reject(prevErr);
-        } else {
-            const boundFunc = func.bind(this);
-            return Promise.delay(50).then(() => {
-                return boundFunc.apply(null, args)
-                    .then( (allGood: any) => {return Promise.resolve(allGood)})
-                    .catch( (err: Error) => {
-                        if(err instanceof NotRetryableError) {
-                            return Promise.reject(err);
-                        } else {
-                            const incAttempts = attemptsSoFar + 1;
-                            console.info(retryMessage + " :: Attempt # " + incAttempts + " out of " + maxRetries);
-                            return this._retry(attemptsSoFar + 1, maxRetries, err, func, args, retryMessage);
-                        }
-                    });
-            });
-        }
     }
 
     static pathExistsInDoc(path: string[], doc: any) : boolean {

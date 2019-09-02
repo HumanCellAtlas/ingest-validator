@@ -12,6 +12,7 @@ import ErrorReport from "../model/error-report";
 import {NoDescribedBy, NoFileValidationImage, SchemaRetrievalError} from "./ingest-validation-exceptions";
 import R from "ramda";
 import {FileAlreadyValidatedError, FileCurrentlyValidatingError} from "../utils/ingest-client/ingest-client-exceptions";
+import {FileValidationRequestFailed} from "../utils/upload-client/upload-client-exceptions";
 /**
  *
  * Wraps the generic validator, outputs errors in custom format.
@@ -123,6 +124,11 @@ class IngestValidator {
                             const fileValidatingReport = ValidationReport.validatingReport();
                             fileValidatingReport.validationJob = validationJob;
                             resolve(fileValidatingReport);
+                        })
+                        .catch(FileValidationRequestFailed, err => {
+                            const errReport = new ErrorReport("File validation request failed");
+                            const rep = new ValidationReport("INVALID", [errReport]);
+                            resolve(rep);
                         })
                         .catch(FileAlreadyValidatedError, err => {
                             console.info(`Request to validate File with name ${fileName} but it was already validated`);
