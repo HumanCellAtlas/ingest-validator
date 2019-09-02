@@ -22,6 +22,10 @@ class ValidationReport {
         return new ValidationReport("VALIDATING", []);
     }
 
+    static invalidReport(validationErrors: ErrorReport[]): ValidationReport {
+        return new ValidationReport("INVALID", validationErrors);
+    }
+
     setValidationJob(job: ValidationJob): void {
         this.validationJob = job;
         this.validationJob.validationReport = this;

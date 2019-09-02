@@ -9,7 +9,7 @@ import Promise from "bluebird";
 import {RejectMessageException} from "../messging-exceptions";
 import {StatusCodeError} from "request-promise/errors";
 import ErrorReport from "../../model/error-report";
-import {ErrorObject} from "ajv";
+
 
 class FileValidationHandler implements IHandler{
     ingestClient: IngestClient;
@@ -39,8 +39,7 @@ class FileValidationHandler implements IHandler{
                 validationReport = new ValidationReport(validationState, validationErrors);
             } catch (err) {
                 console.error("Failed to JSON parse stdout in validation message (ignoring): " + msg);
-                let errReport = new ErrorReport();
-                errReport.message = "Failed to JSON parse stdout from upload service";
+                let errReport = new ErrorReport("Failed to JSON parse stdout from upload service");
                 validationReport = new ValidationReport("INVALID", [errReport]);
             }
 
