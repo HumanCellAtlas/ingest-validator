@@ -91,9 +91,8 @@ class IngestFileValidator {
 
     uploadAreaForFile(fileDocument: string) : Promise<string> {
         return new Promise((resolve, reject) => {
-            this.ingestClient.envelopesForMetadataDocument(fileDocument)
-                .then((envelopes: any[]) => {
-                    const envelope = envelopes[0]; // assuming there is at least 1 envelope
+            this.ingestClient.envelopeForMetadataDocument(fileDocument)
+                .then((envelope: any) => {
                     const uploadAreaId = envelope["stagingDetails"]["stagingAreaUuid"]["uuid"];
                     resolve(uploadAreaId);
                 })

@@ -192,23 +192,23 @@ class IngestClient extends Client {
         return resource["_links"]["self"]["href"];
     }
 
-    envelopesLinkForResource(resource: any) {
-        return resource["_links"]["submissionEnvelopes"]["href"];
+    envelopeLinkForResource(resource: any) {
+        return resource["_links"]["submissionEnvelope"]["href"];
     }
 
     /**
      * gets envelopes associated with this metadata document
      * @param metadataDocument
      */
-    envelopesForMetadataDocument(metadataDocument: any) : Promise<any[]> {
+    envelopeForMetadataDocument(metadataDocument: any) : Promise<any> {
         return new Promise((resolve, reject) => {
             request({
                 method: "GET",
-                url: this.envelopesLinkForResource(metadataDocument),
+                url: this.envelopeLinkForResource(metadataDocument),
                 json: true,
             }).then(resp => {
                 // envelopes are embedded entities
-                resolve(resp['_embedded']['submissionEnvelopes']);
+                resolve(resp);
             }).catch(err => {
                 reject(err);
             });
