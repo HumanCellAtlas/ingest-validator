@@ -18,8 +18,10 @@ import R from "ramda";
 import IngestValidator from "./validation/ingest-validator";
 import DocumentUpdateHandler from "./listener/handlers/document-update-handler";
 import SchemaValidator from "./validation/schema-validator";
-import GraphRestriction from "./custom/graph-restriction";
+//import GraphRestriction from "./custom/graph-restriction";
 import UploadClient from "./utils/upload-client/upload-client";
+let {ElixirValidator, GraphRestriction} = require('elixir-jsonschema-validator');
+
 /** Pre-setup: Configuring HTTP agents and DNS caching **/
 
 const dnscache = require('dnscache')({
@@ -31,8 +33,11 @@ const dnscache = require('dnscache')({
 /** ------------------------------- **/
 
 const schemaValidator = (() => {
-    const ontologyValidatorKeyword = new GraphRestriction("graph_restriction");
-    return new SchemaValidator([ontologyValidatorKeyword]);
+    //const ontologyValidatorKeyword = new GraphRestriction("graph_restriction");
+    const olsConnectionConfig: any = config.get("OLS_API.connection");
+    const olsUrl = `${olsConnectionConfig["scheme"]}://${olsConnectionConfig["host"]}:${olsConnectionConfig["port"]}/api`;
+    return new ElixirValidator([new GraphRestriction(null, olsUrl)]);
+    //return new SchemaValidator([ontologyValidatorKeyword]);
 })();
 
 const ingestClient = (() => {
@@ -74,7 +79,6 @@ const fileValidationListener = (() => {
 
     return new FileValidationListener(rabbitConnectionConfig, rabbitMessagingConfig, handler);
 })();
-
 
 function begin() {
     documentUpdateListener.start();
