@@ -5,6 +5,7 @@ import Promise from "bluebird";
 import * as TypeMoq from "typemoq";
 import IngestFileValidator from "../utils/ingest-client/ingest-file-validator";
 import ValidationReport from "../model/validation-report";
+import {IElixirValidator} from "../common/types";
 
 
 describe("Ingest validator tests", () =>{
@@ -16,7 +17,7 @@ describe("Ingest validator tests", () =>{
     });
 
     it("should return an INVALID ValidationReport when describedBy schema can't be retrieved", () => {
-        const mockSchemaValidator: TypeMoq.IMock<SchemaValidator> = TypeMoq.Mock.ofType<SchemaValidator>();
+        const mockSchemaValidator: TypeMoq.IMock<IElixirValidator> = TypeMoq.Mock.ofType<IElixirValidator>();
         const mockIngestClient: TypeMoq.IMock<IngestClient> = TypeMoq.Mock.ofType<IngestClient>();
         const mockFileValidator: TypeMoq.IMock<IngestFileValidator> = TypeMoq.Mock.ofType<IngestFileValidator>();
 

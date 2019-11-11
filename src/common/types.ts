@@ -47,6 +47,10 @@ namespace ts {
         jobCompleted: boolean,
         validationReport?: ValidationReport | null
     }
+
+    export interface IElixirValidator {
+        validate(inputSchema: any, inputObject: any): Promise<any[]>
+    }
 }
 
 export = ts;

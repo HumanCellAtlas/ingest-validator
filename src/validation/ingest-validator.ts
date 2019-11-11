@@ -13,6 +13,7 @@ import {NoDescribedBy, NoFileValidationImage, SchemaRetrievalError} from "./inge
 import R from "ramda";
 import {FileAlreadyValidatedError, FileCurrentlyValidatingError} from "../utils/ingest-client/ingest-client-exceptions";
 import {FileValidationRequestFailed} from "../utils/upload-client/upload-client-exceptions";
+import {IElixirValidator} from "../common/types";
 /**
  *
  * Wraps the generic validator, outputs errors in custom format.
@@ -20,12 +21,12 @@ import {FileValidationRequestFailed} from "../utils/upload-client/upload-client-
  *
  */
 class IngestValidator {
-    schemaValidator: SchemaValidator;
+    schemaValidator: IElixirValidator;
     fileValidator: IngestFileValidator;
     ingestClient: IngestClient;
     schemaCache: any;
 
-    constructor(schemaValidator: SchemaValidator, fileValidator: IngestFileValidator, ingestClient: IngestClient) {
+    constructor(schemaValidator: IElixirValidator, fileValidator: IngestFileValidator, ingestClient: IngestClient) {
         this.schemaValidator = schemaValidator;
         this.fileValidator = fileValidator;
         this.ingestClient = ingestClient;
@@ -41,7 +42,7 @@ class IngestValidator {
 
             return this.getSchema(schemaUri)
                 .then(schema => {return IngestValidator.insertSchemaId(schema)})
-                .then(schema => {return this.schemaValidator.validateSingleSchema(schema, documentContent)})
+                .then(schema => {return this.schemaValidator.validate(schema, documentContent)})
                 .then(valErrors => {return IngestValidator.parseValidationErrors(valErrors)})
                 .then(parsedErrors => {return IngestValidator.generateValidationReport(parsedErrors)})
                 .then(contentValidationReport => { return this.attemptFileValidation(contentValidationReport, document, documentType) })

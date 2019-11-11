@@ -8,7 +8,7 @@ import FileValidationHandler from "./listener/handlers/file-validation-handler";
 import FileValidationListener from "./listener/file-validation-listener";
 import IngestFileValidator from "./utils/ingest-client/ingest-file-validator";
 import {
-    FileValidationImage,
+    FileValidationImage, IElixirValidator,
     IngestConnectionProperties,
     RabbitConnectionProperties,
     RabbitMessagingProperties,
@@ -32,11 +32,12 @@ const dnscache = require('dnscache')({
 
 /** ------------------------------- **/
 
-const schemaValidator = (() => {
+
+const schemaValidator: IElixirValidator = (() => {
     //const ontologyValidatorKeyword = new GraphRestriction("graph_restriction");
     const olsConnectionConfig: any = config.get("OLS_API.connection");
     const olsUrl = `${olsConnectionConfig["scheme"]}://${olsConnectionConfig["host"]}:${olsConnectionConfig["port"]}/api`;
-    return new ElixirValidator([new GraphRestriction(null, olsUrl)]);
+    return new ElixirValidator([new GraphRestriction(null, olsUrl)]) as IElixirValidator;
     //return new SchemaValidator([ontologyValidatorKeyword]);
 })();
 
