@@ -20,7 +20,7 @@ import DocumentUpdateHandler from "./listener/handlers/document-update-handler";
 import SchemaValidator from "./validation/schema-validator";
 //import GraphRestriction from "./custom/graph-restriction";
 import UploadClient from "./utils/upload-client/upload-client";
-let {ElixirValidator, GraphRestriction} = require('elixir-jsonschema-validator');
+import {ElixirValidator, GraphRestriction} from 'elixir-jsonschema-validator';
 
 /** Pre-setup: Configuring HTTP agents and DNS caching **/
 

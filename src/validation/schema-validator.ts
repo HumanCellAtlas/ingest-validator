@@ -4,8 +4,12 @@ import Promise from "bluebird";
 import ajv from "ajv";
 import request from "request-promise";
 import AppError from "../model/application-error";
+
+interface h {
+    [index: string]: ValidateFunction
+}
 class SchemaValidator {
-    validatorCache: {[key: string]: ValidateFunction};
+    validatorCache: h;
     customKeywordValidators: CustomAjvKeyword[];
     ajvInstance: Ajv;
 
@@ -17,7 +21,7 @@ class SchemaValidator {
 
     validateSingleSchema(inputSchema: any, inputObject: any) : Promise<ErrorObject[]> {
         inputSchema["$async"] = true;
-        const schemaId: string = inputSchema['$id'];
+        const schemaId = inputSchema.$id;
 
         return new Promise((resolve, reject) => {
             const compiledSchemaPromise = this.getValidationFunction(inputSchema);
