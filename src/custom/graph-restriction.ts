@@ -67,17 +67,17 @@ class GraphRestriction implements CustomAjvKeyword {
             return Promise.all(expanded);
         };
 
-        const generateErrorObject: (message: string) => ErrorObject = (message) => {
+        const generateErrorObject: (message: string, dataPath: string) => ErrorObject = (message, dataPath) => {
             return {
                 keyword: "graph_restriction",
                 message: message,
-                dataPath: "",
+                dataPath: dataPath,
                 schemaPath: "",
                 params: {}
             };
         };
 
-        const findChildTerm = (schema: any, data: any) => {
+        const findChildTerm = (schema: any, data: any, parentSchema:any, dataPath:any) => {
             return new Promise((resolve, reject) => {
                 let parentTerms = schema.classes;
                 const ontologyIds = schema.ontologies;
@@ -116,21 +116,24 @@ class GraphRestriction implements CustomAjvKeyword {
 
                                 if (jsonBody.response.numFound === 1) {
                                 } else if (jsonBody.response.numFound === 0) {
-                                    errors.push(generateErrorObject(`Provided term is not child of [${parentTerm}]`));
+                                    errors.push(generateErrorObject(`Provided term is not child of [${parentTerm}]`, dataPath));
                                 } else {
-                                    errors.push(generateErrorObject("Something went wrong while validating term, try again."));
+                                    errors.push(generateErrorObject("Something went wrong while validating term, try again.", dataPath));
                                 }
+                                reject(new ajv.ValidationError(errors));
+                            }).catch(err => {
+                                errors.push(generateErrorObject(`An error occurred on ontology validation request: [${err.toLocaleString()}]`, dataPath));
                                 reject(new ajv.ValidationError(errors));
                             });
                         }).catch(err => {
-                            errors.push(generateErrorObject(err));
+                            errors.push(generateErrorObject(err, dataPath));
                             reject(new ajv.ValidationError(errors));
                         });
                     }
                 }
                 else {
-                    errors.push(generateErrorObject("Missing required variable in schema graph_restriction, required properties are: parentTerm and ontologyId."));
-                    reject(ajv.ValidationError);
+                    errors.push(generateErrorObject("Missing required variable in schema graph_restriction, required properties are: parentTerm and ontologyId.", dataPath));
+                    reject(new ajv.ValidationError(errors));
                 }
             });
         };
