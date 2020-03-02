@@ -5,7 +5,13 @@ import config from "config";
 import request from "request-promise";
 import R from "ramda";
 import Promise from "bluebird";
-import {NoUuidError, NotRetryableError, LinkNotFoundOnResource, AlreadyInStateError} from "./ingest-client-exceptions";
+import {
+    NoUuidError,
+    NotRetryableError,
+    LinkNotFoundOnResource,
+    AlreadyInStateError,
+    EntityNotFoundError
+} from "./ingest-client-exceptions";
 import {FileChecksums, IngestConnectionProperties, ValidationJob} from "../../common/types";
 import ValidationReport from "../../model/validation-report";
 import {StatusCodeError} from "request-promise/errors";
@@ -43,18 +49,16 @@ class IngestClient extends Client {
     }
 
     retrieveEmbeddedEntities(entityUrl: string, entityLink: string, entityType: string) : Promise<any[]> {
-        return new Promise<any[]>((resolve, reject) => {
-            this.retrieve(entityUrl)
-                .then(doc => {
-                    if(! IngestClient.pathExistsInDoc(["_links", entityLink], doc)) {
-                        throw new LinkNotFoundOnResource(`Error: Resource at ${entityUrl} has no link "${entityLink}"`);
-                    } else {
-                        this.retrieve(doc["_links"][entityLink]["href"]).then(embeddedEntites => {
-                            resolve(embeddedEntites["_embedded"][entityType]);
-                        });
-                    }
-                })
-        });
+        return this.retrieve(entityUrl)
+            .then(doc => {
+                if(! IngestClient.pathExistsInDoc(["_links", entityLink], doc)) {
+                    return Promise.reject(new LinkNotFoundOnResource(`Error: Resource at ${entityUrl} has no link "${entityLink}"`));
+                } else {
+                    return this.retrieve(doc["_links"][entityLink]["href"]).then(embeddedEntites => {
+                        return Promise.resolve(embeddedEntites["_embedded"][entityType]);
+                    });
+                }
+            })!
     }
 
 
@@ -69,17 +73,15 @@ class IngestClient extends Client {
      * @param entityUrl
      * @returns {Promise} resolving to the metadata document JSON
      */
-    getMetadataDocument(entityUrl: string) {
-        return new Promise((resolve, reject) => {
-            this.retrieveMetadataDocument(entityUrl).then((doc: any) => {
-                if(doc["uuid"] && doc["uuid"]["uuid"]) {
-                    resolve(doc);
-                } else {
-                    throw new NoUuidError("document at " + entityUrl + "has no UUID");
-                }
-            }).catch(NoUuidError, (err) => {
-                reject(err);
-            })
+    getMetadataDocument(entityUrl: string): Promise<any> {
+        return this.retrieveMetadataDocument(entityUrl).then((doc: any) => {
+            if(doc["uuid"] && doc["uuid"]["uuid"]) {
+                return Promise.resolve(doc);
+            } else {
+                return Promise.reject(new NoUuidError("document at " + entityUrl + "has no UUID"));
+            }
+        }).catch(NoUuidError, (err) => {
+            return Promise.reject(err);
         });
     }
 

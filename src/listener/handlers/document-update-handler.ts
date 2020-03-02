@@ -6,7 +6,11 @@ import IngestClient from "../../utils/ingest-client/ingest-client";
 import IHandler from "./handler";
 import Promise from "bluebird";
 import {NoCloudUrl, NoFileMetadata, NotEligibleForValidation} from "../../validation/ingest-validation-exceptions";
-import {NoUuidError, AlreadyInStateError} from "../../utils/ingest-client/ingest-client-exceptions";
+import {
+    NoUuidError,
+    AlreadyInStateError,
+    EntityNotFoundError
+} from "../../utils/ingest-client/ingest-client-exceptions";
 import ValidationReport from "../../model/validation-report";
 
 class DocumentUpdateHandler implements IHandler {
@@ -20,7 +24,12 @@ class DocumentUpdateHandler implements IHandler {
 
     handle(msg: string) : Promise<boolean>{
         const msgJson = JSON.parse(msg);
-        return this._handle(msgJson).then(() => {return Promise.resolve(true)}).catch(() => {return Promise.resolve(false)});
+        return this._handle(msgJson)
+            .then(() => {return Promise.resolve(true)})
+            .catch((err) => {
+                console.error(`Caught an unhandled exception, message will be ignored: ${err.toString()}`)
+                return Promise.resolve(false)
+            });
     }
 
     _handle(msgJson: any): Promise<any> {
