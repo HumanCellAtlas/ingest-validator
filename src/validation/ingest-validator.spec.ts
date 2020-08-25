@@ -9,9 +9,15 @@ import ValidationReport from "../model/validation-report";
 
 describe("Ingest validator tests", () =>{
 
-    it("should correctly parse file formats from file names", () => {
-        let fileName = "aaaa.fastq.gz";
-        let format = IngestValidator.fileFormatFromFileName(fileName);
+    it("should correctly parse file formats from file resources", () => {
+        let fileResource = {
+            "content": {
+                "file_core": {
+                    "format": "fastq.gz"
+                }
+            }
+        };
+        let format = IngestValidator.fileFormatFromFileResource(fileResource);
         expect(format).toBe("fastq.gz");
     });
 
