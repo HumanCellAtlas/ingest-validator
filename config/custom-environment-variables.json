@@ -36,6 +36,8 @@
     }
   },
   "FILE_VALIDATION_IMAGES" : {
+    "fq" : "FASTQ_VALIDATION_IMAGE",
+    "fq.gz" : "FASTQ_VALIDATION_IMAGE",
     "fastq" : "FASTQ_VALIDATION_IMAGE",
     "fastq.gz" : "FASTQ_VALIDATION_IMAGE",
     "fastq.tar.gz" : "FASTQ_VALIDATION_IMAGE"
