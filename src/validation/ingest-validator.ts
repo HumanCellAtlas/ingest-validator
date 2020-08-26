@@ -112,7 +112,7 @@ class IngestValidator {
         // proceed with data file validation if metadata doc validation passes
         if(documentType.toUpperCase() === 'FILE' && contentValidationReport.validationState.toUpperCase() == "VALID") {
             const fileName = fileDocument['fileName'];
-            const fileFormat = IngestValidator.fileFormatFromFileName(fileName);
+            const fileFormat = IngestValidator.fileFormatFromFileResource(fileDocument);
 
             // refresh document
 
@@ -153,17 +153,8 @@ class IngestValidator {
         }
     }
 
-    /**
-     *  returns file extension given a file name, e.g
-     *  given aaaabbbcc.fastq, returns fastq
-     *  given aaabbbccc.fastq.gz, returns fastq.gz
-     *  given aaaabbbccc.fastq.tar.gz, returns fastq.tar.gz
-     *
-     * @param fileName
-     */
-    static fileFormatFromFileName(fileName: string): string {
-        const ext: string = fileName.split(/[.](.+)/)[1];
-        return ext ? ext : "";
+    static fileFormatFromFileResource(fileResource: any): string {
+        return fileResource['content']['file_core']['format'];
     }
 }
 
