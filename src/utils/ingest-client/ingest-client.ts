@@ -7,6 +7,7 @@ import R from "ramda";
 import Promise from "bluebird";
 import {
     NoUuidError,
+    NoContentError,
     NotRetryableError,
     LinkNotFoundOnResource,
     AlreadyInStateError,
@@ -75,14 +76,14 @@ class IngestClient extends Client {
      */
     getMetadataDocument(entityUrl: string): Promise<any> {
         return this.retrieveMetadataDocument(entityUrl).then((doc: any) => {
-            if(doc["uuid"] && doc["uuid"]["uuid"]) {
-                return Promise.resolve(doc);
-            } else {
+            if(!(doc["uuid"] && doc["uuid"]["uuid"])) {
                 return Promise.reject(new NoUuidError("document at " + entityUrl + "has no UUID"));
             }
-        }).catch(NoUuidError, (err) => {
-            return Promise.reject(err);
-        });
+            if(!doc['content']) {
+                return Promise.reject(new NoContentError())
+            }
+            return Promise.resolve(doc)
+        })
     }
 
     transitionDocumentState(...args: any[]) : Promise<any> {
