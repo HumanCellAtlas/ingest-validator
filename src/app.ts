@@ -53,11 +53,11 @@ const ingestFileValidator = (() => {
 })();
 
 const ingestValidator = (() => {
-    return new IngestValidator(schemaValidator, ingestFileValidator, ingestClient);
+    return new IngestValidator(schemaValidator, ingestClient);
 })();
 
 const documentUpdateListener = (() => {
-    const handler = new DocumentUpdateHandler(ingestValidator, ingestClient);
+    const handler = new DocumentUpdateHandler(ingestValidator, ingestFileValidator, ingestClient);
 
     const rabbitConnectionConfig = config.get("AMQP.metadataValidation.connection") as RabbitConnectionProperties;
     const rabbitMessagingConfig = config.get("AMQP.metadataValidation.messaging") as RabbitMessagingProperties;

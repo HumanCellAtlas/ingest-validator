@@ -4,6 +4,7 @@
 
 namespace ingestClientExceptions {
     export class NoUuidError extends Error {}
+    export class NoContentError extends Error {}
     export class RetryableError extends Error {}
     export class NotRetryableError extends Error {}
     export class AlreadyInStateError extends NotRetryableError {}

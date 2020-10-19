@@ -4,15 +4,13 @@
 import ValidationReport from "../model/validation-report";
 
 import Promise from "bluebird";
-import IngestFileValidator from "../utils/ingest-client/ingest-file-validator";
 import IngestClient from "../utils/ingest-client/ingest-client";
 import {ErrorObject} from "ajv";
 import SchemaValidator from "./schema-validator";
 import ErrorReport from "../model/error-report";
-import {NoDescribedBy, NoFileValidationImage, SchemaRetrievalError} from "./ingest-validation-exceptions";
+import {NoDescribedBy, SchemaRetrievalError} from "./ingest-validation-exceptions";
 import R from "ramda";
-import {FileAlreadyValidatedError, FileCurrentlyValidatingError} from "../utils/ingest-client/ingest-client-exceptions";
-import {FileValidationRequestFailed} from "../utils/upload-client/upload-client-exceptions";
+
 /**
  *
  * Wraps the generic validator, outputs errors in custom format.
@@ -21,13 +19,11 @@ import {FileValidationRequestFailed} from "../utils/upload-client/upload-client-
  */
 class IngestValidator {
     schemaValidator: SchemaValidator;
-    fileValidator: IngestFileValidator;
     ingestClient: IngestClient;
     schemaCache: any;
 
-    constructor(schemaValidator: SchemaValidator, fileValidator: IngestFileValidator, ingestClient: IngestClient) {
+    constructor(schemaValidator: SchemaValidator, ingestClient: IngestClient) {
         this.schemaValidator = schemaValidator;
-        this.fileValidator = fileValidator;
         this.ingestClient = ingestClient;
         this.schemaCache = {};
     }
@@ -44,7 +40,6 @@ class IngestValidator {
                 .then(schema => {return this.schemaValidator.validateSingleSchema(schema, documentContent)})
                 .then(valErrors => {return IngestValidator.parseValidationErrors(valErrors)})
                 .then(parsedErrors => {return IngestValidator.generateValidationReport(parsedErrors)})
-                .then(contentValidationReport => { return this.attemptFileValidation(contentValidationReport, document, documentType) })
                 .catch(SchemaRetrievalError, err => {
                     const errReport = new ErrorReport(`Failed to retrieve schema at ${schemaUri}`);
                     return Promise.resolve(ValidationReport.invalidReport([errReport]));
@@ -96,66 +91,6 @@ class IngestValidator {
         return Promise.resolve(report);
     }
 
-
-    /**
-     *
-     * Only do file validation if schema validation passes for the resource and if
-     * the resource is a file
-     *
-     * @param contentValidationReport
-     * @param fileDocument
-     * @param documentType
-     *
-     * @returns {Promise.<ValidationReport>}
-     */
-    attemptFileValidation(contentValidationReport: ValidationReport, fileDocument: any, documentType: string) : Promise<ValidationReport> {
-        // proceed with data file validation if metadata doc validation passes
-        if(documentType.toUpperCase() === 'FILE' && contentValidationReport.validationState.toUpperCase() == "VALID") {
-            const fileName = fileDocument['fileName'];
-            const fileFormat = IngestValidator.fileFormatFromFileResource(fileDocument);
-
-            // refresh document
-
-            return new Promise((resolve, reject) => {
-                const fileDocumentUrl = this.ingestClient.selfLinkForResource(fileDocument);
-                this.ingestClient.retrieveMetadataDocument(fileDocumentUrl).then(doc => {
-                    this.fileValidator.validateFile(fileDocument, fileFormat, fileName)
-                        .then(validationJob => {
-                            const fileValidatingReport = ValidationReport.validatingReport();
-                            fileValidatingReport.validationJob = validationJob;
-                            resolve(fileValidatingReport);
-                        })
-                        .catch(FileValidationRequestFailed, err => {
-                            const errReport = new ErrorReport("File validation request failed");
-                            const rep = new ValidationReport("INVALID", [errReport]);
-                            resolve(rep);
-                        })
-                        .catch(FileAlreadyValidatedError, err => {
-                            console.info(`Request to validate File with name ${fileName} but it was already validated`);
-                            resolve(contentValidationReport);
-                        })
-                        .catch(FileCurrentlyValidatingError, err => {
-                            console.info(`Request to validate File with name ${fileName} but it's currently validating`);
-                            resolve(ValidationReport.validatingReport());
-                        })
-                        .catch(NoFileValidationImage, err => {
-                            console.info("No matching validation image for file with file name " + fileName);
-                            resolve(contentValidationReport);
-                        }).catch(err => {
-                            console.error("ERROR: error requesting file validation job " + err);
-                            reject(err);
-                        });
-                })
-                    .catch( () => resolve(contentValidationReport));
-            });
-        } else {
-            return Promise.resolve(contentValidationReport); // just return original report if not eligible for file validation
-        }
-    }
-
-    static fileFormatFromFileResource(fileResource: any): string {
-        return fileResource['content']['file_core']['format'];
-    }
 }
 
 export default IngestValidator;
