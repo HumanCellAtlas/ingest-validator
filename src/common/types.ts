@@ -18,6 +18,7 @@ namespace ts {
         scheme: string;
         host: string;
         port: number;
+        token?: string;
     }
 
     export type IngestConnectionProperties = HttpConnectionProperties;
