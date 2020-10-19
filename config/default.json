@@ -31,7 +31,7 @@
     "connection" : {
       "scheme": "https",
       "host" : "localhost",
-      "port" : 8080
+      "port" : 8080,
       "token": ""
     },
     "maxConnections": 20
